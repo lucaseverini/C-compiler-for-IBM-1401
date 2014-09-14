@@ -107,17 +107,17 @@ public class Tokenizer {
 	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) throws IndexOutOfBoundsException {
 		if(c == '\'') {
-			String text = String.valueOf(source.charAt(++position));
-			if(source.charAt(++position) == '\'')
+			String text = String.valueOf(source.charAt(position++));
+			if(source.charAt(position++) == '\'')
 			{
 				return new Token(text, Token.TokenType.characterLiteral);
 			}
 		}
-		else {
+		else if(c == '\"') {
 			String text = "";
 
 			while(true) {
-				char ch = source.charAt(++position);
+				char ch = source.charAt(position++);
 				if(ch != '\"') {
 					text = text + ch;
 				}
