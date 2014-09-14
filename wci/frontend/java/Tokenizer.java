@@ -26,19 +26,22 @@ public class Tokenizer {
 	}
 
 	private boolean isKeyword(String str) {
-		String keywords = "abstract continue for new switch assert default "+
-		"if package synchronized boolean do goto private this break double "+
-		"implements protected throw byte else import public throws case enum "+
-		"instanceof return transient catch extends int short try char final "+
-		"interface static void class finally long strictfp volatile const float "+
-		"native super while";
-		return keywords.contains(str);
+		String keywords = " abstract continue for new switch assert default "+
+		" if package synchronized boolean do goto private this break double "+
+		" implements protected throw byte else import public throws case enum "+
+		" instanceof return transient catch extends int short try char final "+
+		" interface static void class finally long strictfp volatile const float "+
+		" native super while ";
+		return keywords.contains(" " + str + " ");
 	}
 
 	public Token nextToken() {
 		char c;
 		try {
-			while(Character.isWhitespace(c = source.charAt(position++)));
+			while(Character.isWhitespace(c = source.charAt(position))) {
+				position++;
+			}
+			
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -110,17 +113,16 @@ public class Tokenizer {
 	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) {
 		if(c == '\'') {
-			String text = String.valueOf(source.charAt(++position));
-			if(source.charAt(++position) == '\'')
+			String text = String.valueOf(source.charAt(position++));
+			if(source.charAt(position++) == '\'')
 			{
 				return new Token(text, Token.TokenType.characterLiteral);
 			}
 		}
-		else {
+		else if(c == '\"') {
 			String text = "";
-
 			while(true) {
-				char ch = source.charAt(++position);
+				char ch = source.charAt(position++);
 				if(ch != '\"') {
 					text = text + ch;
 				}
