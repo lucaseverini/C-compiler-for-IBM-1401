@@ -2,11 +2,12 @@ package wci.frontend.java;
 
 public class Tokenizer {
 	private String source;
-	private int position;
+	private int position, lastPosition;
 
 	public Tokenizer(String source) {
 		this.source = source + '\n';
 		position = 0;
+		lastPosition = -1;
 	}
 
 	private boolean isSymbol(char c) {
@@ -35,11 +36,7 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
-	private long packLineAndCols(){
-		return packLineAndCols(position);
-	}
-
-	private long packLineAndCols(int pos){
+	public long packLineAndCols(int pos){
 		int numNewLines = 0;
 		int posInLine = 0;
 		/*  Because we have to explain this.
@@ -77,7 +74,7 @@ public class Tokenizer {
 			while(Character.isWhitespace(c = source.charAt(position))) {
 				position++;
 			}
-
+			lastPosition = position;
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -143,14 +140,14 @@ public class Tokenizer {
 		}
 
 		if (isKeyword(token)) {
-			printLineAndCol(packLineAndCols(position));
+			//printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.keyword);
 		} else if (" true false ".contains(" "+token+" ")) {
 			return new Token(token, Token.TokenType.booleanLiteral);
 		} else if (" null ".contains(" "+token+" ")) {
 			return new Token(token, Token.TokenType.nullLiteral);
 		} else {
-			printLineAndCol(packLineAndCols(position));
+			//printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.identifier);
 		}
 	}
@@ -330,8 +327,13 @@ public class Tokenizer {
 		}
 		return null;
 	}
+	
+	public int getLastPosition() {
+		return lastPosition;
+	}
 
 	public void reset() {
 		position = 0;
+		lastPosition = -1;
 	}
 }

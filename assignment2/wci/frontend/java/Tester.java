@@ -22,6 +22,8 @@ public class Tester {
 		Token tok = t.nextToken();
 		while(tok != null && tok.getType() != Token.TokenType.eof) {
 			System.out.println(tok);
+			long lineAndCol = t.packLineAndCols(t.getLastPosition());
+			t.printLineAndCol(lineAndCol);
 			tok = t.nextToken();
 		}
 		System.out.println(tok);
