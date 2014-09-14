@@ -19,6 +19,7 @@ public class Tester {
 		}
 		Tokenizer t = new Tokenizer(fileContents);
 		Token tok = t.nextToken();
+
 		while(true) {
 			if(tok == null) {
 				long tokenStart = t.getStartPositon();

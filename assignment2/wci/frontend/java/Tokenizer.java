@@ -12,7 +12,7 @@ public class Tokenizer {
 	}
 
 	private boolean isSymbol(char c) {
-		return "(){}[];,.:+-*/|&^%<>!~?".contains(String.valueOf(c));
+		return "(){}[];,.:+-*/|&^%<>!~?=".contains(String.valueOf(c));
 	}
 
 	private boolean isDigit(char c) {
@@ -37,11 +37,11 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
-	private long getLineAndCols(){
-		return getLineAndCols(position);
+	private long packLineAndCols(){
+		return packLineAndCols(position);
 	}
 
-	private long getLineAndCols(int pos){
+	private long packLineAndCols(int pos){
 		int numNewLines = 0;
 		int posInLine = 0;
 		/*  Because we have to explain this.
@@ -57,7 +57,7 @@ public class Tokenizer {
 				posInLine++;
 			}
 		}
-		ret = ((numNewLines + 1) << 32) | posInLine;
+		ret = ((numNewLines + 1L) << 32) | posInLine;
 		return ret;
 	}
 
@@ -142,15 +142,24 @@ public class Tokenizer {
 	//TODO - Matt
 	private Token nextIdentOrKeyword() {
 		String token = "";
-		while(!Character.isWhitespace(source.charAt(position)) &&
-				!isSymbol(source.charAt(position))) {
-			token += source.charAt(position);
-			position ++;
+		while(!Character.isWhitespace(source.charAt(position))) {
+			if (isIdentifierChar(source.charAt(position))){
+				token += source.charAt(position);
+				position ++;
+			} else {
+				break;
+			}
 		}
 
 		if (isKeyword(token)) {
+			printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.keyword);
+		} else if (" true false ".contains(" "+token+" ")) {
+			return new Token(token, Token.TokenType.booleanLiteral);
+		} else if (" null ".contains(" "+token+" ")) {
+			return new Token(token, Token.TokenType.nullLiteral);
 		} else {
+			printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.identifier);
 		}
 	}
@@ -182,7 +191,7 @@ public class Tokenizer {
 		position++;
 		return null;
 	}
-	
+
 	// Returns the real char in case it is escaped 
 	private char getRealChar(char c) {
 		if(c == '\\') {
@@ -195,7 +204,7 @@ public class Tokenizer {
 
 				case 'r':
 					return (char)13;
-					
+
 				case '\\':
 					return '\\';
 
@@ -204,19 +213,133 @@ public class Tokenizer {
 
 				case '"':
 					return '"';
-					
+
 				default:
 					return '?';
 			}
 		}
-		
+
 		return c;
+	}
+
+	private void consumeBlockComment() throws UnclosedCommentException{
+		try {
+			while(true) {
+				char c = source.charAt(position++);
+				if (c == '*' && source.charAt(position) == '/') {
+					position++;
+					return;
+				}
+			}
+		} catch (IndexOutOfBoundsException e) {
+			throw new UnclosedCommentException();
+		}
+	}
+
+	private void consumeLineComment() {
+		while(source.charAt(position++) != '\n');
 	}
 
 	//Remember, if the token is a '.', it may be the start of a floating point literal
 	//this method should call nextNumberLiteral in that case
-	private Token nextSymbolOrComment() throws UnclosedCommentException{
-		position ++;
+	//also, this method handles comments, in which case it consumes the comment and returns
+	//the next token after that comment.
+	private Token nextSymbolOrComment() throws UnclosedCommentException {
+		char c = source.charAt(position), c2, c3, c4;
+		switch (c) {
+			//first, all of our cases that are guaranteed to be single-character
+			//separators
+			case '(':
+			case ')':
+			case '{':
+			case '}':
+			case '[':
+			case ']':
+			case ';':
+			case ',':
+				position++;
+				return new Token(c + "", Token.TokenType.separator);
+			case ':':
+			case '?':
+			case '~':
+				position++;
+				return new Token(c + "", Token.TokenType.operator);
+			//now for the trickier cases
+			case '.' :
+				if (isDigit(source.charAt(position + 1))) {
+					return nextNumberLiteral();
+				} else {
+					position++;
+					return new Token(".", Token.TokenType.separator);
+				}
+
+			case '>':
+			case '<':
+				c2 = source.charAt(++position);
+				if (c == c2) {
+					c3 = source.charAt(++position);
+					if (c3 == '=') {
+						position++;
+						return new Token(source.substring(position - 3, position), Token.TokenType.operator);
+					} else if (c == '>' && c3 == '>') {
+						c4 = source.charAt(++position);
+						if (c4 == '=') {
+							position++;
+							return new Token(">>>=", Token.TokenType.operator);
+						} else {
+							return new Token(">>>", Token.TokenType.operator);
+						}
+					} else {
+						return new Token(source.substring(position - 2, position), Token.TokenType.operator);
+					}
+				} else if (c2 == '=') {
+					position++;
+					return new Token(source.substring(position - 2, position), Token.TokenType.operator);
+				} else {
+					return new Token(c + "", Token.TokenType.operator);
+				}
+
+			case '/':
+				c2 = source.charAt(++position);
+				if (c2 == '*') {
+					position++;
+					consumeBlockComment();
+					return nextToken();
+				} else if (c2 == '/') {
+					consumeLineComment();
+					return nextToken();
+				} else position--;
+				//intentional fall through here.
+			//these are all the operators that can either stand alone or be followed by a '='
+			case '*':
+			case '!':
+			case '^':
+			case '%':
+			case '=':
+				c2 = source.charAt(++position);
+				if (c2 == '=') {
+					position++;
+					return new Token(c + "=", Token.TokenType.operator);
+				} else {
+					return new Token(c + "", Token.TokenType.operator);
+				}
+			//these are all the operators that can either stand alone, be reduplicated, or be followed by a '='
+			case '+':
+			case '-':
+			case '&':
+			case '|':
+				c2 = source.charAt(++position);
+				if (c2 == c) {
+					position++;
+					return new Token(c + "" + c2, Token.TokenType.operator);
+				} else if (c2 == '=') {
+					position++;
+					return new Token(c + "=", Token.TokenType.operator);
+				} else {
+					return new Token(c + "", Token.TokenType.operator);
+				}
+		}
+
 		return null;
 	}
 
