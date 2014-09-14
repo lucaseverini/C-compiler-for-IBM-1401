@@ -27,4 +27,33 @@ public class Token {
 		return type;
 	}
 
+	public String toString() {
+		String type_str = "";
+		switch (this.type) {
+			case identifier:
+				type_str = "identifier";
+			case keyword:
+				type_str = "keyword";
+			case separator:
+				type_str = "separator";
+			case operator:
+				type_str = "operator";
+			case integerLiteral:
+				type_str = "integerLiteral";
+			case floatingPointLiteral:
+				type_str = "floatingPointLiteral";
+			case booleanLiteral:
+				type_str = "booleanLiteral";
+			case characterLiteral:
+				type_str = "characterLiteral";
+			case stringLiteral:
+				type_str = "stringLiteral";
+			case nullLiteral:
+				type_str = "nullLiteral";
+			case eof:
+				type_str = "eof";
+		}
+		return "Token: "+ this.text + " Type: " + type_str;
+	}
+
 }

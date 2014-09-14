@@ -25,11 +25,20 @@ public class Tokenizer {
 		return isDigit(c) || isIdentifierStart(c);
 	}
 
+	private boolean isKeyword(String str) {
+		String keywords = "abstract continue for new switch assert default "+
+		"if package synchronized boolean do goto private this break double "+
+		"implements protected throw byte else import public throws case enum "+
+		"instanceof return transient catch extends int short try char final "+
+		"interface static void class finally long strictfp volatile const float "+
+		"native super while";
+		return keywords.contains(str);
+	}
+
 	public Token nextToken() {
 		char c;
 		try {
 			while(Character.isWhitespace(c = source.charAt(position++)));
-
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -46,10 +55,9 @@ public class Tokenizer {
 			position = source.length();
 			return new Token("", Token.TokenType.eof);
 		}
-		
 		return null;
 	}
-	
+
 	//TODO - Sean
 	private Token nextNumberLiteral() throws IndexOutOfBoundsException {
 		int start = position;
@@ -78,13 +86,25 @@ public class Tokenizer {
 			}
 		}
 	}
-	
+
+
 	//TODO - Matt
 	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException {
-		return null;
+		String token = "";
+		while(!Character.isWhitespace(source.charAt(position)) &&
+				!isSymbol(source.charAt(position))) {
+			token += source.charAt(position);
+			position ++;
+		}
+
+		if (isKeyword(token)) {
+			return new Token(token, Token.TokenType.keyword);
+		} else {
+			return new Token(token, Token.TokenType.identifier);
+		}
 	}
 
-	// Luca
+	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) throws IndexOutOfBoundsException {
 		if(c == '\'') {
 			String text = String.valueOf(source.charAt(++position));
@@ -95,7 +115,7 @@ public class Tokenizer {
 		}
 		else {
 			String text = "";
-			
+
 			while(true) {
 				char ch = source.charAt(++position);
 				if(ch != '\"') {
@@ -106,8 +126,8 @@ public class Tokenizer {
 				}
 			}
 		}
-		
-		throw new IndexOutOfBoundsException();
+
+		return null;
 	}
 
 	//Remember, if the token is a '.', it may be the start of a floating point literal
@@ -115,7 +135,7 @@ public class Tokenizer {
 	private Token nextSymbolOrComment() throws IndexOutOfBoundsException {
 		return null;
 	}
-	
+
 	public void reset() {
 		position = 0;
 	}
