@@ -38,7 +38,10 @@ public class Tokenizer {
 	public Token nextToken() {
 		char c;
 		try {
-			while(Character.isWhitespace(c = source.charAt(position))) position++;
+			while(Character.isWhitespace(c = source.charAt(position))) {
+				position++;
+			}
+			
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
