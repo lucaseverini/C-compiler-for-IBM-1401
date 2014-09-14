@@ -116,11 +116,6 @@ public class Tokenizer {
 		return null;
 	}
 	
-	//TODO - Luca
-	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException {
-		return null;
-	}
-
 	public void reset() {
 		position = 0;
 	}
