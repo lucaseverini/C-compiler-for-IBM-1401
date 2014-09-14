@@ -25,7 +25,6 @@ public class Tokenizer {
 		return isDigit(c) || isIdentifierStart(c);
 	}
 
-
 	public Token nextToken() {
 		char c;
 		try {
@@ -60,8 +59,12 @@ public class Tokenizer {
 		char c;
 		while (true) {
 			c = source.charAt(position++);
-			if (c == 'x' || c == 'X') hexidecimal  = true;
-			else if (c == '.') type = Token.TokenType.floatingPointLiteral;
+			if (c == 'x' || c == 'X') {
+				hexidecimal  = true;
+			}
+			else if (c == '.') {
+				type = Token.TokenType.floatingPointLiteral;
+			}
 			else if ((c == 'e' || c == 'E') && ! hexidecimal) {
 				type = Token.TokenType.floatingPointLiteral;
 				expectingExponent = true;
@@ -69,15 +72,15 @@ public class Tokenizer {
 			else if (c == 'p' || c == 'P') {
 				type = Token.TokenType.floatingPointLiteral;
 				expectingExponent = true;
-			} else if (expectingExponent && c == '+' || c == '-') {}
-			else if (!isIdentifierChar(c)) {
+			} else if (expectingExponent && c == '+' || c == '-') {
+			} else if (!isIdentifierChar(c)) {
 				return new Token(source.substring(start, position), type);
 			}
 		}
 	}
 	
 	//TODO - Matt
-	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException{
+	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException {
 		return null;
 	}
 
