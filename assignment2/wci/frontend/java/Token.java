@@ -19,8 +19,8 @@ public class Token {
 		characterLiteral, stringLiteral, nullLiteral, eof
 	}
 
-	private String text;
-	private TokenType type;
+	private final String text;
+	private final TokenType type;
 
 	protected Token(String text, TokenType type) {
 		this.text = text;

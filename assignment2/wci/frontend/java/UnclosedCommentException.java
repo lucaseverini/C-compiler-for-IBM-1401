@@ -9,6 +9,7 @@
 package wci.frontend.java;
 
 public class UnclosedCommentException extends Exception {
+	private static final long serialVersionUID = 1L;
 	//TODO - sean : add nice errors with line numbers n stuff
 	@Override
 	public String toString() {

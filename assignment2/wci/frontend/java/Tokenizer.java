@@ -9,7 +9,7 @@
 package wci.frontend.java;
 
 public class Tokenizer {
-	private String source;
+	private final String source;
 	private int position;
 	private int startPosition;
 

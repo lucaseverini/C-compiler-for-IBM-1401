@@ -20,8 +20,9 @@ public class Tester {
 			f = new File("test.txt");
 			Scanner s = new Scanner(f);
 
-			while(s.hasNextLine())
+			while(s.hasNextLine()) {
 				fileContents += s.nextLine() + "\n";
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
