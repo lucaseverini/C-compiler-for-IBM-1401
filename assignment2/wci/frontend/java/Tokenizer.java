@@ -10,7 +10,7 @@ public class Tokenizer {
 	}
 
 	private boolean isSymbol(char c) {
-		return "(){}[];,.:+-*/|&^%<>!~?".contains(String.valueOf(c));
+		return "(){}[];,.:+-*/|&^%<>!~?=".contains(String.valueOf(c));
 	}
 
 	private boolean isDigit(char c) {
@@ -202,11 +202,11 @@ public class Tokenizer {
 		return c;
 	}
 
-	private void consumeBlockComment() {
+	private void consumeBlockComment() throws UnclosedCommentException{
 		try {
 			while(true) {
-				char c = source.indexOf(position++);
-				if (c == '*' && source.indexOf(position) == '/') {
+				char c = source.charAt(position++);
+				if (c == '*' && source.charAt(position) == '/') {
 					position++;
 					return;
 				}
@@ -224,7 +224,7 @@ public class Tokenizer {
 	//this method should call nextNumberLiteral in that case
 	//also, this method handles comments, in which case it consumes the comment and returns
 	//the next token after that comment.
-	private Token nextSymbolOrComment() throws IndexOutOfBoundsException {
+	private Token nextSymbolOrComment() throws UnclosedCommentException {
 		char c = source.charAt(position), c2, c3, c4;
 		switch (c) {
 			//first, all of our cases that are guaranteed to be single-character
@@ -238,19 +238,19 @@ public class Tokenizer {
 			case ';':
 			case ',':
 				position++;
-				return new Token(Token.TokenType.separator, c + "");
+				return new Token(c + "", Token.TokenType.separator);
 			case ':':
 			case '?':
 			case '~':
 				position++;
-				return new Token(Token.TokenType.operator, c + "");
+				return new Token(c + "", Token.TokenType.operator);
 			//now for the trickier cases
 			case '.' :
 				if (isDigit(source.charAt(position + 1))) {
 					return nextNumberLiteral();
 				} else {
 					position++;
-					return new Token(Token.TokenType.separator, ".");
+					return new Token(".", Token.TokenType.separator);
 				}
 			
 			case '>':
@@ -319,6 +319,7 @@ public class Tokenizer {
 					return new Token(c + "", Token.TokenType.operator);
 				}
 		}
+		return null;
 	}
 
 	public void reset() {
