@@ -1,9 +1,17 @@
+/*
+	Tokenizer.java
+
+    Assignment #2 - CS153 - SJSU
+	By Sean Papay, Matt Pleva, Luca Severini 
+	September-14-2014
+*/
+
 package wci.frontend.java;
 
 public class Tokenizer {
 	private String source;
 	private int position, lastPosition;
-
+	
 	public Tokenizer(String source) {
 		this.source = source + '\n';
 		position = 0;
@@ -75,6 +83,7 @@ public class Tokenizer {
 				position++;
 			}
 			lastPosition = position;
+			
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -93,6 +102,7 @@ public class Tokenizer {
 		} catch (UnclosedCommentException e) {
 			System.out.println(e);
 		}
+		position++;
 		return null;
 	}
 
@@ -155,7 +165,7 @@ public class Tokenizer {
 	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) {
 		if(c == '\'') {
-			String text = String.valueOf(getNextRealChar(source.charAt(++position)));
+			String text = String.valueOf(getRealChar(source.charAt(++position)));
 			if(source.charAt(++position) == '\'')
 			{
 				position++;
@@ -167,7 +177,7 @@ public class Tokenizer {
 			while(true) {
 				char ch = source.charAt(++position);
 				if(ch != '"') {
-					text = text + getNextRealChar(ch);
+					text = text + getRealChar(ch);
 				}
 				else {
 					position++;
@@ -176,10 +186,12 @@ public class Tokenizer {
 			}
 		}
 
+		position++;
 		return null;
 	}
 
-	private char getNextRealChar(char c) {
+	// Returns the real char in case it is escaped 
+	private char getRealChar(char c) {
 		if(c == '\\') {
 			switch(source.charAt(++position)) {
 				case 't':
@@ -208,7 +220,7 @@ public class Tokenizer {
 		return c;
 	}
 
-	private void consumeBlockComment() throws UnclosedCommentException{
+	private void consumeBlockComment() throws UnclosedCommentException {
 		try {
 			while(true) {
 				char c = source.charAt(position++);
@@ -325,6 +337,7 @@ public class Tokenizer {
 					return new Token(c + "", Token.TokenType.operator);
 				}
 		}
+
 		return null;
 	}
 	
