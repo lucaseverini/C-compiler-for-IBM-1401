@@ -28,6 +28,7 @@ public class Tokenizer {
 		return isDigit(c) || isIdentifierStart(c);
 	}
 
+	//TODO - Sean : handle index out of bounds
 	public Token nextToken() {
 		char c;
 		while(Character.isWhitespace(c = source.charAt(tokenStart))) {
