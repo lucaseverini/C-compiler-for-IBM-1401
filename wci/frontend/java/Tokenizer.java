@@ -3,7 +3,6 @@ package wci.frontend.java;
 public class Tokenizer {
 	private String source;
 	private int position;
-	private int tokenStart;
 
 	pubic Tokenizer(String source) {
 		this.source = source + '\n';
@@ -32,10 +31,7 @@ public class Tokenizer {
 	public Token nextToken() {
 		char c;
 		try {
-			while(Character.isWhitespace(c = source.charAt(tokenStart))) {
-				tokenStaart++;
-			}
-			position = tokenStart;
+			while(Character.isWhitespace(c = source.charAt(position++)));
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -50,7 +46,6 @@ public class Tokenizer {
 			}
 		} catch (IndexOutOfBoundsException e) {
 			position = source.length();
-			tokenStart = position;
 			return new Token("", eof);
 		}
 	}
@@ -97,6 +92,5 @@ public class Tokenizer {
 
 	public void reset() {
 		position = 0;
-		tokenStart = 0;
 	}
 }
