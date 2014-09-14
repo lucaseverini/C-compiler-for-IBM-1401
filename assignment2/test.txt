@@ -3,7 +3,15 @@ public
 testing
 3.14
 1337
+
 'c'
 "String"
 "longer string"
+"aaaa\tbbbb"
+"abc\'"
+"ABC\""
+"===\\===\'===\"===\t===\n===\r==="
+"*********"
+'\\'
+'\''
 
