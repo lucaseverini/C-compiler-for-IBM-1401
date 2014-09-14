@@ -5,15 +5,14 @@ public class Tokenizer {
 	private int position;
 	private int tokenStart;
 
-	pubic Tokenizer(String source) {
+	public Tokenizer(String source) {
 		this.source = source;
 		position = 0;
 		tokenStart = 0;
 	}
 
-	private isSymbol(char c) {
-		return "(){}[];,.:+-*/|&^%<>!~?".contains(c)
-
+	private boolean isSymbol(char c) {
+		return "(){}[];,.:+-*/|&^%<>!~?".contains(c);
 	}
 
 	private boolean isDigit(char c) {
@@ -33,7 +32,7 @@ public class Tokenizer {
 		char c;
 		try {
 			while(Character.isWhitespace(c = source.charAt(tokenStart))) {
-				tokenStaart++;
+				tokenStart++;
 			}
 			position = tokenStart;
 			if (isDigit(c)) {
@@ -46,30 +45,54 @@ public class Tokenizer {
 				return nextSymbolOrComment();
 			}
 			if (c == '\'' || c == '\"') {
-				return nextStringOrCharLiteral();
+				return nextStringOrCharLiteral(c);
 			}
 		} catch (IndexOutOfBoundsException e) {
 			position = source.length();
 			tokenStart = position;
-			return new Token("", eof);
+			return new Token("", Token.TokenType.eof);
 		}
+		
+		return null;
 	}
-	
+/*	
 	//TODO - Sean
 	private Token nextNumberLiteral() throws IndexOutOfBoundsException {
 		
-	}
-	
+	}	
 	
 	//TODO - Matt
 	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException;
 	
 	//TODO - someone
 	private Token nextSymbolOrComment() throws IndexOutOfBoundsException;
-	
+*/	
 	//TODO - Luca
-	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException;
-
+	private Token nextStringOrCharLiteral(char c) throws IndexOutOfBoundsException
+	{
+		if(c == '\'') {
+			String text = String.valueOf(source.charAt(++position));
+			if(source.charAt(++position) == '\'')
+			{
+				return new Token(text, Token.TokenType.characterLiteral);
+			}
+		}
+		else {
+			String text = "";
+			
+			while(true) {
+				char ch = source.charAt(++position);
+				if(ch != '\"') {
+					text = text + ch;
+				}
+				else {
+					return new Token(text, Token.TokenType.stringLiteral);
+				}
+			}
+		}
+		
+		throw new IndexOutOfBoundsException();
+	}
 
 	public void reset() {
 		position = 0;
