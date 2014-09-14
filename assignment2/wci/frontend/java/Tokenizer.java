@@ -149,26 +149,57 @@ public class Tokenizer {
 	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) {
 		if(c == '\'') {
-			String text = String.valueOf(source.charAt(position++));
-			if(source.charAt(position++) == '\'')
+			String text = String.valueOf(getNextRealChar(source.charAt(++position)));
+			if(source.charAt(++position) == '\'')
 			{
+				position++;
 				return new Token(text, Token.TokenType.characterLiteral);
 			}
 		}
-		else if(c == '\"') {
+		else if(c == '"') {
 			String text = "";
 			while(true) {
-				char ch = source.charAt(position++);
-				if(ch != '\"') {
-					text = text + ch;
+				char ch = source.charAt(++position);
+				if(ch != '"') {
+					text = text + getNextRealChar(ch);
 				}
 				else {
+					position++;
 					return new Token(text, Token.TokenType.stringLiteral);
 				}
 			}
 		}
 
 		return null;
+	}
+	
+	private char getNextRealChar(char c) {
+		if(c == '\\') {
+			switch(source.charAt(++position)) {
+				case 't':
+					return (char)9;
+
+				case 'n':
+					return (char)10;
+
+				case 'r':
+					return (char)13;
+					
+				case '\\':
+					return '\\';
+
+				case '\'':
+					return '\'';
+
+				case '"':
+					return '"';
+					
+				default:
+					return '?';
+			}
+		}
+		
+		return c;
 	}
 
 	//Remember, if the token is a '.', it may be the start of a floating point literal
