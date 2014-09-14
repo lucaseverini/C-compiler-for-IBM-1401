@@ -25,7 +25,8 @@ public class Tester {
 			tok = t.nextToken();
 		}
 		System.out.println(tok);
-
+		long lac = ((65536L << 32) | 583);
+		Tokenizer.printLineAndCol(lac);
 	}
 
 }

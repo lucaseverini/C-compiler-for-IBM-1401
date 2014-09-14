@@ -35,13 +35,49 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
+	private long getLineAndCols(){
+		return getLineAndCols(position);
+	}
+
+	private long getLineAndCols(int pos){
+		int numNewLines = 0;
+		int posInLine = 0;
+		/*  Because we have to explain this.
+			The upper 32 bits of ret is the line number and the lower 32 bits is
+			the column index.
+		*/
+		long ret = 0;
+		for (int i = 0; i < pos; i ++) {
+			if (this.source.charAt(i) == '\n'){
+				numNewLines ++;
+				posInLine = 0;
+			} else {
+				posInLine++;
+			}
+		}
+		ret = ((numNewLines + 1) << 32) | posInLine;
+		return ret;
+	}
+
+	public static long getLine(long lac) {
+		return lac >> 32;
+	}
+
+	public static long getCol(long lac) {
+		return ((lac << 32) >> 32);
+	}
+
+	public static void printLineAndCol(long lac) {
+		System.out.println("Line: " + (lac >> 32) + "\t Col: " + ((lac << 32) >> 32));
+	}
+
 	public Token nextToken() {
 		char c;
 		try {
 			while(Character.isWhitespace(c = source.charAt(position))) {
 				position++;
 			}
-			
+
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
