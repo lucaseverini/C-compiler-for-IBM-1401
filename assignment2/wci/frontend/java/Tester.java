@@ -5,7 +5,6 @@ import java.util.Scanner;
 import java.io.IOException;
 
 public class Tester {
-
 	public static void main (String[] args) {
 		File f = null;
 		String fileContents = "";
@@ -20,12 +19,17 @@ public class Tester {
 		}
 		Tokenizer t = new Tokenizer(fileContents);
 		Token tok = t.nextToken();
-		while(tok.getType() != Token.TokenType.eof) {
-			System.out.println(tok);
+		while(tok == null || tok.getType() != Token.TokenType.eof) {
+			if(tok == null) {
+				int line = 
+				int col = 
+				System.out.println("Invalid token at line " + line + " col " + col);
+			}
+			else {
+				System.out.println(tok);
+			}
 			tok = t.nextToken();
 		}
 		System.out.println(tok);
-
 	}
-
 }

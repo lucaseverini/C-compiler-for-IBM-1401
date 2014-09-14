@@ -134,6 +134,7 @@ public class Tokenizer {
 			}
 		}
 
+		position++;
 		return null;
 	}
 	
