@@ -1,3 +1,11 @@
+/*
+	Token.java
+
+    Assignment #2 - CS153 - SJSU
+	By Sean Papay, Matt Pleva, Luca Severini 
+	September-14-2014
+*/
+
 package wci.frontend.java;
 
 /* A class representing a single token of a java program
@@ -33,38 +41,47 @@ public class Token {
 			case identifier:
 				type_str = "identifier";
 				break;
+				
 			case keyword:
 				type_str = "keyword";
 				break;
+				
 			case separator:
 				type_str = "separator";
 				break;
+				
 			case operator:
 				type_str = "operator";
 				break;
+				
 			case integerLiteral:
 				type_str = "integerLiteral";
 				break;
+				
 			case floatingPointLiteral:
 				type_str = "floatingPointLiteral";
 				break;
+				
 			case booleanLiteral:
 				type_str = "booleanLiteral";
 				break;
+				
 			case characterLiteral:
 				type_str = "characterLiteral";
 				break;
+				
 			case stringLiteral:
 				type_str = "stringLiteral";
 				break;
+				
 			case nullLiteral:
 				type_str = "nullLiteral";
 				break;
+				
 			case eof:
 				type_str = "eof";
 				break;
 		}
 		return "Token: "+ this.text + "\t\tType: " + type_str;
 	}
-
 }

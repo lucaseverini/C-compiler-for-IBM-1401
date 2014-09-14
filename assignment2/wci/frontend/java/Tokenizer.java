@@ -1,3 +1,11 @@
+/*
+	Tokenizer.java
+
+    Assignment #2 - CS153 - SJSU
+	By Sean Papay, Matt Pleva, Luca Severini 
+	September-14-2014
+*/
+
 package wci.frontend.java;
 
 public class Tokenizer {
@@ -37,11 +45,11 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
-	private long packLineAndCols(){
+	private long packLineAndCols() {
 		return packLineAndCols(position);
 	}
 
-	private long packLineAndCols(int pos){
+	private long packLineAndCols(int pos) {
 		int numNewLines = 0;
 		int posInLine = 0;
 		/*  Because we have to explain this.
@@ -222,7 +230,7 @@ public class Tokenizer {
 		return c;
 	}
 
-	private void consumeBlockComment() throws UnclosedCommentException{
+	private void consumeBlockComment() throws UnclosedCommentException {
 		try {
 			while(true) {
 				char c = source.charAt(position++);

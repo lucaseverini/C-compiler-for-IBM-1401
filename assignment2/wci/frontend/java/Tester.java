@@ -1,3 +1,11 @@
+/*
+	Tester.java
+
+    Assignment #2 - CS153 - SJSU
+	By Sean Papay, Matt Pleva, Luca Severini 
+	September-14-2014
+*/
+
 package wci.frontend.java;
 
 import java.io.File;
