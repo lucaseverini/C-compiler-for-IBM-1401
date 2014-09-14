@@ -113,20 +113,22 @@ public class Tokenizer {
 	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) {
 		if(c == '\'') {
-			String text = String.valueOf(source.charAt(position++));
-			if(source.charAt(position++) == '\'')
+			String text = String.valueOf(source.charAt(++position));
+			if(source.charAt(++position) == '\'')
 			{
+				position++;
 				return new Token(text, Token.TokenType.characterLiteral);
 			}
 		}
 		else if(c == '\"') {
 			String text = "";
 			while(true) {
-				char ch = source.charAt(position++);
+				char ch = source.charAt(++position);
 				if(ch != '\"') {
 					text = text + ch;
 				}
 				else {
+					position++;
 					return new Token(text, Token.TokenType.stringLiteral);
 				}
 			}

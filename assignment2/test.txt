@@ -3,3 +3,7 @@ public
 testing
 3.14
 1337
+'c'
+"String"
+"longer string"
+
