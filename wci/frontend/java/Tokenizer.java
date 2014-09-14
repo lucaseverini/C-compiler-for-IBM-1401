@@ -47,6 +47,19 @@ public class Tokenizer {
 			return nextStringOrCharLiteral();
 		}
 	}
+	
+	//TODO - Sean
+	private Token nextNumberLiteral();
+	
+	
+	//TODO - Matt
+	private Token nextIdentOrKeyword();
+	
+	//TODO - someone
+	private Token nextSymbolOrComment();
+	
+	//TODO - Luca
+	private Token nextStringOrCharLiteral();
 
 
 	public void reset() {
