@@ -14,7 +14,7 @@ public class Tester {
 			Scanner s = new Scanner(f);
 
 			while(s.hasNextLine())
-				fileContents += s.nextLine();
+				fileContents += s.nextLine() + "\n";
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
