@@ -3,16 +3,14 @@ package wci.frontend.java;
 public class Tokenizer {
 	private String source;
 	private int position;
-	private int tokenStart;
 
 	public Tokenizer(String source) {
-		this.source = source;
+		this.source = source + '\n';
 		position = 0;
-		tokenStart = 0;
 	}
 
 	private boolean isSymbol(char c) {
-		return "(){}[];,.:+-*/|&^%<>!~?".contains(c);
+		return "(){}[];,.:+-*/|&^%<>!~?".contains(String.valueOf(c));
 	}
 
 	private boolean isDigit(char c) {
@@ -31,10 +29,8 @@ public class Tokenizer {
 	public Token nextToken() {
 		char c;
 		try {
-			while(Character.isWhitespace(c = source.charAt(tokenStart))) {
-				tokenStart++;
-			}
-			position = tokenStart;
+			while(Character.isWhitespace(c = source.charAt(position++)));
+
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -49,24 +45,42 @@ public class Tokenizer {
 			}
 		} catch (IndexOutOfBoundsException e) {
 			position = source.length();
-			tokenStart = position;
 			return new Token("", Token.TokenType.eof);
 		}
 		
 		return null;
 	}
-/*	
+	
 	//TODO - Sean
 	private Token nextNumberLiteral() throws IndexOutOfBoundsException {
-		
-	}	
+		int start = position;
+		boolean hexidecimal = false;
+		boolean expectingExponent = false;
+		Token.TokenType type = Token.TokenType.integerLiteral;
+		char c;
+		while (true) {
+			c = source.charAt(position++);
+			if (c == 'x' || c == 'X') hexidecimal  = true;
+			else if (c == '.') type = Token.TokenType.floatingPointLiteral;
+			else if ((c == 'e' || c == 'E') && ! hexidecimal) {
+				type = Token.TokenType.floatingPointLiteral;
+				expectingExponent = true;
+			}
+			else if (c == 'p' || c == 'P') {
+				type = Token.TokenType.floatingPointLiteral;
+				expectingExponent = true;
+			} else if (expectingExponent && c == '+' || c == '-') {}
+			else if (!isIdentifierChar(c)) {
+				return new Token(source.substring(start, position), type);
+			}
+		}
+	}
 	
 	//TODO - Matt
-	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException;
-	
-	//TODO - someone
-	private Token nextSymbolOrComment() throws IndexOutOfBoundsException;
-*/	
+	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException{
+		return null;
+	}
+
 	//TODO - Luca
 	private Token nextStringOrCharLiteral(char c) throws IndexOutOfBoundsException
 	{
@@ -94,8 +108,18 @@ public class Tokenizer {
 		throw new IndexOutOfBoundsException();
 	}
 
+	//Remember, if the token is a '.', it may be the start of a floating point literal
+	//this method should call nextNumberLiteral in that case
+	private Token nextSymbolOrComment() throws IndexOutOfBoundsException{
+		return null;
+	}
+	
+	//TODO - Luca
+	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException{
+		return null;
+	}
+
 	public void reset() {
 		position = 0;
-		tokenStart = 0;
 	}
 }
