@@ -28,39 +28,47 @@ public class Tokenizer {
 		return isDigit(c) || isIdentifierStart(c);
 	}
 
-	//TODO - Sean : handle index out of bounds
+
 	public Token nextToken() {
 		char c;
-		while(Character.isWhitespace(c = source.charAt(tokenStart))) {
-			tokenStaart++;
-		}
-		position = tokenStart;
-		if (isDigit(c)) {
-			return nextNumberLiteral();
-		}
-		if (isIdentifierStart(c)) {
-			return nextIdentOrKeyword();
-		}
-		if (isSymbol(c)) {
-			return nextSymbolOrComment();
-		}
-		if (c == '\'' || c == '\"') {
-			return nextStringOrCharLiteral();
+		try {
+			while(Character.isWhitespace(c = source.charAt(tokenStart))) {
+				tokenStaart++;
+			}
+			position = tokenStart;
+			if (isDigit(c)) {
+				return nextNumberLiteral();
+			}
+			if (isIdentifierStart(c)) {
+				return nextIdentOrKeyword();
+			}
+			if (isSymbol(c)) {
+				return nextSymbolOrComment();
+			}
+			if (c == '\'' || c == '\"') {
+				return nextStringOrCharLiteral();
+			}
+		} catch (IndexOutOfBoundsException e) {
+			position = source.length();
+			tokenStart = position;
+			return new Token("", eof);
 		}
 	}
 	
 	//TODO - Sean
-	private Token nextNumberLiteral();
+	private Token nextNumberLiteral() throws IndexOutOfBoundsException {
+		
+	}
 	
 	
 	//TODO - Matt
-	private Token nextIdentOrKeyword();
+	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException;
 	
 	//TODO - someone
-	private Token nextSymbolOrComment();
+	private Token nextSymbolOrComment() throws IndexOutOfBoundsException;
 	
 	//TODO - Luca
-	private Token nextStringOrCharLiteral();
+	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException;
 
 
 	public void reset() {

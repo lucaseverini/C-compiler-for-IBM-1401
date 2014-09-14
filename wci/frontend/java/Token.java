@@ -8,7 +8,7 @@ public class Token {
 	public enum TokenType {
 		identifier, keyword, separator, operator,
 		integerLiteral, floatingPointLiteral, booleanLiteral,
-		characterLiteral, stringLiteral, nullLiteral
+		characterLiteral, stringLiteral, nullLiteral, eof
 	}
 
 	private String text;
