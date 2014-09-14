@@ -57,12 +57,14 @@ public class Tokenizer {
 		} catch (IndexOutOfBoundsException e) {
 			position = source.length();
 			return new Token("", Token.TokenType.eof);
+		} catch (UnclosedCommentException e) {
+			System.out.println(e);
 		}
 		return null;
 	}
 
 	//TODO - Sean
-	private Token nextNumberLiteral() throws IndexOutOfBoundsException {
+	private Token nextNumberLiteral() {
 		int start = position;
 		boolean hexidecimal = false;
 		boolean expectingExponent = false;
@@ -85,6 +87,7 @@ public class Tokenizer {
 				expectingExponent = true;
 			} else if (expectingExponent && c == '+' || c == '-') {
 			} else if (!isIdentifierChar(c)) {
+				position--;
 				return new Token(source.substring(start, position), type);
 			}
 		}
@@ -92,7 +95,7 @@ public class Tokenizer {
 
 
 	//TODO - Matt
-	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException {
+	private Token nextIdentOrKeyword() {
 		String token = "";
 		while(!Character.isWhitespace(source.charAt(position)) &&
 				!isSymbol(source.charAt(position))) {
@@ -108,7 +111,7 @@ public class Tokenizer {
 	}
 
 	// TODO - Luca
-	private Token nextStringOrCharLiteral(char c) throws IndexOutOfBoundsException {
+	private Token nextStringOrCharLiteral(char c) {
 		if(c == '\'') {
 			String text = String.valueOf(source.charAt(position++));
 			if(source.charAt(position++) == '\'')
@@ -134,7 +137,7 @@ public class Tokenizer {
 
 	//Remember, if the token is a '.', it may be the start of a floating point literal
 	//this method should call nextNumberLiteral in that case
-	private Token nextSymbolOrComment() throws IndexOutOfBoundsException {
+	private Token nextSymbolOrComment() {
 		return null;
 	}
 
