@@ -137,7 +137,7 @@ public class Tokenizer {
 
 	//Remember, if the token is a '.', it may be the start of a floating point literal
 	//this method should call nextNumberLiteral in that case
-	private Token nextSymbolOrComment() {
+	private Token nextSymbolOrComment() throws UnclosedCommentException{
 		return null;
 	}
 
