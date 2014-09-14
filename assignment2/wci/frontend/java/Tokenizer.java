@@ -138,15 +138,17 @@ public class Tokenizer {
 				token += source.charAt(position);
 				position ++;
 			} else {
-				System.out.printf("Invalid Token at ");
-				printLineAndCol(packLineAndCols(position));
-				return null;
+				break;
 			}
 		}
 
 		if (isKeyword(token)) {
 			printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.keyword);
+		} else if (" true false ".contains(" "+token+" ")) {
+			return new Token(token, Token.TokenType.booleanLiteral);
+		} else if (" null ".contains(" "+token+" ")) {
+			return new Token(token, Token.TokenType.nullLiteral);
 		} else {
 			printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.identifier);
@@ -222,11 +224,11 @@ public class Tokenizer {
 			throw new UnclosedCommentException();
 		}
 	}
-	
+
 	private void consumeLineComment() {
 		while(source.charAt(position++) != '\n');
 	}
-	
+
 	//Remember, if the token is a '.', it may be the start of a floating point literal
 	//this method should call nextNumberLiteral in that case
 	//also, this method handles comments, in which case it consumes the comment and returns
@@ -259,7 +261,7 @@ public class Tokenizer {
 					position++;
 					return new Token(".", Token.TokenType.separator);
 				}
-			
+
 			case '>':
 			case '<':
 				c2 = source.charAt(++position);
@@ -275,7 +277,7 @@ public class Tokenizer {
 							return new Token(">>>=", Token.TokenType.operator);
 						} else {
 							return new Token(">>>", Token.TokenType.operator);
-						} 
+						}
 					} else {
 						return new Token(source.substring(position - 2, position), Token.TokenType.operator);
 					}
@@ -285,7 +287,7 @@ public class Tokenizer {
 				} else {
 					return new Token(c + "", Token.TokenType.operator);
 				}
-				
+
 			case '/':
 				c2 = source.charAt(++position);
 				if (c2 == '*') {
