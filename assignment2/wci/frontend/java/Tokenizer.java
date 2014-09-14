@@ -135,10 +135,123 @@ public class Tokenizer {
 		return null;
 	}
 
+	private void consumeBlockComment() {
+		try {
+			while(true) {
+				char c = source.indexOf(position++);
+				if (c == '*' && source.indexOf(position) == '/') {
+					position++;
+					return;
+				}
+			}
+		} catch (IndexOutOfBoundsException e) {
+			throw new UnclosedCommentException();
+		}
+	}
+	
+	private void consumeLineComment() {
+		while(source.charAt(position++) != '\n');
+	}
+	
 	//Remember, if the token is a '.', it may be the start of a floating point literal
 	//this method should call nextNumberLiteral in that case
-	private Token nextSymbolOrComment() throws UnclosedCommentException{
-		return null;
+	//also, this method handles comments, in which case it consumes the comment and returns
+	//the next token after that comment.
+	private Token nextSymbolOrComment() throws IndexOutOfBoundsException {
+		char c = source.charAt(position), c2, c3, c4;
+		switch (c) {
+			//first, all of our cases that are guaranteed to be single-character
+			//separators
+			case '(':
+			case ')':
+			case '{':
+			case '}':
+			case '[':
+			case ']':
+			case ';':
+			case ',':
+				position++;
+				return new Token(Token.TokenType.separator, c + "");
+			case ':':
+			case '?':
+			case '~':
+				position++;
+				return new Token(Token.TokenType.operator, c + "");
+			//now for the trickier cases
+			case '.' :
+				if (isDigit(source.charAt(position + 1))) {
+					return nextNumberLiteral();
+				} else {
+					position++;
+					return new Token(Token.TokenType.separator, ".");
+				}
+			
+			case '>':
+			case '<':
+				c2 = source.charAt(++position);
+				if (c == c2) {
+					c3 = source.charAt(++position);
+					if (c3 == '=') {
+						position++;
+						return new Token(source.substring(position - 3, position), Token.TokenType.operator);
+					} else if (c == '>' && c3 == '>') {
+						c4 = source.charAt(++position);
+						if (c4 == '=') {
+							position++;
+							return new Token(">>>=", Token.TokenType.operator);
+						} else {
+							return new Token(">>>", Token.TokenType.operator);
+						} 
+					} else {
+						return new Token(source.substring(position - 2, position), Token.TokenType.operator);
+					}
+				} else if (c2 == '=') {
+					position++;
+					return new Token(source.substring(position - 2, position), Token.TokenType.operator);
+				} else {
+					return new Token(c + "", Token.TokenType.operator);
+				}
+				
+			case '/':
+				c2 = source.charAt(++position);
+				if (c2 == '*') {
+					position++;
+					consumeBlockComment();
+					return nextToken();
+				} else if (c2 == '/') {
+					consumeLineComment();
+					return nextToken();
+				} else position--;
+				//intentional fall through here.
+			//these are all the operators that can either stand alone or be followed by a '='
+			case '*':
+			case '!':
+			case '^':
+			case '%':
+			case '=':
+				c2 = source.charAt(++position);
+				if (c2 == '=') {
+					position++;
+					return new Token(c + "=", Token.TokenType.operator);
+				} else {
+					return new Token(c + "", Token.TokenType.operator);
+				}
+			//these are all the operators that can either stand alone, be reduplicated, or be followed by a '='
+			case '+':
+			case '-':
+			case '&':
+			case '|':
+				c2 = source.charAt(++position);
+				if (c2 == c) {
+					position++;
+					return new Token(c + "" + c2, Token.TokenType.operator);
+				} else if (c2 == '=') {
+					position++;
+					return new Token(c + "=", Token.TokenType.operator);
+				} else {
+					return new Token(c + "", Token.TokenType.operator);
+				}
+		}
 	}
 
 	public void reset() {
