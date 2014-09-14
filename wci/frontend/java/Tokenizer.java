@@ -118,7 +118,6 @@ public class Tokenizer {
 		}
 		else if(c == '\"') {
 			String text = "";
-
 			while(true) {
 				char ch = source.charAt(position++);
 				if(ch != '\"') {
