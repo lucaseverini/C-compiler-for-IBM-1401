@@ -6,7 +6,7 @@ public class Tokenizer {
 	private int tokenStart;
 
 	pubic Tokenizer(String source) {
-		this.source = source;
+		this.source = source + '\n';
 		position = 0;
 		tokenStart = 0;
 	}
@@ -57,18 +57,42 @@ public class Tokenizer {
 	
 	//TODO - Sean
 	private Token nextNumberLiteral() throws IndexOutOfBoundsException {
-		
+		int start = position;
+		boolean hexidecimal = false;
+		boolean expectingExponent = false;
+		Token.TokenType type = integerLiteral;
+		char c;
+		while (c = source.charAt(position++)) {
+			if (c == 'x' || c == 'X') hexidecimal  = true;
+			else if (c == '.') type == floatingPointLiteral;
+			else if ((c == 'e' || c == 'E') && ! hexidecimal) {
+				type = floatingPointLiteral;
+				expectingExponent = true;
+			}
+			else if (c == 'p' || c == 'P') {
+				type = floatingPointLiteral;
+				expectingExponent = true;
+			} else if (expectingExponent && c == '+' || c == '-') continue;
+			else if (!isIdentifierChar(c) {
+				return new Token(source.substring(start, position), type);
+			}
+		}
 	}
 	
 	
 	//TODO - Matt
-	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException;
+	private Token nextIdentOrKeyword() throws IndexOutOfBoundsException{
+	}
 	
 	//TODO - someone
-	private Token nextSymbolOrComment() throws IndexOutOfBoundsException;
+	//Remember, if the token is a '.', it may be the start of a floating point literal
+	//this method should call nextNumberLiteral in that case
+	private Token nextSymbolOrComment() throws IndexOutOfBoundsException{
+	}
 	
 	//TODO - Luca
-	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException;
+	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException{
+	}
 
 
 	public void reset() {
