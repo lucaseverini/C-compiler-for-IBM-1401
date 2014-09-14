@@ -53,7 +53,7 @@ public class Token {
 			case eof:
 				type_str = "eof";
 		}
-		return "Token: "+ this.text + " Type: " + type_str;
+		return "Token: "+ this.text + "\t\tType: " + type_str;
 	}
 
 }
