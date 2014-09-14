@@ -19,17 +19,28 @@ public class Tester {
 		}
 		Tokenizer t = new Tokenizer(fileContents);
 		Token tok = t.nextToken();
-		while(tok == null || tok.getType() != Token.TokenType.eof) {
+		while(true) {
 			if(tok == null) {
-				int line = 
-				int col = 
-				System.out.println("Invalid token at line " + line + " col " + col);
+				long tokenStart = t.getStartPositon();
+				long lac = ((65536L << 32) | 583);
+				long line = (lac >> 32);
+				long col = ((lac << 32) >> 32);
+				System.out.println("Invalid token at line:" + line + " col:" + col);
+				System.out.println("tokenStart:" + tokenStart);
 			}
 			else {
-				System.out.println(tok);
+				if(tok.getType() == Token.TokenType.eof) {
+					break;
+				}
+				else {
+					System.out.println(tok);				
+				}
 			}
 			tok = t.nextToken();
 		}
 		System.out.println(tok);
+
+		long lac = ((65536L << 32) | 583);
+		Tokenizer.printLineAndCol(lac);
 	}
 }

@@ -3,10 +3,12 @@ package wci.frontend.java;
 public class Tokenizer {
 	private String source;
 	private int position;
+	private int startPosition;
 
 	public Tokenizer(String source) {
 		this.source = source + '\n';
 		position = 0;
+		startPosition = 0;
 	}
 
 	private boolean isSymbol(char c) {
@@ -35,6 +37,46 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
+	private long getLineAndCols(){
+		return getLineAndCols(position);
+	}
+
+	private long getLineAndCols(int pos){
+		int numNewLines = 0;
+		int posInLine = 0;
+		/*  Because we have to explain this.
+			The upper 32 bits of ret is the line number and the lower 32 bits is
+			the column index.
+		*/
+		long ret = 0;
+		for (int i = 0; i < pos; i ++) {
+			if (this.source.charAt(i) == '\n'){
+				numNewLines ++;
+				posInLine = 0;
+			} else {
+				posInLine++;
+			}
+		}
+		ret = ((numNewLines + 1) << 32) | posInLine;
+		return ret;
+	}
+
+	public static long getLine(long lac) {
+		return lac >> 32;
+	}
+
+	public static long getCol(long lac) {
+		return ((lac << 32) >> 32);
+	}
+
+	public int getStartPositon() {
+		return startPosition;
+	}
+
+	public static void printLineAndCol(long lac) {
+		System.out.println("Line: " + (lac >> 32) + "\t Col: " + ((lac << 32) >> 32));
+	}
+
 	public Token nextToken() {
 		char c;
 		try {
@@ -42,6 +84,8 @@ public class Tokenizer {
 				position++;
 			}
 			
+			startPosition = position;
+
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -60,6 +104,7 @@ public class Tokenizer {
 		} catch (UnclosedCommentException e) {
 			System.out.println(e);
 		}
+		position++;
 		return null;
 	}
 
@@ -113,7 +158,7 @@ public class Tokenizer {
 	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) {
 		if(c == '\'') {
-			String text = String.valueOf(getNextRealChar(source.charAt(++position)));
+			String text = String.valueOf(getRealChar(source.charAt(++position)));
 			if(source.charAt(++position) == '\'')
 			{
 				position++;
@@ -125,7 +170,7 @@ public class Tokenizer {
 			while(true) {
 				char ch = source.charAt(++position);
 				if(ch != '"') {
-					text = text + getNextRealChar(ch);
+					text = text + getRealChar(ch);
 				}
 				else {
 					position++;
@@ -138,7 +183,8 @@ public class Tokenizer {
 		return null;
 	}
 	
-	private char getNextRealChar(char c) {
+	// Returns the real char in case it is escaped 
+	private char getRealChar(char c) {
 		if(c == '\\') {
 			switch(source.charAt(++position)) {
 				case 't':
@@ -170,10 +216,12 @@ public class Tokenizer {
 	//Remember, if the token is a '.', it may be the start of a floating point literal
 	//this method should call nextNumberLiteral in that case
 	private Token nextSymbolOrComment() throws UnclosedCommentException{
+		position ++;
 		return null;
 	}
 
 	public void reset() {
 		position = 0;
+		startPosition = 0;
 	}
 }
