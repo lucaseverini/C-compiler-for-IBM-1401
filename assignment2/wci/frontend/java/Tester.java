@@ -20,7 +20,7 @@ public class Tester {
 		}
 		Tokenizer t = new Tokenizer(fileContents);
 		Token tok = t.nextToken();
-		while(tok.getType() != Token.TokenType.eof) {
+		while(tok != null && tok.getType() != Token.TokenType.eof) {
 			System.out.println(tok);
 			tok = t.nextToken();
 		}

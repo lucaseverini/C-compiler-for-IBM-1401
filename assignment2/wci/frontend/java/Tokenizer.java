@@ -35,11 +35,11 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
-	private long getLineAndCols(){
-		return getLineAndCols(position);
+	private long packLineAndCols(){
+		return packLineAndCols(position);
 	}
 
-	private long getLineAndCols(int pos){
+	private long packLineAndCols(int pos){
 		int numNewLines = 0;
 		int posInLine = 0;
 		/*  Because we have to explain this.
@@ -55,7 +55,7 @@ public class Tokenizer {
 				posInLine++;
 			}
 		}
-		ret = ((numNewLines + 1) << 32) | posInLine;
+		ret = ((numNewLines + 1L) << 32) | posInLine;
 		return ret;
 	}
 
@@ -133,15 +133,22 @@ public class Tokenizer {
 	//TODO - Matt
 	private Token nextIdentOrKeyword() {
 		String token = "";
-		while(!Character.isWhitespace(source.charAt(position)) &&
-				!isSymbol(source.charAt(position))) {
-			token += source.charAt(position);
-			position ++;
+		while(!Character.isWhitespace(source.charAt(position))) {
+			if (isIdentifierChar(source.charAt(position))){
+				token += source.charAt(position);
+				position ++;
+			} else {
+				System.out.printf("Invalid Token at ");
+				printLineAndCol(packLineAndCols(position));
+				return null;
+			}
 		}
 
 		if (isKeyword(token)) {
+			printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.keyword);
 		} else {
+			printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.identifier);
 		}
 	}
@@ -172,7 +179,7 @@ public class Tokenizer {
 
 		return null;
 	}
-	
+
 	private char getNextRealChar(char c) {
 		if(c == '\\') {
 			switch(source.charAt(++position)) {
@@ -184,7 +191,7 @@ public class Tokenizer {
 
 				case 'r':
 					return (char)13;
-					
+
 				case '\\':
 					return '\\';
 
@@ -193,12 +200,12 @@ public class Tokenizer {
 
 				case '"':
 					return '"';
-					
+
 				default:
 					return '?';
 			}
 		}
-		
+
 		return c;
 	}
 
