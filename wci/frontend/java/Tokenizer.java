@@ -84,9 +84,8 @@ public class Tokenizer {
 		return null;
 	}
 
-	//TODO - Luca
-	private Token nextStringOrCharLiteral(char c) throws IndexOutOfBoundsException
-	{
+	// Luca
+	private Token nextStringOrCharLiteral(char c) throws IndexOutOfBoundsException {
 		if(c == '\'') {
 			String text = String.valueOf(source.charAt(++position));
 			if(source.charAt(++position) == '\'')
@@ -113,12 +112,12 @@ public class Tokenizer {
 
 	//Remember, if the token is a '.', it may be the start of a floating point literal
 	//this method should call nextNumberLiteral in that case
-	private Token nextSymbolOrComment() throws IndexOutOfBoundsException{
+	private Token nextSymbolOrComment() throws IndexOutOfBoundsException {
 		return null;
 	}
 	
 	//TODO - Luca
-	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException{
+	private Token nextStringOrCharLiteral() throws IndexOutOfBoundsException {
 		return null;
 	}
 
