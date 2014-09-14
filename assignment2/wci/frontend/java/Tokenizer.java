@@ -35,13 +35,49 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
+	private long getLineAndCols(){
+		return getLineAndCols(position);
+	}
+
+	private long getLineAndCols(int pos){
+		int numNewLines = 0;
+		int posInLine = 0;
+		/*  Because we have to explain this.
+			The upper 32 bits of ret is the line number and the lower 32 bits is
+			the column index.
+		*/
+		long ret = 0;
+		for (int i = 0; i < pos; i ++) {
+			if (this.source.charAt(i) == '\n'){
+				numNewLines ++;
+				posInLine = 0;
+			} else {
+				posInLine++;
+			}
+		}
+		ret = ((numNewLines + 1) << 32) | posInLine;
+		return ret;
+	}
+
+	public static long getLine(long lac) {
+		return lac >> 32;
+	}
+
+	public static long getCol(long lac) {
+		return ((lac << 32) >> 32);
+	}
+
+	public static void printLineAndCol(long lac) {
+		System.out.println("Line: " + (lac >> 32) + "\t Col: " + ((lac << 32) >> 32));
+	}
+
 	public Token nextToken() {
 		char c;
 		try {
 			while(Character.isWhitespace(c = source.charAt(position))) {
 				position++;
 			}
-			
+
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -113,26 +149,57 @@ public class Tokenizer {
 	// TODO - Luca
 	private Token nextStringOrCharLiteral(char c) {
 		if(c == '\'') {
-			String text = String.valueOf(source.charAt(position++));
-			if(source.charAt(position++) == '\'')
+			String text = String.valueOf(getNextRealChar(source.charAt(++position)));
+			if(source.charAt(++position) == '\'')
 			{
+				position++;
 				return new Token(text, Token.TokenType.characterLiteral);
 			}
 		}
-		else if(c == '\"') {
+		else if(c == '"') {
 			String text = "";
 			while(true) {
-				char ch = source.charAt(position++);
-				if(ch != '\"') {
-					text = text + ch;
+				char ch = source.charAt(++position);
+				if(ch != '"') {
+					text = text + getNextRealChar(ch);
 				}
 				else {
+					position++;
 					return new Token(text, Token.TokenType.stringLiteral);
 				}
 			}
 		}
 
 		return null;
+	}
+	
+	private char getNextRealChar(char c) {
+		if(c == '\\') {
+			switch(source.charAt(++position)) {
+				case 't':
+					return (char)9;
+
+				case 'n':
+					return (char)10;
+
+				case 'r':
+					return (char)13;
+					
+				case '\\':
+					return '\\';
+
+				case '\'':
+					return '\'';
+
+				case '"':
+					return '"';
+					
+				default:
+					return '?';
+			}
+		}
+		
+		return c;
 	}
 
 	private void consumeBlockComment() {
