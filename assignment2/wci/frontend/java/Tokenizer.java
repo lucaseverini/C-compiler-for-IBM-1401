@@ -57,10 +57,9 @@ public class Tokenizer {
 	public long packLineAndCols(int pos){
 		int numNewLines = 0;
 		int posInLine = 0;
-		/*  Because we have to explain this.
-			The upper 32 bits of ret is the line number and the lower 32 bits is
-			the column index.
-		*/
+		// Because we have to explain this.
+		// The upper 32 bits of ret is the line number and the lower 32 bits is
+		// the column index.
 		long ret = 0;
 		for (int i = 0; i < pos; i ++) {
 			if (this.source.charAt(i) == '\n'){
@@ -256,14 +255,14 @@ public class Tokenizer {
 	}
 
 	//Remember, if the token is a '.', it may be the start of a floating point literal
-	//this method should call nextNumberLiteral in that case
-	//also, this method handles comments, in which case it consumes the comment and returns
-	//the next token after that comment.
+	// this method should call nextNumberLiteral in that case
+	// also, this method handles comments, in which case it consumes the comment
+	// and returns the next token after that comment.
 	private Token nextSymbolOrComment() throws UnclosedCommentException {
 		char c = source.charAt(position), c2, c3, c4;
 		switch (c) {
-			//first, all of our cases that are guaranteed to be single-character
-			//separators
+			// First, all of our cases that are guaranteed to be
+			// single-character separators
 			case '(':
 			case ')':
 			case '{':
@@ -274,12 +273,14 @@ public class Tokenizer {
 			case ',':
 				position++;
 				return new Token(c + "", Token.TokenType.separator);
+
 			case ':':
 			case '?':
 			case '~':
 				position++;
 				return new Token(c + "", Token.TokenType.operator);
-			//now for the trickier cases
+
+			// Now for the trickier cases
 			case '.' :
 				if (isDigit(source.charAt(position + 1))) {
 					return nextNumberLiteral();
@@ -323,9 +324,12 @@ public class Tokenizer {
 				} else if (c2 == '/') {
 					consumeLineComment();
 					return nextToken();
-				} else position--;
-				//intentional fall through here.
-			//these are all the operators that can either stand alone or be followed by a '='
+				} else {
+					position--;
+				}
+
+			// These are all the operators that can either stand alone
+			// or be followed by a '='
 			case '*':
 			case '!':
 			case '^':
@@ -338,7 +342,9 @@ public class Tokenizer {
 				} else {
 					return new Token(c + "", Token.TokenType.operator);
 				}
-			//these are all the operators that can either stand alone, be reduplicated, or be followed by a '='
+
+			// These are all the operators that can either stand alone,
+			// be reduplicated, or be followed by a '='
 			case '+':
 			case '-':
 			case '&':
