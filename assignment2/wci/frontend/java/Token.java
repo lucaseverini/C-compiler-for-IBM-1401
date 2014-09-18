@@ -2,7 +2,7 @@
 	Token.java
 
     Assignment #2 - CS153 - SJSU
-	By Sean Papay, Matt Pleva, Luca Severini 
+	By Sean Papay, Matt Pleva, Luca Severini
 	September-14-2014
 */
 
@@ -13,13 +13,18 @@ package wci.frontend.java;
  */
 
 public class Token {
+	/*
+		These are the types that the tokens can have
+	*/
 	public enum TokenType {
 		identifier, keyword, separator, operator,
 		integerLiteral, floatingPointLiteral, booleanLiteral,
 		characterLiteral, stringLiteral, nullLiteral, eof
 	}
 
+	// the value of the token
 	private final String text;
+	// the type of the token
 	private final TokenType type;
 
 	protected Token(String text, TokenType type) {
@@ -35,49 +40,52 @@ public class Token {
 		return type;
 	}
 
+	/*
+		Pretty prints the token
+	*/
 	public String toString() {
 		String type_str = "";
 		switch (this.type) {
 			case identifier:
 				type_str = "identifier";
 				break;
-				
+
 			case keyword:
 				type_str = "keyword";
 				break;
-				
+
 			case separator:
 				type_str = "separator";
 				break;
-				
+
 			case operator:
 				type_str = "operator";
 				break;
-				
+
 			case integerLiteral:
 				type_str = "integerLiteral";
 				break;
-				
+
 			case floatingPointLiteral:
 				type_str = "floatingPointLiteral";
 				break;
-				
+
 			case booleanLiteral:
 				type_str = "booleanLiteral";
 				break;
-				
+
 			case characterLiteral:
 				type_str = "characterLiteral";
 				break;
-				
+
 			case stringLiteral:
 				type_str = "stringLiteral";
 				break;
-				
+
 			case nullLiteral:
 				type_str = "nullLiteral";
 				break;
-				
+
 			case eof:
 				type_str = "eof";
 				break;

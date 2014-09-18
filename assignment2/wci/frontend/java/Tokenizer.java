@@ -2,7 +2,7 @@
 	Tokenizer.java
 
     Assignment #2 - CS153 - SJSU
-	By Sean Papay, Matt Pleva, Luca Severini 
+	By Sean Papay, Matt Pleva, Luca Severini
 	September-14-2014
 */
 
@@ -11,12 +11,17 @@ package wci.frontend.java;
 public class Tokenizer {
 	private String source;
 	private int position, lastPosition;
-	
+
 	public Tokenizer(String source) {
 		this.source = source + '\n';
 		position = 0;
 		lastPosition = -1;
 	}
+
+	/*
+		The following are methods for checking if a char is part of a specific type of token
+
+	*/
 
 	private boolean isSymbol(char c) {
 		return "(){}[];,.:+-*/|&^%<>!~?=".contains(String.valueOf(c));
@@ -44,6 +49,11 @@ public class Tokenizer {
 		return keywords.contains(" " + str + " ");
 	}
 
+	/*
+		We needed a way to return line and col numbers so we decided to use a long int
+		to store both so that we could add line numbers to a token
+	*/
+
 	public long packLineAndCols(int pos){
 		int numNewLines = 0;
 		int posInLine = 0;
@@ -64,6 +74,11 @@ public class Tokenizer {
 		return ret;
 	}
 
+	/*
+		The next two methods extract the line and col from the long created from
+		the above method
+	*/
+
 	public static long getLine(long lac) {
 		return lac >> 32;
 	}
@@ -83,7 +98,7 @@ public class Tokenizer {
 				position++;
 			}
 			lastPosition = position;
-			
+
 			if (isDigit(c)) {
 				return nextNumberLiteral();
 			}
@@ -137,9 +152,13 @@ public class Tokenizer {
 	}
 
 
-	//TODO - Matt
+	/*
+		We call this method when we are sure we have an identifier or a keyword.
+
+	*/
 	private Token nextIdentOrKeyword() {
 		String token = "";
+		// Keep consuming chars if it is in an identifier
 		while(!Character.isWhitespace(source.charAt(position))) {
 			if (isIdentifierChar(source.charAt(position))){
 				token += source.charAt(position);
@@ -148,16 +167,14 @@ public class Tokenizer {
 				break;
 			}
 		}
-
+		// determine the type of the token we have created
 		if (isKeyword(token)) {
-			//printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.keyword);
 		} else if (" true false ".contains(" "+token+" ")) {
 			return new Token(token, Token.TokenType.booleanLiteral);
 		} else if (" null ".contains(" "+token+" ")) {
 			return new Token(token, Token.TokenType.nullLiteral);
 		} else {
-			//printLineAndCol(packLineAndCols(position));
 			return new Token(token, Token.TokenType.identifier);
 		}
 	}
@@ -190,7 +207,7 @@ public class Tokenizer {
 		return null;
 	}
 
-	// Returns the real char in case it is escaped 
+	// Returns the real char in case it is escaped
 	private char getRealChar(char c) {
 		if(c == '\\') {
 			switch(source.charAt(++position)) {
@@ -340,7 +357,7 @@ public class Tokenizer {
 
 		return null;
 	}
-	
+
 	public int getLastPosition() {
 		return lastPosition;
 	}
