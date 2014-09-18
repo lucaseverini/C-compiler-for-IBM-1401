@@ -1,0 +1,1 @@
+PROGRAM hello;BEGIN   writeln('Hello, Pascal world!');END.

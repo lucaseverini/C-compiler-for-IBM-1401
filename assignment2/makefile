@@ -1,10 +1,13 @@
 build:
-	javac wci/frontend/java/Tester.java
+	javac Java.java Pascal.java
 
 run_java: build
-	java wci/frontend/java/Tester javatest.in
+	java Java compile javatest.in
 
 run_pas: build
-	java wci/frontend/java/Tester hello.pas
+	java Pascal compile hello.pas
 
 all: build
+
+clean:
+	find . -name "*.class" -type f -delete

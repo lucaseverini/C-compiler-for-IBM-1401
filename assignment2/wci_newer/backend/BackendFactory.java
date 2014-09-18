@@ -15,14 +15,14 @@ public class BackendFactory
 {
     /**
      * Create a compiler or an interpreter back end component.
-     * @param operation either "parse", "compile" or "execute"
-     * @return a parse, compiler or an interpreter back end component.
+     * @param operation either "compile" or "execute"
+     * @return a compiler or an interpreter back end component.
      * @throws Exception if an error occurred.
      */
     public static Backend createBackend(String operation)
         throws Exception
     {
- 	    if (operation.equalsIgnoreCase("compile")) {
+        if (operation.equalsIgnoreCase("compile")) {
             return new CodeGenerator();
         }
         else if (operation.equalsIgnoreCase("execute")) {
