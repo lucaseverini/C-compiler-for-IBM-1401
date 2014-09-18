@@ -59,49 +59,7 @@ public class Pascal
             ex.printStackTrace();
         }
     }
-
-    private static final String FLAGS = "[-ix]";
-    private static final String USAGE =
-        "Usage: Pascal execute|compile " + FLAGS + " <source file path>";
-
-    /**
-     * The main method.
-     * @param args command-line arguments: "compile" or "execute" followed by
-     *             optional flags followed by the source file path.
-     */
-    public static void main(String args[])
-    {
-        try {
-            String operation = args[0];
-
-            // Operation.
-            if (!(   operation.equalsIgnoreCase("compile")
-                  || operation.equalsIgnoreCase("execute"))) {
-                throw new Exception();
-            }
-
-            int i = 0;
-            String flags = "";
-
-            // Flags.
-            while ((++i < args.length) && (args[i].charAt(0) == '-')) {
-                flags += args[i].substring(1);
-            }
-
-            // Source path.
-            if (i < args.length) {
-                String path = args[i];
-                new Pascal(operation, path, flags);
-            }
-            else {
-                throw new Exception();
-            }
-        }
-        catch (Exception ex) {
-            System.out.println(USAGE);
-        }
-    }
-
+ 
     private static final String SOURCE_LINE_FORMAT = "%03d %s";
 
     /**
@@ -113,6 +71,7 @@ public class Pascal
          * Called by the source whenever it produces a message.
          * @param message the message.
          */
+		@Override
         public void messageReceived(Message message)
         {
             MessageType type = message.getType();
@@ -153,6 +112,7 @@ public class Pascal
          * Called by the parser whenever it produces a message.
          * @param message the message.
          */
+		@Override
         public void messageReceived(Message message)
         {
             MessageType type = message.getType();
@@ -245,6 +205,7 @@ public class Pascal
          * Called by the back end whenever it produces a message.
          * @param message the message.
          */
+		@Override
         public void messageReceived(Message message)
         {
             MessageType type = message.getType();

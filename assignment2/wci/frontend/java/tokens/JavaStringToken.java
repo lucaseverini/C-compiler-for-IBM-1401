@@ -1,7 +1,7 @@
 package wci.frontend.java.tokens;
 
 import wci.frontend.*;
-import wci.frontend.pascal.*;
+import wci.frontend.java.*;
 
 import static wci.frontend.Source.EOL;
 import static wci.frontend.Source.EOF;
@@ -16,7 +16,7 @@ import static wci.frontend.java.JavaErrorCode.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
-public class JavaStringToken extends PascalToken
+public class JavaStringToken extends JavaToken
 {
     /**
      * Constructor.
@@ -34,14 +34,13 @@ public class JavaStringToken extends PascalToken
      * @throws Exception if an error occurred.
      */
 	@Override
-    protected void extract()
-        throws Exception
+    protected void extract() throws Exception
     {
         StringBuilder textBuffer = new StringBuilder();
         StringBuilder valueBuffer = new StringBuilder();
 
         char currentChar = nextChar();  // consume initial quote
-        textBuffer.append('\'');
+        textBuffer.append('\"');
 
         // Get string characters.
         do {
@@ -50,26 +49,52 @@ public class JavaStringToken extends PascalToken
                 currentChar = ' ';
             }
 
-            if ((currentChar != '\'') && (currentChar != EOF)) {
+            if ((currentChar != '\"') && (currentChar != EOF)) {
                 textBuffer.append(currentChar);
                 valueBuffer.append(currentChar);
                 currentChar = nextChar();  // consume character
             }
 
-            // Quote?  Each pair of adjacent quotes represents a single-quote.
-            if (currentChar == '\'') {
-                while ((currentChar == '\'') && (peekChar() == '\'')) {
-                    textBuffer.append("''");
-                    valueBuffer.append(currentChar); // append single-quote
-                    currentChar = nextChar();        // consume pair of quotes
-                    currentChar = nextChar();
-                }
-            }
-        } while ((currentChar != '\'') && (currentChar != EOF));
+            // Escape
+            if (currentChar == '\\') 
+			{
+				currentChar = nextChar();
+				switch(currentChar)
+				{
+					case 't':
+						textBuffer.append((char)9);
+						break;
+						
+					case 'n':
+						textBuffer.append((char)10);
+						break;
+						
+					case 'r':
+						textBuffer.append((char)13);
+						break;
+						
+					case '\"':
+						textBuffer.append('\"');
+						break;
 
-        if (currentChar == '\'') {
+					case '\\':
+						textBuffer.append('\\');
+						break;
+						
+					default:
+						type = ERROR;
+						value = INVALID_CHARACTER;
+						text = textBuffer.toString();
+						return;
+				}	
+				
+				currentChar = nextChar();
+			}
+        } while ((currentChar != '\"') && (currentChar != EOF));
+
+        if (currentChar == '\"') {
             nextChar();  // consume final quote
-            textBuffer.append('\'');
+            textBuffer.append('\"');
 
             type = STRING;
             value = valueBuffer.toString();

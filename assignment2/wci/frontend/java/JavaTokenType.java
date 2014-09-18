@@ -27,16 +27,16 @@ public enum JavaTokenType implements TokenType
     GREATER_EQUALS(">="), GREATER_THAN(">"), LEFT_PAREN("("), RIGHT_PAREN(")"), 
 	MINUS_ASSIGN("-="), PLUS_ASSIGN("+="), MULTIPLY_ASSIGN("*="), DIVIDE_ASSIGN("/="),
     LEFT_BRACKET("["), RIGHT_BRACKET("]"), LEFT_BRACE("{"), RIGHT_BRACE("}"),
-    UP_ARROW("^"), COMMENT("//"), START_COMMENT("/*"), END_COMMENT("*/"),
+    UP_ARROW("^"),
 
-    IDENTIFIER, INTEGER, REAL, STRING,
+    IDENTIFIER, INTEGER, REAL, STRING, COMMENT,
     ERROR, END_OF_FILE;
 
     private static final int FIRST_RESERVED_INDEX = SWITCH.ordinal();
     private static final int LAST_RESERVED_INDEX  = CONTINUE.ordinal();
 
     private static final int FIRST_SPECIAL_INDEX = PLUS_PLUS.ordinal();
-    private static final int LAST_SPECIAL_INDEX  = END_COMMENT.ordinal();
+    private static final int LAST_SPECIAL_INDEX  = UP_ARROW.ordinal();
 
     private String text;  // token text
 

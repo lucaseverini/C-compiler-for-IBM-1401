@@ -10,7 +10,7 @@ import static wci.frontend.java.JavaErrorCode.*;
 /**
  * <h1>JavaScanner</h1>
  *
- * <p>The Pascal scanner.</p>
+ * <p>The Java scanner.</p>
  *
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
@@ -27,7 +27,7 @@ public class JavaScanner extends Scanner
     }
 
     /**
-     * Extract and return the next Pascal token from the source.
+     * Extract and return the next Java token from the source.
      * @return the next token.
      * @throws Exception if an error occurred.
      */
@@ -51,16 +51,31 @@ public class JavaScanner extends Scanner
         else if (Character.isDigit(currentChar)) {
             token = new JavaNumberToken(source);
         }
-        else if (currentChar == '\'') {
+        else if (currentChar == '\"') {
             token = new JavaStringToken(source);
         }
-        else if (JavaTokenType.SPECIAL_SYMBOLS
-                 .containsKey(Character.toString(currentChar))) {
+		else if(currentChar == '/')
+		{
+			char nextChar = nextChar();
+			if(nextChar == '/')
+			{
+				token = new JavaCommentToken(source);
+			}
+			else if(nextChar == '*')
+			{
+				token = new JavaCommentBlockToken(source);
+			}
+			else
+			{
+				token = new JavaSpecialSymbolToken(source);
+			}
+		}
+        else if (JavaTokenType.SPECIAL_SYMBOLS.containsKey(Character.toString(currentChar))) 
+		{
             token = new JavaSpecialSymbolToken(source);
         }
         else {
-            token = new JavaErrorToken(source, INVALID_CHARACTER,
-                                         Character.toString(currentChar));
+            token = new JavaErrorToken(source, INVALID_CHARACTER, Character.toString(currentChar));
             nextChar();  // consume character
         }
 
