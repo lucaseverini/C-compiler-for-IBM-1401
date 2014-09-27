@@ -112,7 +112,7 @@ public class ExpressionParser extends StatementParser
 
             // Parse the second simple expression.  The operator node adopts
             // the simple expression's tree as its second child.
-            opNode.addChild(parseSetExpression(token));
+            opNode.addChild(parseSet(token));
 
             // The operator node becomes the new root node.
             rootNode = opNode;
@@ -349,55 +349,29 @@ public class ExpressionParser extends StatementParser
     }
 	
 	   /**
-     * Parse a simple expression.
+     * Parse a set.
      * @param token the initial token.
      * @return the root of the generated parse subtree.
      * @throws Exception if an error occurred.
      */
-    private ICodeNode parseSetExpression(Token token)
-        throws Exception
-    {
-        TokenType signType = null;  // type of leading sign (if any)
-
-        // Look for a leading + or - sign.
-        TokenType tokenType = token.getType();
-        if ((tokenType == PLUS) || (tokenType == MINUS)) {
-            signType = tokenType;
-            token = nextToken();  // consume the + or -
-        }
-
-        // Parse a term and make the root of its tree the root node.
-        ICodeNode rootNode = parseTerm(token);
-
-        // Was there a leading - sign?
-        if (signType == MINUS) {
-
-            // Create a NEGATE node and adopt the current tree
-            // as its child. The NEGATE node becomes the new root node.
-            ICodeNode negateNode = ICodeFactory.createICodeNode(NEGATE);
-            negateNode.addChild(rootNode);
-            rootNode = negateNode;
-        }
-
-		ICodeNode opNode = ICodeFactory.createICodeNode(SET_EXP);
-        opNode.addChild(rootNode);
-
-        token = currentToken();
-        tokenType = token.getType();
-
-        // Loop over additive operators.
-        while (tokenType != RIGHT_BRACKET) 
+    private ICodeNode parseSet(Token token) throws Exception
+    { 
+		ICodeNode rootNode = ICodeFactory.createICodeNode(SET_EXP);
+  
+        while (currentToken().getType() != RIGHT_BRACKET) 
 		{		
 			ICodeNode setNode = parseExpression(token);
-
-			opNode.addChild(setNode);
+			rootNode.addChild(setNode);
 			
-            token = currentToken();
-            tokenType = token.getType();
-			
+			if(currentToken().getType() == RIGHT_BRACKET)
+			{
+				break;
+			}
+						
 			token = nextToken();  // consume the operator
-			tokenType = token.getType();
 		}
+		
+		System.out.println(rootNode.getChildren());
 
         return rootNode;
     }
