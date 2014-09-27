@@ -375,7 +375,7 @@ public class ExpressionParser extends StatementParser
 			token = nextToken();  // consume the operator
 		}
 			
-		nextToken(); //consume the closing brace
+		nextToken(); // consume the closing brace
 		System.out.println(rootNode.getChildren());
 
 		return rootNode;
