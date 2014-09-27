@@ -36,7 +36,7 @@ public class ExpressionParser extends StatementParser
     // Synchronization set for starting an expression.
     static final EnumSet<PascalTokenType> EXPR_START_SET =
         EnumSet.of(PLUS, MINUS, IDENTIFIER, INTEGER, REAL, STRING,
-                   PascalTokenType.NOT, LEFT_PAREN);
+                   PascalTokenType.NOT, LEFT_PAREN, LEFT_BRACKET);
 
     /**
      * Parse an expression.
@@ -338,6 +338,10 @@ public class ExpressionParser extends StatementParser
 
                 break;
             }
+            
+            case LEFT_BRACKET:
+							token = nextToken();
+							return parseSet(token);
 
             default: {
                 errorHandler.flag(token, UNEXPECTED_TOKEN, this);
@@ -357,24 +361,24 @@ public class ExpressionParser extends StatementParser
     private ICodeNode parseSet(Token token) throws Exception
     { 
 		ICodeNode rootNode = ICodeFactory.createICodeNode(SET_EXP);
-  
-        while (currentToken().getType() != RIGHT_BRACKET) 
+   		
+		while (currentToken().getType() != RIGHT_BRACKET) 
 		{		
 			ICodeNode setNode = parseExpression(token);
 			rootNode.addChild(setNode);
-			
+				
 			if(currentToken().getType() == RIGHT_BRACKET)
 			{
-				nextToken();  // consume the bracket
-				break;
+					break;
 			}
-						
+							
 			token = nextToken();  // consume the operator
 		}
-		
+			
+		nextToken(); //consume the closing brace
 		System.out.println(rootNode.getChildren());
 
-        return rootNode;
+		return rootNode;
     }
 
 }
