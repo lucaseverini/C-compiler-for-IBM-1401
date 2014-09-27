@@ -93,7 +93,7 @@ public class ExpressionExecutor extends StatementExecutor
                 boolean value = (Boolean) execute(expressionNode);
                 return !value;
             }
-            
+
             case SET_EXP:
 							ArrayList<ICodeNode> children = node.getChildren();
 							long mask = 0;
@@ -111,7 +111,7 @@ public class ExpressionExecutor extends StatementExecutor
 								mask |= one;
 							}
 							return(Long) mask;
-							
+
 
             // Must be a binary operator.
             default: return executeBinaryOperator(node, nodeType);
@@ -142,7 +142,7 @@ public class ExpressionExecutor extends StatementExecutor
 
         boolean integerMode = (operand1 instanceof Integer) &&
                               (operand2 instanceof Integer);
-                              
+
         boolean setMode = (operand1 instanceof Long) &&
 				                  (operand2 instanceof Long);
 
@@ -279,6 +279,7 @@ public class ExpressionExecutor extends StatementExecutor
                 case LE: return (val1 & (~val2)) == 0;
                 case GT: return (val1 != val2) && (((~val1) & val2) == 0);
                 case GE: return ((~val1) & val2) == 0;
+                case IN: return ((1 << val1) & val2);
 							}
 						}
         else {
