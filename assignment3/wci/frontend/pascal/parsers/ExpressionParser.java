@@ -365,6 +365,7 @@ public class ExpressionParser extends StatementParser
 			
 			if(currentToken().getType() == RIGHT_BRACKET)
 			{
+				nextToken();  // consume the bracket
 				break;
 			}
 						
