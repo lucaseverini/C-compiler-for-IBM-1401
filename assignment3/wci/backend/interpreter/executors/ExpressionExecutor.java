@@ -94,12 +94,12 @@ public class ExpressionExecutor extends StatementExecutor
                 return !value;
             }
             
-            case SET:
+            case SET_EXP:
 							ArrayList<ICodeNode> children = node.getChildren();
 							long mask = 0;
 							for (ICodeNode child : children) {
 								Object value = execute(child);
-								if !(object instanceof Integer) {
+								if (!(value instanceof Integer)) {
 									// this should have been caught at compile time...
 								}
 								int val = (int)value;
@@ -107,7 +107,7 @@ public class ExpressionExecutor extends StatementExecutor
 									//runtime error, set element out of range
 								}
 								long one = 1;
-								one <<= val
+								one <<= val;
 								mask |= one;
 							}
 							return(Long) mask;
@@ -275,10 +275,10 @@ public class ExpressionExecutor extends StatementExecutor
 							switch (nodeType) {
                 case EQ: return val1 == val2;
                 case NE: return val1 != val2;
-                case LT: return val1 != val2 && (val1 & (~val2) == 0);
-                case LE: return val1 & (~val2) == 0;
-                case GT: return val1 != val2 && ((~val1) & val2 == 0);
-                case GE: return (~val1) & val2 == 0;
+                case LT: return val1 != val2 && ((val1 & (~val2)) == 0);
+                case LE: return (val1 & (~val2)) == 0;
+                case GT: return (val1 != val2) && (((~val1) & val2) == 0);
+                case GE: return ((~val1) & val2) == 0;
 							}
 						}
         else {

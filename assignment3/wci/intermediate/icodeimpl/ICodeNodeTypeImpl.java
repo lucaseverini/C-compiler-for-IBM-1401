@@ -37,5 +37,5 @@ public enum ICodeNodeTypeImpl implements ICodeNodeType
     WRITE_PARM,
 
     // Expression
-    SET,
+    SET_EXP,
 }

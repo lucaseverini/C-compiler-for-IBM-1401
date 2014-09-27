@@ -101,7 +101,23 @@ public class ExpressionParser extends StatementParser
             // The operator node becomes the new root node.
             rootNode = opNode;
         }
+		else if (tokenType == LEFT_BRACKET) {
+            // Create a new operator node and adopt the current tree
+            // as its first child.
+            ICodeNodeType nodeType = SET_EXP;
+            ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
+            opNode.addChild(rootNode);
 
+            token = nextToken();  // consume the operator
+
+            // Parse the second simple expression.  The operator node adopts
+            // the simple expression's tree as its second child.
+            opNode.addChild(parseSetExpression(token));
+
+            // The operator node becomes the new root node.
+            rootNode = opNode;
+		}
+		
         return rootNode;
     }
 
@@ -124,8 +140,7 @@ public class ExpressionParser extends StatementParser
      * @return the root of the generated parse subtree.
      * @throws Exception if an error occurred.
      */
-    private ICodeNode parseSimpleExpression(Token token)
-        throws Exception
+    private ICodeNode parseSimpleExpression(Token token) throws Exception
     {
         TokenType signType = null;  // type of leading sign (if any)
 
@@ -332,4 +347,59 @@ public class ExpressionParser extends StatementParser
 
         return rootNode;
     }
+	
+	   /**
+     * Parse a simple expression.
+     * @param token the initial token.
+     * @return the root of the generated parse subtree.
+     * @throws Exception if an error occurred.
+     */
+    private ICodeNode parseSetExpression(Token token)
+        throws Exception
+    {
+        TokenType signType = null;  // type of leading sign (if any)
+
+        // Look for a leading + or - sign.
+        TokenType tokenType = token.getType();
+        if ((tokenType == PLUS) || (tokenType == MINUS)) {
+            signType = tokenType;
+            token = nextToken();  // consume the + or -
+        }
+
+        // Parse a term and make the root of its tree the root node.
+        ICodeNode rootNode = parseTerm(token);
+
+        // Was there a leading - sign?
+        if (signType == MINUS) {
+
+            // Create a NEGATE node and adopt the current tree
+            // as its child. The NEGATE node becomes the new root node.
+            ICodeNode negateNode = ICodeFactory.createICodeNode(NEGATE);
+            negateNode.addChild(rootNode);
+            rootNode = negateNode;
+        }
+
+		ICodeNode opNode = ICodeFactory.createICodeNode(SET_EXP);
+        opNode.addChild(rootNode);
+
+        token = currentToken();
+        tokenType = token.getType();
+
+        // Loop over additive operators.
+        while (tokenType != RIGHT_BRACKET) 
+		{		
+			ICodeNode setNode = parseExpression(token);
+
+			opNode.addChild(setNode);
+			
+            token = currentToken();
+            tokenType = token.getType();
+			
+			token = nextToken();  // consume the operator
+			tokenType = token.getType();
+		}
+
+        return rootNode;
+    }
+
 }
