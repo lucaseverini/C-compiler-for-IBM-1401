@@ -93,6 +93,25 @@ public class ExpressionExecutor extends StatementExecutor
                 boolean value = (Boolean) execute(expressionNode);
                 return !value;
             }
+            
+            case SET:
+							ArrayList<ICodeNode> children = node.getChildren();
+							long mask = 0;
+							for (ICodeNode child : children) {
+								Object value = execute(child);
+								if !(object instanceof Integer) {
+									// this should have been caught at compile time...
+								}
+								int val = (int)value;
+								if (val < 0 || val > 50) {
+									//runtime error, set element out of range
+								}
+								long one = 1;
+								one <<= val
+								mask |= one;
+							}
+							return(Long) mask;
+							
 
             // Must be a binary operator.
             default: return executeBinaryOperator(node, nodeType);
