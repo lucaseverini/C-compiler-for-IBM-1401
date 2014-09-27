@@ -20,7 +20,7 @@ public enum ICodeNodeTypeImpl implements ICodeNodeType
     IF, SELECT, SELECT_BRANCH, SELECT_CONSTANTS, NO_OP,
 
     // Relational operators
-    EQ, NE, LT, LE, GT, GE, NOT, IN
+    EQ, NE, LT, LE, GT, GE, NOT, IN_EXP,
 
     // Additive operators
     ADD, SUBTRACT, OR, NEGATE,
@@ -31,7 +31,7 @@ public enum ICodeNodeTypeImpl implements ICodeNodeType
     // Operands
     VARIABLE, SUBSCRIPTS, FIELD,
     INTEGER_CONSTANT, REAL_CONSTANT,
-    STRING_CONSTANT, BOOLEAN_CONSTANT, DOT_DOT
+    STRING_CONSTANT, BOOLEAN_CONSTANT, DOT_DOT,
 
     // WRITE parameter
     WRITE_PARM,

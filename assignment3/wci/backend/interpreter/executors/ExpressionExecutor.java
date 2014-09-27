@@ -143,8 +143,7 @@ public class ExpressionExecutor extends StatementExecutor
         boolean integerMode = (operand1 instanceof Integer) &&
                               (operand2 instanceof Integer);
 
-        boolean setMode = (operand1 instanceof Long) &&
-				                  (operand2 instanceof Long);
+        boolean setMode = (operand2 instanceof Long);
 
         // ====================
         // Arithmetic operators
@@ -270,8 +269,16 @@ public class ExpressionExecutor extends StatementExecutor
             }
         }
         else if (setMode) {
-							long val1 = (long)operand1;
-							long val2 = (long)operand2;
+                            int ival1 = 0;
+                            long val1 = 0;
+                            long val2 = 0;
+                            if (nodeType !=IN_EXP) {
+							    val1 = (long)operand1;
+							    val2 = (long)operand2;
+                            } else {
+                                ival1 = (int)operand1;
+                                val2 = (long)operand2;
+                            }
 							switch (nodeType) {
                 case EQ: return val1 == val2;
                 case NE: return val1 != val2;
@@ -279,7 +286,7 @@ public class ExpressionExecutor extends StatementExecutor
                 case LE: return (val1 & (~val2)) == 0;
                 case GT: return (val1 != val2) && (((~val1) & val2) == 0);
                 case GE: return ((~val1) & val2) == 0;
-                case IN: return ((1 << val1) & val2);
+                case IN_EXP: return ((1 << ival1) & val2) == 0;
 							}
 						}
         else {

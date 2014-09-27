@@ -53,7 +53,7 @@ public class ExpressionParser extends StatementParser
     // Set of relational operators.
     private static final EnumSet<PascalTokenType> REL_OPS =
         EnumSet.of(EQUALS, NOT_EQUALS, LESS_THAN, LESS_EQUALS,
-                   GREATER_THAN, GREATER_EQUALS);
+                   GREATER_THAN, GREATER_EQUALS, IN);
 
     // Map relational operator tokens to node types.
     private static final HashMap<PascalTokenType, ICodeNodeType>
@@ -65,6 +65,7 @@ public class ExpressionParser extends StatementParser
         REL_OPS_MAP.put(LESS_EQUALS, LE);
         REL_OPS_MAP.put(GREATER_THAN, GT);
         REL_OPS_MAP.put(GREATER_EQUALS, GE);
+        REL_OPS_MAP.put(IN, IN_EXP);
     };
 
     /**
@@ -117,7 +118,7 @@ public class ExpressionParser extends StatementParser
             // The operator node becomes the new root node.
             rootNode = opNode;
 		}
-		
+
         return rootNode;
     }
 
@@ -338,7 +339,7 @@ public class ExpressionParser extends StatementParser
 
                 break;
             }
-            
+
             case LEFT_BRACKET:
 							token = nextToken();
 							return parseSet(token);
@@ -351,7 +352,7 @@ public class ExpressionParser extends StatementParser
 
         return rootNode;
     }
-	
+
 	   /**
      * Parse a set.
      * @param token the initial token.
@@ -359,22 +360,22 @@ public class ExpressionParser extends StatementParser
      * @throws Exception if an error occurred.
      */
     private ICodeNode parseSet(Token token) throws Exception
-    { 
+    {
 		ICodeNode rootNode = ICodeFactory.createICodeNode(SET_EXP);
-   		
-		while (currentToken().getType() != RIGHT_BRACKET) 
-		{		
+
+		while (currentToken().getType() != RIGHT_BRACKET)
+		{
 			ICodeNode setNode = parseExpression(token);
 			rootNode.addChild(setNode);
-				
+
 			if(currentToken().getType() == RIGHT_BRACKET)
 			{
 					break;
 			}
-							
+
 			token = nextToken();  // consume the operator
 		}
-			
+
 		nextToken(); //consume the closing brace
 		System.out.println(rootNode.getChildren());
 
