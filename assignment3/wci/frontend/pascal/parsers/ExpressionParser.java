@@ -340,13 +340,13 @@ public class ExpressionParser extends StatementParser
             }
             
             case LEFT_BRACKET:
-							token = nextToken();
-							return parseSet(token);
+				token = nextToken();			// consume the [
+				rootNode = parseSet(token);		// parse the set
+				break;
 
-            default: {
+            default:
                 errorHandler.flag(token, UNEXPECTED_TOKEN, this);
                 break;
-            }
         }
 
         return rootNode;
