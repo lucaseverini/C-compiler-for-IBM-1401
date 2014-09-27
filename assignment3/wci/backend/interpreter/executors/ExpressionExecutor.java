@@ -142,6 +142,9 @@ public class ExpressionExecutor extends StatementExecutor
 
         boolean integerMode = (operand1 instanceof Integer) &&
                               (operand2 instanceof Integer);
+                              
+        boolean setMode = (operand1 instanceof Long) &&
+				                  (operand2 instanceof Long);
 
         // ====================
         // Arithmetic operators
@@ -195,6 +198,18 @@ public class ExpressionExecutor extends StatementExecutor
                     }
                 }
             }
+            else if (setMode) {
+							long val1 = (long)operand1;
+							long val2 = (long)operand2;
+							switch (nodeType) {
+								case ADD:
+									return val1 | val2;
+								case SUBTRACT:
+									return val1 & (~val2);
+								case MULTIPLY:
+									return val1 & val2;
+							}
+						}
             else {
                 float value1 = operand1 instanceof Integer
                                    ? (Integer) operand1 : (Float) operand1;
@@ -254,6 +269,18 @@ public class ExpressionExecutor extends StatementExecutor
                 case GE: return value1 >= value2;
             }
         }
+        else if (setMode) {
+							long val1 = (long)operand1;
+							long val2 = (long)operand2;
+							switch (nodeType) {
+                case EQ: return val1 == val2;
+                case NE: return val1 != val2;
+                case LT: return val1 != val2 && (val1 & (~val2) == 0);
+                case LE: return val1 & (~val2) == 0;
+                case GT: return val1 != val2 && ((~val1) & val2 == 0);
+                case GE: return (~val1) & val2 == 0;
+							}
+						}
         else {
             float value1 = operand1 instanceof Integer
                                ? (Integer) operand1 : (Float) operand1;
