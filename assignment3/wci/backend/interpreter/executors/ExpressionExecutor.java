@@ -98,19 +98,27 @@ public class ExpressionExecutor extends StatementExecutor
 							ArrayList<ICodeNode> children = node.getChildren();
 							long mask = 0;
 							for (ICodeNode child : children) {
-								Object value = execute(child);
-								if (!(value instanceof Integer)) {
-									// this should have been caught at compile time...
+								if (child.getType() == DOT_DOT) {
+									int from = (int) execute(child.getChildren().get(0));
+									int to = (int) execute(child.getChildren().get(1));
+									for (int i = from; i <= to; i++) {
+										mask |= (1l<<i);
+									}
+								} else {
+									Object value = execute(child);
+									if (!(value instanceof Integer)) {
+										// this should have been caught at compile time...
+									}
+									int val = (int)value;
+									if (val < 0 || val > 50) {
+										//runtime error, set element out of range
+									}
+									long one = 1;
+									one <<= val;
+									mask |= one;
 								}
-								int val = (int)value;
-								if (val < 0 || val > 50) {
-									//runtime error, set element out of range
-								}
-								long one = 1;
-								one <<= val;
-								mask |= one;
 							}
-							return(Long) mask;
+							return new RuntimeSet(mask);
 
 
             // Must be a binary operator.
@@ -143,7 +151,7 @@ public class ExpressionExecutor extends StatementExecutor
         boolean integerMode = (operand1 instanceof Integer) &&
                               (operand2 instanceof Integer);
 
-        boolean setMode = (operand2 instanceof Long);
+        boolean setMode = (operand2 instanceof RuntimeSet);
 
         // ====================
         // Arithmetic operators
@@ -198,15 +206,15 @@ public class ExpressionExecutor extends StatementExecutor
                 }
             }
             else if (setMode) {
-							long val1 = (long)operand1;
-							long val2 = (long)operand2;
+							long val1 = ((RuntimeSet)operand1).bits;
+							long val2 = ((RuntimeSet)operand2).bits;
 							switch (nodeType) {
 								case ADD:
-									return val1 | val2;
+									return new RuntimeSet(val1 | val2);
 								case SUBTRACT:
-									return val1 & (~val2);
+									return new RuntimeSet(val1 & (~val2));
 								case MULTIPLY:
-									return val1 & val2;
+									return new RuntimeSet(val1 & val2);
 							}
 						}
             else {
@@ -269,26 +277,20 @@ public class ExpressionExecutor extends StatementExecutor
             }
         }
         else if (setMode) {
-                            int ival1 = 0;
-                            long val1 = 0;
-                            long val2 = 0;
-                            if (nodeType !=IN_EXP) {
-							    val1 = (long)operand1;
-							    val2 = (long)operand2;
-                            } else {
-                                ival1 = (int)operand1;
-                                val2 = (long)operand2;
-                            }
-							switch (nodeType) {
-                case EQ: return val1 == val2;
-                case NE: return val1 != val2;
-                case LT: return val1 != val2 && ((val1 & (~val2)) == 0);
-                case LE: return (val1 & (~val2)) == 0;
-                case GT: return (val1 != val2) && (((~val1) & val2) == 0);
-                case GE: return ((~val1) & val2) == 0;
-                case IN_EXP: return ((1 << ival1) & val2) == 0;
-							}
-						}
+					long val2 = ((RuntimeSet)operand2).bits;
+					if (nodeType == IN_EXP) {
+						return ((1 << (int)operand1) & val2) == 0;
+					}
+					long val1 = ((RuntimeSet)operand1).bits;
+					switch (nodeType) {
+						case EQ: return val1 == val2;
+						case NE: return val1 != val2;
+						case LT: return val1 != val2 && ((val1 & (~val2)) == 0);
+						case LE: return (val1 & (~val2)) == 0;
+						case GT: return (val1 != val2) && (((~val1) & val2) == 0);
+						case GE: return ((~val1) & val2) == 0;
+					}
+				}
         else {
             float value1 = operand1 instanceof Integer
                                ? (Integer) operand1 : (Float) operand1;
