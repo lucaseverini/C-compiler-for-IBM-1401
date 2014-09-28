@@ -44,8 +44,7 @@ public class ExpressionParser extends StatementParser
      * @return the root node of the generated parse tree.
      * @throws Exception if an error occurred.
      */
-    public ICodeNode parse(Token token)
-        throws Exception
+    public ICodeNode parse(Token token) throws Exception
     {
         return parseExpression(token);
     }
@@ -74,8 +73,7 @@ public class ExpressionParser extends StatementParser
      * @return the root of the generated parse subtree.
      * @throws Exception if an error occurred.
      */
-    private ICodeNode parseExpression(Token token)
-        throws Exception
+    private ICodeNode parseExpression(Token token) throws Exception
     {
         // Parse a simple expression and make the root of its tree
         // the root node.
@@ -85,8 +83,8 @@ public class ExpressionParser extends StatementParser
         TokenType tokenType = token.getType();
 
         // Look for a relational operator.
-        if (REL_OPS.contains(tokenType)) {
-
+        if (REL_OPS.contains(tokenType)) 
+		{
             // Create a new operator node and adopt the current tree
             // as its first child.
             ICodeNodeType nodeType = REL_OPS_MAP.get(tokenType);
@@ -102,7 +100,8 @@ public class ExpressionParser extends StatementParser
             // The operator node becomes the new root node.
             rootNode = opNode;
         }
-		else if (tokenType == LEFT_BRACKET) {
+		else if (tokenType == LEFT_BRACKET) 
+		{
             // Create a new operator node and adopt the current tree
             // as its first child.
             ICodeNodeType nodeType = SET_EXP;
@@ -124,7 +123,7 @@ public class ExpressionParser extends StatementParser
 
     // Set of additive operators.
     private static final EnumSet<PascalTokenType> ADD_OPS =
-        EnumSet.of(PLUS, MINUS, PascalTokenType.OR);
+        EnumSet.of(PLUS, MINUS, PascalTokenType.OR, PascalTokenType.DOT_DOT);
 
     // Map additive operator tokens to node types.
     private static final HashMap<PascalTokenType, ICodeNodeTypeImpl>
@@ -133,6 +132,7 @@ public class ExpressionParser extends StatementParser
         ADD_OPS_OPS_MAP.put(PLUS, ADD);
         ADD_OPS_OPS_MAP.put(MINUS, SUBTRACT);
         ADD_OPS_OPS_MAP.put(PascalTokenType.OR, ICodeNodeTypeImpl.OR);
+		ADD_OPS_OPS_MAP.put(PascalTokenType.DOT_DOT, ICodeNodeTypeImpl.DOT_DOT);
     };
 
     /**
@@ -206,7 +206,8 @@ public class ExpressionParser extends StatementParser
         MULT_OPS_OPS_MAP.put(DIV, INTEGER_DIVIDE);
         MULT_OPS_OPS_MAP.put(PascalTokenType.MOD, ICodeNodeTypeImpl.MOD);
         MULT_OPS_OPS_MAP.put(PascalTokenType.AND, ICodeNodeTypeImpl.AND);
-    };
+        // MULT_OPS_OPS_MAP.put(PascalTokenType.DOT_DOT, ICodeNodeTypeImpl.DOT_DOT);
+     };
 
     /**
      * Parse a term.
@@ -377,7 +378,7 @@ public class ExpressionParser extends StatementParser
 		}
 		nextToken(); //consume the closing brace
 
-		System.out.println(rootNode.getChildren());
+		System.out.println("SET: [ " + rootNode.getChildren() + " ]");
 
 		return rootNode;
     }
