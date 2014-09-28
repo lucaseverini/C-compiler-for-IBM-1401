@@ -378,7 +378,7 @@ public class ExpressionParser extends StatementParser
 		}
 		nextToken(); //consume the closing brace
 
-		System.out.println(rootNode.getChildren());
+		System.out.println("SET: [ " + rootNode.getChildren() + " ]");
 
 		return rootNode;
     }
