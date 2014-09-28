@@ -279,7 +279,7 @@ public class ExpressionExecutor extends StatementExecutor
         else if (setMode) {
 					long val2 = ((RuntimeSet)operand2).bits;
 					if (nodeType == IN_EXP) {
-						return ((1L << (int)operand1) & val2) == 0;
+						return ((1L << (int)operand1) & val2) != 0;
 					}
 					long val1 = ((RuntimeSet)operand1).bits;
 					switch (nodeType) {
