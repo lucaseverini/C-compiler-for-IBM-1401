@@ -212,7 +212,7 @@ public class ExpressionParser extends StatementParser
         }
 
         if (tokenType == PascalTokenType.DOT_DOT) {
-            ICodeNodeType nodeType = ADD_OPS_OPS_MAP.get(tokenType);
+            ICodeNodeType nodeType = ICodeNodeTypeImpl.DOT_DOT;
             ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
             opNode.addChild(rootNode);
 
@@ -221,7 +221,6 @@ public class ExpressionParser extends StatementParser
             // Parse another term.  The operator node adopts
             // the term's tree as its second child.
             ICodeNode tmp = parseFactorDOTDOT(token);
-
             opNode.addChild(tmp);
 
             // The operator node becomes the new root node.
@@ -294,6 +293,24 @@ public class ExpressionParser extends StatementParser
         ICodeNode rootNode = null;
 
         switch ((PascalTokenType) tokenType) {
+
+            case IDENTIFIER: {
+                // Look up the identifier in the symbol table stack.
+                // Flag the identifier as undefined if it's not found.
+                String name = token.getText().toLowerCase();
+                SymTabEntry id = symTabStack.lookup(name);
+                if (id == null) {
+                    errorHandler.flag(token, IDENTIFIER_UNDEFINED, this);
+                    id = symTabStack.enterLocal(name);
+                }
+
+                rootNode = ICodeFactory.createICodeNode(VARIABLE);
+                rootNode.setAttribute(ID, id);
+                id.appendLineNumber(token.getLineNumber());
+
+                token = nextToken();  // consume the identifier
+                break;
+            }
 
             case INTEGER: {
                 // Create an INTEGER_CONSTANT node as the root node.
