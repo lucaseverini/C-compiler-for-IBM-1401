@@ -52,7 +52,7 @@ public class ExpressionParser extends StatementParser
     // Set of relational operators.
     private static final EnumSet<PascalTokenType> REL_OPS =
         EnumSet.of(EQUALS, NOT_EQUALS, LESS_THAN, LESS_EQUALS,
-                   GREATER_THAN, GREATER_EQUALS, IN);
+                   GREATER_THAN, GREATER_EQUALS );//, IN);
 
     // Map relational operator tokens to node types.
     private static final HashMap<PascalTokenType, ICodeNodeType>
@@ -64,7 +64,7 @@ public class ExpressionParser extends StatementParser
         REL_OPS_MAP.put(LESS_EQUALS, LE);
         REL_OPS_MAP.put(GREATER_THAN, GT);
         REL_OPS_MAP.put(GREATER_EQUALS, GE);
-        REL_OPS_MAP.put(IN, IN_EXP);
+        //REL_OPS_MAP.put(IN, IN_EXP);
     };
 
     /**
@@ -83,7 +83,7 @@ public class ExpressionParser extends StatementParser
         TokenType tokenType = token.getType();
 
         // Look for a relational operator.
-        if (REL_OPS.contains(tokenType)) 
+        if (REL_OPS.contains(tokenType))
 		{
             // Create a new operator node and adopt the current tree
             // as its first child.
@@ -100,14 +100,13 @@ public class ExpressionParser extends StatementParser
             // The operator node becomes the new root node.
             rootNode = opNode;
         }
-		else if (tokenType == LEFT_BRACKET) 
+		else if (tokenType == LEFT_BRACKET)
 		{
             // Create a new operator node and adopt the current tree
             // as its first child.
             ICodeNodeType nodeType = SET_EXP;
             ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
             opNode.addChild(rootNode);
-
             token = nextToken();  // consume the operator
 
             // Parse the second simple expression.  The operator node adopts
@@ -117,6 +116,29 @@ public class ExpressionParser extends StatementParser
             // The operator node becomes the new root node.
             rootNode = opNode;
 		}
+        else if (tokenType == IN)
+        {
+            ICodeNodeType nodeType = IN_EXP;
+            ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
+            opNode.addChild(rootNode);
+
+            token = nextToken();  // consume the operator
+
+            // Parse the second simple expression.  The operator node adopts
+            // the simple expression's tree as its second child.
+            ICodeNode tmp = parseExpression(token);
+
+            if ((rootNode.getType() == SET_EXP && tmp.getType() == SET_EXP) ||
+                (rootNode.getType() == INTEGER_CONSTANT && tmp.getType() == INTEGER_CONSTANT)) {
+                //this.synchronize(EXPR_START_SET);
+                errorHandler.flag(token, INVALID_OPERATOR, this);
+            }
+
+            opNode.addChild(tmp);
+
+            // The operator node becomes the new root node.
+            rootNode = opNode;
+        }
 
         return rootNode;
     }
