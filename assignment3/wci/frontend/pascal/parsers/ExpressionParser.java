@@ -130,7 +130,6 @@ public class ExpressionParser extends StatementParser
 
             if ((rootNode.getType() == SET_EXP && tmp.getType() == SET_EXP) ||
                 (rootNode.getType() == INTEGER_CONSTANT && tmp.getType() == INTEGER_CONSTANT)) {
-                //this.synchronize(EXPR_START_SET);
                 errorHandler.flag(token, INVALID_OPERATOR, this);
             }
 
@@ -145,7 +144,7 @@ public class ExpressionParser extends StatementParser
 
     // Set of additive operators.
     private static final EnumSet<PascalTokenType> ADD_OPS =
-        EnumSet.of(PLUS, MINUS, PascalTokenType.OR, PascalTokenType.DOT_DOT);
+        EnumSet.of(PLUS, MINUS, PascalTokenType.OR); //, PascalTokenType.DOT_DOT);
 
     // Map additive operator tokens to node types.
     private static final HashMap<PascalTokenType, ICodeNodeTypeImpl>
@@ -154,7 +153,7 @@ public class ExpressionParser extends StatementParser
         ADD_OPS_OPS_MAP.put(PLUS, ADD);
         ADD_OPS_OPS_MAP.put(MINUS, SUBTRACT);
         ADD_OPS_OPS_MAP.put(PascalTokenType.OR, ICodeNodeTypeImpl.OR);
-		ADD_OPS_OPS_MAP.put(PascalTokenType.DOT_DOT, ICodeNodeTypeImpl.DOT_DOT);
+		//ADD_OPS_OPS_MAP.put(PascalTokenType.DOT_DOT, ICodeNodeTypeImpl.DOT_DOT);
     };
 
     /**
@@ -210,6 +209,23 @@ public class ExpressionParser extends StatementParser
 
             token = currentToken();
             tokenType = token.getType();
+        }
+
+        if (tokenType == PascalTokenType.DOT_DOT) {
+            ICodeNodeType nodeType = ADD_OPS_OPS_MAP.get(tokenType);
+            ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
+            opNode.addChild(rootNode);
+
+            token = nextToken();  // consume the operator
+
+            // Parse another term.  The operator node adopts
+            // the term's tree as its second child.
+            ICodeNode tmp = parseFactorDOTDOT(token);
+
+            opNode.addChild(tmp);
+
+            // The operator node becomes the new root node.
+            rootNode = opNode;
         }
 
         return rootNode;
@@ -268,6 +284,29 @@ public class ExpressionParser extends StatementParser
             tokenType = token.getType();
         }
 
+        return rootNode;
+    }
+
+    private ICodeNode parseFactorDOTDOT(Token token)
+        throws Exception
+    {
+        TokenType tokenType = token.getType();
+        ICodeNode rootNode = null;
+
+        switch ((PascalTokenType) tokenType) {
+
+            case INTEGER: {
+                // Create an INTEGER_CONSTANT node as the root node.
+                rootNode = ICodeFactory.createICodeNode(INTEGER_CONSTANT);
+                rootNode.setAttribute(VALUE, token.getValue());
+
+                token = nextToken();  // consume the number
+                break;
+            }
+            default:
+                errorHandler.flag(token, INVALID_RANGE_OF_VALUES, this);
+                break;
+        }
         return rootNode;
     }
 
