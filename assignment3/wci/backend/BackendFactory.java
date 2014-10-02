@@ -1,8 +1,3 @@
-package wci.backend;
-
-import wci.backend.compiler.CodeGenerator;
-import wci.backend.interpreter.Executor;
-
 /**
  * <h1>BackendFactory</h1>
  *
@@ -11,6 +6,12 @@ import wci.backend.interpreter.Executor;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend;
+
+import wci.backend.compiler.CodeGenerator;
+import wci.backend.interpreter.Executor;
+
 public class BackendFactory
 {
     /**

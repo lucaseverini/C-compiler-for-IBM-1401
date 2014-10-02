@@ -1,7 +1,3 @@
-package wci.frontend.pascal;
-
-import wci.frontend.*;
-
 /**
  * <h1>PascalToken</h1>
  *
@@ -10,6 +6,11 @@ import wci.frontend.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal;
+
+import wci.frontend.*;
+
 public class PascalToken extends Token
 {
     /**

@@ -1,12 +1,3 @@
-package wci.backend.compiler;
-
-import wci.backend.*;
-import wci.intermediate.ICode;
-import wci.intermediate.SymTabStack;
-import wci.message.*;
-
-import static wci.message.MessageType.COMPILER_SUMMARY;
-
 /**
  * <h1>CodeGenerator</h1>
  *
@@ -15,6 +6,15 @@ import static wci.message.MessageType.COMPILER_SUMMARY;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.compiler;
+
+import wci.backend.*;
+import wci.intermediate.ICode;
+import wci.intermediate.SymTabStack;
+import wci.message.*;
+import static wci.message.MessageType.COMPILER_SUMMARY;
+
 public class CodeGenerator extends Backend
 {
     /**
@@ -24,6 +24,7 @@ public class CodeGenerator extends Backend
      * @param symTabStack the symbol table stack.
      * @throws Exception if an error occurred.
      */
+	@Override
     public void process(ICode iCode, SymTabStack symTabStack)
         throws Exception
     {

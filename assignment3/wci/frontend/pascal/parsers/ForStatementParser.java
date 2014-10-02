@@ -1,16 +1,3 @@
-package wci.frontend.pascal.parsers;
-
-import java.util.EnumSet;
-
-import wci.frontend.*;
-import wci.frontend.pascal.*;
-import wci.intermediate.*;
-
-import static wci.frontend.pascal.PascalTokenType.*;
-import static wci.frontend.pascal.PascalErrorCode.*;
-import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
-import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
-
 /**
  * <h1>ForStatementParser</h1>
  *
@@ -19,6 +6,18 @@ import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal.parsers;
+
+import java.util.EnumSet;
+import wci.frontend.*;
+import wci.frontend.pascal.*;
+import wci.intermediate.*;
+import static wci.frontend.pascal.PascalTokenType.*;
+import static wci.frontend.pascal.PascalErrorCode.*;
+import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
+import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
+
 public class ForStatementParser extends StatementParser
 {
     /**

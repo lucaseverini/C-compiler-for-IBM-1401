@@ -1,16 +1,3 @@
-package wci.backend.interpreter.executors;
-
-import java.util.ArrayList;
-
-import wci.intermediate.*;
-import wci.intermediate.icodeimpl.*;
-import wci.backend.interpreter.*;
-import wci.message.*;
-
-import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
-import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
-import static wci.message.MessageType.ASSIGN;
-
 /**
  * <h1>AssignmentExecutor</h1>
  *
@@ -19,6 +6,18 @@ import static wci.message.MessageType.ASSIGN;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter.executors;
+
+import java.util.ArrayList;
+import wci.intermediate.*;
+import wci.intermediate.icodeimpl.*;
+import wci.backend.interpreter.*;
+import wci.message.*;
+import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
+import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
+import static wci.message.MessageType.ASSIGN;
+
 public class AssignmentExecutor extends StatementExecutor
 {
     /**

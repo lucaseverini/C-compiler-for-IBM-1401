@@ -1,13 +1,3 @@
-package wci.intermediate.icodeimpl;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import wci.intermediate.*;
-
 /**
  * <h1>ICodeNodeImpl</h1>
  *
@@ -16,6 +6,16 @@ import wci.intermediate.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.intermediate.icodeimpl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import wci.intermediate.*;
+
 public class ICodeNodeImpl
     extends HashMap<ICodeKey, Object>
     implements ICodeNode

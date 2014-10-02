@@ -1,10 +1,3 @@
-package wci.frontend.pascal.tokens;
-
-import wci.frontend.*;
-import wci.frontend.pascal.*;
-
-import static wci.frontend.pascal.PascalTokenType.*;
-
 /**
  * <h1>PascalWordToken</h1>
  *
@@ -13,6 +6,13 @@ import static wci.frontend.pascal.PascalTokenType.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal.tokens;
+
+import wci.frontend.*;
+import wci.frontend.pascal.*;
+import static wci.frontend.pascal.PascalTokenType.*;
+
 public class PascalWordToken extends PascalToken
 {
     /**

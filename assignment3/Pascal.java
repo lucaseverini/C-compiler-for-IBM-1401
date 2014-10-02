@@ -1,14 +1,3 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-
-import wci.frontend.*;
-import wci.intermediate.*;
-import wci.backend.*;
-import wci.message.*;
-import wci.util.*;
-
-import static wci.message.MessageType.*;
-
 /**
  * <h1>Pascal</h1>
  *
@@ -17,6 +6,16 @@ import static wci.message.MessageType.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import wci.frontend.*;
+import wci.intermediate.*;
+import wci.backend.*;
+import wci.message.*;
+import wci.util.*;
+import static wci.message.MessageType.*;
+
 public class Pascal
 {
     private Parser parser;            // language-independent parser
@@ -104,7 +103,7 @@ public class Pascal
             // Source path.
             if (i < args.length) {
                 String path = args[i];
-                new Pascal(operation, path, flags);
+                Pascal dummyP = new Pascal(operation, path, flags);
             }
             else {
                 throw new Exception();
@@ -126,6 +125,7 @@ public class Pascal
          * Called by the source whenever it produces a message.
          * @param message the message.
          */
+		@Override
         public void messageReceived(Message message)
         {
             MessageType type = message.getType();
@@ -161,6 +161,7 @@ public class Pascal
          * Called by the parser whenever it produces a message.
          * @param message the message.
          */
+		@Override
         public void messageReceived(Message message)
         {
             MessageType type = message.getType();
@@ -236,6 +237,7 @@ public class Pascal
          * Called by the back end whenever it produces a message.
          * @param message the message.
          */
+		@Override
         public void messageReceived(Message message)
         {
             MessageType type = message.getType();

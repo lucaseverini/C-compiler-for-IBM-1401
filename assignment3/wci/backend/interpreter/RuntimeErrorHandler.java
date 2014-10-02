@@ -1,12 +1,3 @@
-package wci.backend.interpreter;
-
-import wci.intermediate.*;
-import wci.backend.Backend;
-import wci.message.*;
-
-import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
-import static wci.message.MessageType.RUNTIME_ERROR;
-
 /**
  * <h1>RuntimeErrorHandler</h1>
  *
@@ -15,6 +6,15 @@ import static wci.message.MessageType.RUNTIME_ERROR;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter;
+
+import wci.intermediate.*;
+import wci.backend.Backend;
+import wci.message.*;
+import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
+import static wci.message.MessageType.RUNTIME_ERROR;
+
 public class RuntimeErrorHandler
 {
     private static final int MAX_ERRORS = 5;

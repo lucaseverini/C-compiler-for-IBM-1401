@@ -1,5 +1,3 @@
-package wci.backend.interpreter;
-
 /**
  * <h1>RuntimeErrorCode</h1>
  *
@@ -8,6 +6,9 @@ package wci.backend.interpreter;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter;
+
 public enum RuntimeErrorCode
 {
     UNINITIALIZED_VALUE("Uninitialized value"),
@@ -19,7 +20,7 @@ public enum RuntimeErrorCode
     STACK_OVERFLOW("Runtime stack overflow"),
     UNIMPLEMENTED_FEATURE("Unimplemented runtime feature");
 
-    private String message;  // error message
+    private final String message;  // error message
 
     /**
      * Constructor.
@@ -30,6 +31,7 @@ public enum RuntimeErrorCode
         this.message = message;
     }
 
+	@Override
     public String toString()
     {
         return message;

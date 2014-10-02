@@ -1,10 +1,3 @@
-package wci.backend.interpreter.executors;
-
-import java.util.ArrayList;
-
-import wci.intermediate.*;
-import wci.backend.interpreter.*;
-
 /**
  * <h1>CompoundExecutor</h1>
  *
@@ -13,6 +6,13 @@ import wci.backend.interpreter.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter.executors;
+
+import java.util.ArrayList;
+import wci.intermediate.*;
+import wci.backend.interpreter.*;
+
 public class CompoundExecutor extends StatementExecutor
 {
     /**

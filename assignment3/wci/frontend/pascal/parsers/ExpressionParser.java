@@ -1,19 +1,3 @@
-package wci.frontend.pascal.parsers;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-
-import wci.frontend.*;
-import wci.frontend.pascal.*;
-import wci.intermediate.*;
-import wci.intermediate.icodeimpl.*;
-
-import static wci.frontend.pascal.PascalTokenType.*;
-import static wci.frontend.pascal.PascalTokenType.NOT;
-import static wci.frontend.pascal.PascalErrorCode.*;
-import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
-import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
-
 /**
  * <h1>ExpressionParser</h1>
  *
@@ -22,6 +6,21 @@ import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal.parsers;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import wci.frontend.*;
+import wci.frontend.pascal.*;
+import wci.intermediate.*;
+import wci.intermediate.icodeimpl.*;
+import static wci.frontend.pascal.PascalTokenType.*;
+import static wci.frontend.pascal.PascalTokenType.NOT;
+import static wci.frontend.pascal.PascalErrorCode.*;
+import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
+import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
+
 public class ExpressionParser extends StatementParser
 {
     /**
@@ -164,12 +163,14 @@ public class ExpressionParser extends StatementParser
      */
     private ICodeNode parseSimpleExpression(Token token) throws Exception
     {
+		Token prevToken = null;
         TokenType signType = null;  // type of leading sign (if any)
 
         // Look for a leading + or - sign.
         TokenType tokenType = token.getType();
         if ((tokenType == PLUS) || (tokenType == MINUS)) {
             signType = tokenType;
+			prevToken = token;
             token = nextToken();  // consume the + or -
         }
 
@@ -178,7 +179,6 @@ public class ExpressionParser extends StatementParser
 
         // Was there a leading - sign?
         if (signType == MINUS) {
-
             // Create a NEGATE node and adopt the current tree
             // as its child. The NEGATE node becomes the new root node.
             ICodeNode negateNode = ICodeFactory.createICodeNode(NEGATE);
@@ -191,13 +191,13 @@ public class ExpressionParser extends StatementParser
 
         // Loop over additive operators.
         while (ADD_OPS.contains(tokenType)) {
-
             // Create a new operator node and adopt the current tree
             // as its first child.
             ICodeNodeType nodeType = ADD_OPS_OPS_MAP.get(tokenType);
             ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
             opNode.addChild(rootNode);
 
+			prevToken = token;
             token = nextToken();  // consume the operator
 
             // Parse another term.  The operator node adopts
@@ -216,6 +216,7 @@ public class ExpressionParser extends StatementParser
             ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
             opNode.addChild(rootNode);
 
+			prevToken = token;
             token = nextToken();  // consume the operator
 
             // Parse another term.  The operator node adopts
@@ -226,6 +227,12 @@ public class ExpressionParser extends StatementParser
             // The operator node becomes the new root node.
             rootNode = opNode;
         }
+		else if(tokenType != PascalTokenType.COMMA) {
+			if(PascalTokenType.isDataType(tokenType)) {
+				// System.out.println("NO COMMA! at " + token.getPosition());
+				errorHandler.flag(token, MISSING_COMMA, this);
+			}
+		}
 
         return rootNode;
     }
@@ -252,8 +259,7 @@ public class ExpressionParser extends StatementParser
      * @return the root of the generated parse subtree.
      * @throws Exception if an error occurred.
      */
-    private ICodeNode parseTerm(Token token)
-        throws Exception
+    private ICodeNode parseTerm(Token token) throws Exception
     {
         // Parse a factor and make its node the root node.
         ICodeNode rootNode = parseFactor(token);
@@ -263,7 +269,6 @@ public class ExpressionParser extends StatementParser
 
         // Loop over multiplicative operators.
         while (MULT_OPS.contains(tokenType)) {
-
             // Create a new operator node and adopt the current tree
             // as its first child.
             ICodeNodeType nodeType = MULT_OPS_OPS_MAP.get(tokenType);
@@ -333,14 +338,12 @@ public class ExpressionParser extends StatementParser
      * @return the root of the generated parse subtree.
      * @throws Exception if an error occurred.
      */
-    private ICodeNode parseFactor(Token token)
-        throws Exception
+    private ICodeNode parseFactor(Token token) throws Exception
     {
         TokenType tokenType = token.getType();
         ICodeNode rootNode = null;
 
         switch ((PascalTokenType) tokenType) {
-
             case IDENTIFIER: {
                 // Look up the identifier in the symbol table stack.
                 // Flag the identifier as undefined if it's not found.
@@ -425,7 +428,12 @@ public class ExpressionParser extends StatementParser
 				break;
 
             default:
-                errorHandler.flag(token, UNEXPECTED_TOKEN, this);
+				if(token.getType() == COMMA) {
+					errorHandler.flag(token, UNEXPECTED_COMMA, this);
+				}
+				else {
+					errorHandler.flag(token, UNEXPECTED_TOKEN, this);
+				}
                 break;
         }
 
@@ -442,20 +450,25 @@ public class ExpressionParser extends StatementParser
     {
 		ICodeNode rootNode = ICodeFactory.createICodeNode(SET_EXP);
 
-		while (currentToken().getType() != RIGHT_BRACKET)
-		{
+		while (token.getType() != RIGHT_BRACKET && token.getType() != SEMICOLON) {
 			ICodeNode setNode = parseExpression(token);
 			rootNode.addChild(setNode);
 
-			if(currentToken().getType() == RIGHT_BRACKET)
-			{
-					break;
+			token = currentToken();
+			if(token.getType() == RIGHT_BRACKET || token.getType() == SEMICOLON) {
+				break;
 			}
 
 			token = nextToken();  // consume the operator
 		}
-		nextToken(); //consume the closing brace
-
+		
+		if(token.getType() == RIGHT_BRACKET) {
+			nextToken(); //consume the closing brace
+		}
+		else {
+			// System.out.println("NO RIGHT_BRACKET at" + token.getPosition());
+			errorHandler.flag(token, MISSING_RIGHT_BRACKET, this);
+		}
 		// System.out.println("SET: " + rootNode.getChildren());
 
 		return rootNode;

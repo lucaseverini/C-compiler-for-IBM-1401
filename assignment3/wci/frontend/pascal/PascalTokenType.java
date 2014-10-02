@@ -1,9 +1,3 @@
-package wci.frontend.pascal;
-
-import java.util.Hashtable;
-import java.util.HashSet;
-
-import wci.frontend.TokenType;
 
 /**
  * <h1>PascalTokenType</h1>
@@ -13,6 +7,14 @@ import wci.frontend.TokenType;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal;
+
+import java.util.Hashtable;
+import java.util.HashSet;
+import wci.frontend.TokenType;
+import static wci.frontend.pascal.PascalTokenType.IDENTIFIER;
+
 public enum PascalTokenType implements TokenType
 {
     // Reserved words.
@@ -29,7 +31,9 @@ public enum PascalTokenType implements TokenType
     LEFT_BRACKET("["), RIGHT_BRACKET("]"), LEFT_BRACE("{"), RIGHT_BRACE("}"),
     UP_ARROW("^"), DOT_DOT(".."),
 
-    IDENTIFIER, INTEGER, REAL, STRING,
+    // Data types
+	IDENTIFIER, INTEGER, REAL, STRING,
+	
     ERROR, END_OF_FILE;
 
     private static final int FIRST_RESERVED_INDEX = AND.ordinal();
@@ -37,6 +41,9 @@ public enum PascalTokenType implements TokenType
 
     private static final int FIRST_SPECIAL_INDEX = PLUS.ordinal();
     private static final int LAST_SPECIAL_INDEX  = DOT_DOT.ordinal();
+
+	private static final int FIRST_DATA_TYPE = IDENTIFIER.ordinal();
+    private static final int LAST_DATA_TYPE  = STRING.ordinal();
 
     private String text;  // token text
 
@@ -85,4 +92,9 @@ public enum PascalTokenType implements TokenType
             SPECIAL_SYMBOLS.put(values[i].getText(), values[i]);
         }
     }
+	
+	public static boolean isDataType(TokenType type)
+	{
+		return (type == IDENTIFIER || type == INTEGER || type == REAL || type == STRING);
+	}
 }

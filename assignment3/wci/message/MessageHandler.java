@@ -1,7 +1,3 @@
-package wci.message;
-
-import java.util.ArrayList;
-
 /**
  * <h1>MessageHandler</h1>
  *
@@ -11,6 +7,11 @@ import java.util.ArrayList;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.message;
+
+import java.util.ArrayList;
+
 public class MessageHandler
 {
     private Message message;                       // message

@@ -1,5 +1,3 @@
-package wci.frontend.pascal;
-
 /**
  * <h1>PascalErrorCode</h1>
  *
@@ -8,6 +6,9 @@ package wci.frontend.pascal;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal;
+
 public enum PascalErrorCode
 {
     ALREADY_FORWARDED("Already specified in FORWARD"),
@@ -65,6 +66,7 @@ public enum PascalErrorCode
     TOO_MANY_LEVELS("Nesting level too deep"),
     TOO_MANY_SUBSCRIPTS("Too many subscripts"),
     UNEXPECTED_EOF("Unexpected end of file"),
+	UNEXPECTED_COMMA("Unexpected ,"),
     UNEXPECTED_TOKEN("Unexpected token"),
     UNIMPLEMENTED("Unimplemented feature"),
     UNRECOGNIZABLE("Unrecognizable input"),

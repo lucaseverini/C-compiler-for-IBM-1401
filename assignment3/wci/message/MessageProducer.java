@@ -1,5 +1,3 @@
-package wci.message;
-
 /**
  * <h1>MessageProducer</h1>
  *
@@ -8,6 +6,9 @@ package wci.message;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.message;
+
 public interface MessageProducer
 {
     /**

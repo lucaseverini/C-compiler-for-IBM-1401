@@ -1,13 +1,3 @@
-package wci.backend.interpreter.executors;
-
-import java.util.ArrayList;
-
-import wci.intermediate.*;
-import wci.backend.interpreter.*;
-
-import static wci.intermediate.ICodeNodeType.*;
-import static wci.backend.interpreter.RuntimeErrorCode.*;
-
 /**
  * <h1>IfExecutor</h1>
  *
@@ -16,6 +6,15 @@ import static wci.backend.interpreter.RuntimeErrorCode.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter.executors;
+
+import java.util.ArrayList;
+import wci.intermediate.*;
+import wci.backend.interpreter.*;
+import static wci.intermediate.ICodeNodeType.*;
+import static wci.backend.interpreter.RuntimeErrorCode.*;
+
 public class IfExecutor extends StatementExecutor
 {
     /**

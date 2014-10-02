@@ -1,14 +1,3 @@
-package wci.util;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.io.PrintStream;
-
-import wci.intermediate.*;
-import wci.intermediate.icodeimpl.*;
-
 /**
  * <h1>ParseTreePrinter</h1>
  *
@@ -17,6 +6,17 @@ import wci.intermediate.icodeimpl.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.util;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.io.PrintStream;
+import wci.intermediate.*;
+import wci.intermediate.icodeimpl.*;
+
 public class ParseTreePrinter
 {
     private static final int INDENT_WIDTH = 4;

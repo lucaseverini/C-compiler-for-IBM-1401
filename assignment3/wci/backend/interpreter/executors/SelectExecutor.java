@@ -1,15 +1,3 @@
-package wci.backend.interpreter.executors;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import wci.intermediate.*;
-import wci.backend.interpreter.*;
-
-import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
-import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
-import static wci.backend.interpreter.RuntimeErrorCode.*;
-
 /**
  * <h1>SelectExecutor</h1>
  *
@@ -18,6 +6,18 @@ import static wci.backend.interpreter.RuntimeErrorCode.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter.executors;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import wci.intermediate.*;
+import wci.backend.interpreter.*;
+import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
+import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
+import static wci.backend.interpreter.RuntimeErrorCode.*;
+
+
 public class SelectExecutor extends StatementExecutor
 {
     /**

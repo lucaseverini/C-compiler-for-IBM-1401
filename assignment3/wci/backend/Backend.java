@@ -1,9 +1,3 @@
-package wci.backend;
-
-import wci.intermediate.ICode;
-import wci.intermediate.SymTabStack;
-import wci.message.*;
-
 /**
  * <h1>Backend</h1>
  *
@@ -12,6 +6,13 @@ import wci.message.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend;
+
+import wci.intermediate.ICode;
+import wci.intermediate.SymTabStack;
+import wci.message.*;
+
 public abstract class Backend implements MessageProducer
 {
     protected static SymTabStack symTabStack;        // symbol table stack

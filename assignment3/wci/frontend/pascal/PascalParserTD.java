@@ -1,16 +1,3 @@
-package wci.frontend.pascal;
-
-import java.util.EnumSet;
-
-import wci.frontend.*;
-import wci.frontend.pascal.parsers.*;
-import wci.intermediate.*;
-import wci.message.*;
-
-import static wci.frontend.pascal.PascalTokenType.*;
-import static wci.frontend.pascal.PascalErrorCode.*;
-import static wci.message.MessageType.PARSER_SUMMARY;
-
 /**
  * <h1>PascalParserTD</h1>
  *
@@ -19,6 +6,18 @@ import static wci.message.MessageType.PARSER_SUMMARY;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal;
+
+import java.util.EnumSet;
+import wci.frontend.*;
+import wci.frontend.pascal.parsers.*;
+import wci.intermediate.*;
+import wci.message.*;
+import static wci.frontend.pascal.PascalTokenType.*;
+import static wci.frontend.pascal.PascalErrorCode.*;
+import static wci.message.MessageType.PARSER_SUMMARY;
+
 public class PascalParserTD extends Parser
 {
     protected static PascalErrorHandler errorHandler = new PascalErrorHandler();

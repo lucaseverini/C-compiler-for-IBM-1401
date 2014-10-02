@@ -1,15 +1,3 @@
-package wci.backend.interpreter.executors;
-
-import wci.intermediate.*;
-import wci.intermediate.icodeimpl.*;
-import wci.backend.interpreter.*;
-import wci.message.*;
-
-import static wci.intermediate.ICodeNodeType.*;
-import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
-import static wci.backend.interpreter.RuntimeErrorCode.*;
-import static wci.message.MessageType.SOURCE_LINE;
-
 /**
  * <h1>StatementExecutor</h1>
  *
@@ -18,6 +6,18 @@ import static wci.message.MessageType.SOURCE_LINE;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter.executors;
+
+import wci.intermediate.*;
+import wci.intermediate.icodeimpl.*;
+import wci.backend.interpreter.*;
+import wci.message.*;
+import static wci.intermediate.ICodeNodeType.*;
+import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
+import static wci.backend.interpreter.RuntimeErrorCode.*;
+import static wci.message.MessageType.SOURCE_LINE;
+
 public class StatementExecutor extends Executor
 {
     /**

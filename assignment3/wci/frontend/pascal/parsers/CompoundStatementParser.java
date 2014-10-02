@@ -1,13 +1,3 @@
-package wci.frontend.pascal.parsers;
-
-import wci.frontend.*;
-import wci.frontend.pascal.*;
-import wci.intermediate.*;
-
-import static wci.frontend.pascal.PascalTokenType.*;
-import static wci.frontend.pascal.PascalErrorCode.*;
-import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
-
 /**
  * <h1>CompoundStatementParser</h1>
  *
@@ -16,6 +6,16 @@ import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal.parsers;
+
+import wci.frontend.*;
+import wci.frontend.pascal.*;
+import wci.intermediate.*;
+import static wci.frontend.pascal.PascalTokenType.*;
+import static wci.frontend.pascal.PascalErrorCode.*;
+import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
+
 public class CompoundStatementParser extends StatementParser
 {
     /**

@@ -1,14 +1,3 @@
-package wci.backend.interpreter;
-
-import wci.intermediate.*;
-import wci.intermediate.icodeimpl.*;
-import wci.backend.*;
-import wci.backend.interpreter.executors.*;
-import wci.message.*;
-
-import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
-import static wci.message.MessageType.INTERPRETER_SUMMARY;
-
 /**
  * <h1>Executor</h1>
  *
@@ -17,6 +6,17 @@ import static wci.message.MessageType.INTERPRETER_SUMMARY;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.backend.interpreter;
+
+import wci.intermediate.*;
+import wci.intermediate.icodeimpl.*;
+import wci.backend.*;
+import wci.backend.interpreter.executors.*;
+import wci.message.*;
+import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
+import static wci.message.MessageType.INTERPRETER_SUMMARY;
+
 public class Executor extends Backend
 {
     protected static int executionCount;

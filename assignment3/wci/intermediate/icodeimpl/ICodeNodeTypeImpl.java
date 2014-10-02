@@ -1,7 +1,3 @@
-package wci.intermediate.icodeimpl;
-
-import wci.intermediate.ICodeNodeType;
-
 /**
  * <h1>ICodeNodeType</h1>
  *
@@ -10,6 +6,11 @@ import wci.intermediate.ICodeNodeType;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.intermediate.icodeimpl;
+
+import wci.intermediate.ICodeNodeType;
+
 public enum ICodeNodeTypeImpl implements ICodeNodeType
 {
     // Program structure
@@ -21,7 +22,6 @@ public enum ICodeNodeTypeImpl implements ICodeNodeType
 
     // Relational operators
     EQ, NE, LT, LE, GT, GE, NOT, IN_EXP,
-
 
     // Additive operators
     ADD, SUBTRACT, OR, NEGATE,
@@ -36,7 +36,6 @@ public enum ICodeNodeTypeImpl implements ICodeNodeType
     VARIABLE, SUBSCRIPTS, FIELD,
     INTEGER_CONSTANT, REAL_CONSTANT,
     STRING_CONSTANT, BOOLEAN_CONSTANT,
-
 
     // WRITE parameter
     WRITE_PARM,

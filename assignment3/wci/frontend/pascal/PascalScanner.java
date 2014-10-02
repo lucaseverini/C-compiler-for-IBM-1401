@@ -1,12 +1,3 @@
-package wci.frontend.pascal;
-
-import wci.frontend.*;
-import wci.frontend.pascal.tokens.*;
-
-import static wci.frontend.Source.EOF;
-import static wci.frontend.pascal.PascalTokenType.*;
-import static wci.frontend.pascal.PascalErrorCode.*;
-
 /**
  * <h1>PascalScanner</h1>
  *
@@ -15,6 +6,15 @@ import static wci.frontend.pascal.PascalErrorCode.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.frontend.pascal;
+
+import wci.frontend.*;
+import wci.frontend.pascal.tokens.*;
+import static wci.frontend.Source.EOF;
+import static wci.frontend.pascal.PascalTokenType.*;
+import static wci.frontend.pascal.PascalErrorCode.*;
+
 public class PascalScanner extends Scanner
 {
     /**

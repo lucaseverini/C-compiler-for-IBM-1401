@@ -1,10 +1,3 @@
-package wci.util;
-
-import java.util.ArrayList;
-
-import wci.intermediate.*;
-import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
-
 /**
  * <h1>CrossReferencer</h1>
  *
@@ -13,6 +6,13 @@ import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
+
+package wci.util;
+
+import java.util.ArrayList;
+import wci.intermediate.*;
+import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
+
 public class CrossReferencer
 {
     private static final int NAME_WIDTH = 16;
