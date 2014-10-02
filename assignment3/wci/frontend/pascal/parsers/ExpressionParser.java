@@ -20,6 +20,7 @@ import static wci.frontend.pascal.PascalTokenType.NOT;
 import static wci.frontend.pascal.PascalErrorCode.*;
 import static wci.intermediate.icodeimpl.ICodeNodeTypeImpl.*;
 import static wci.intermediate.icodeimpl.ICodeKeyImpl.*;
+import wci.backend.interpreter.executors.*;
 
 public class ExpressionParser extends StatementParser
 {
@@ -504,7 +505,23 @@ public class ExpressionParser extends StatementParser
 			errorHandler.flag(token, MISSING_RIGHT_BRACKET, this);
 		}
 		// System.out.println("SET: " + rootNode.getChildren());
-
+		
+		//here we try to execute the set in order to catch non-unique elements
+		//this is kind of messy, I'm genuinely sorry about this code...
+		ExpressionExecutor ex = new ExpressionExecutor(null);
+		try {
+			ex.execute(rootNode);
+		} catch (Exception e) {
+			boolean allConstants = true;
+			for (ICodeNode child : rootNode.getChildren()) {
+				if (child.getType() != INTEGER_CONSTANT && child.getType() != ICodeNodeTypeImpl.DOT_DOT) {
+					allConstants = false;
+				} 
+			}
+			if (allConstants)
+				errorHandler.flag(token, NON_UNIQUE_SET_ELEMENTS, this);
+		}
+	
 		return rootNode;
     }
 
