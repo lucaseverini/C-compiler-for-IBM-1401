@@ -19,7 +19,8 @@ public enum RuntimeErrorCode
     INVALID_INPUT("Invalid input"),
     STACK_OVERFLOW("Runtime stack overflow"),
     UNIMPLEMENTED_FEATURE("Unimplemented runtime feature"),
-    NON_UNIQUE_SET_ELEMENTS("Non-unique set elements");
+    NON_UNIQUE_SET_ELEMENTS("Non-unique set elements"),
+    ELEMENT_OUT_OF_RANGE("Set element out of range");
 
     private final String message;  // error message
 

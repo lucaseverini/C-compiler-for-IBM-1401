@@ -98,6 +98,16 @@ public class ExpressionParser extends StatementParser
 
             // The operator node becomes the new root node.
             rootNode = opNode;
+            
+            if (nodeType == LT || nodeType == GT) {
+							for (ICodeNode child : rootNode.getChildren()) {
+								if (child.getType() == SET_EXP) {
+									errorHandler.flag(token, INVALID_OPERATOR, this);
+								}
+							}
+						} 
+
+            
         }
 		else if (tokenType == LEFT_BRACKET)
 		{
@@ -206,6 +216,15 @@ public class ExpressionParser extends StatementParser
 
             // The operator node becomes the new root node.
             rootNode = opNode;
+            
+            if (nodeType == ICodeNodeTypeImpl.OR) {
+							for (ICodeNode child : rootNode.getChildren()) {
+								if (child.getType() == SET_EXP) {
+									errorHandler.flag(token, INVALID_OPERATOR, this);
+								}
+							}
+						} 
+
 
             token = currentToken();
             tokenType = token.getType();
@@ -274,6 +293,13 @@ public class ExpressionParser extends StatementParser
             ICodeNodeType nodeType = MULT_OPS_OPS_MAP.get(tokenType);
             ICodeNode opNode = ICodeFactory.createICodeNode(nodeType);
             opNode.addChild(rootNode);
+            
+                    MULT_OPS_OPS_MAP.put(STAR, MULTIPLY);
+        MULT_OPS_OPS_MAP.put(SLASH, FLOAT_DIVIDE);
+        MULT_OPS_OPS_MAP.put(DIV, INTEGER_DIVIDE);
+        MULT_OPS_OPS_MAP.put(PascalTokenType.MOD, ICodeNodeTypeImpl.MOD);
+        MULT_OPS_OPS_MAP.put(PascalTokenType.AND, ICodeNodeTypeImpl.AND);
+            
 
             token = nextToken();  // consume the operator
 
@@ -283,6 +309,14 @@ public class ExpressionParser extends StatementParser
 
             // The operator node becomes the new root node.
             rootNode = opNode;
+            
+            if (nodeType != MULTIPLY) {
+							for (ICodeNode child : rootNode.getChildren()) {
+								if (child.getType() == SET_EXP) {
+									errorHandler.flag(token, INVALID_OPERATOR, this);
+								}
+							}
+						} 
 
             token = currentToken();
             tokenType = token.getType();

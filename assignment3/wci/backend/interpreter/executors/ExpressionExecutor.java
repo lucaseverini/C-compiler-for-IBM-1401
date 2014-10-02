@@ -100,6 +100,12 @@ public class ExpressionExecutor extends StatementExecutor
 								if (child.getType() == DOT_DOT) {
 									int from = (int) execute(child.getChildren().get(0));
 									int to = (int) execute(child.getChildren().get(1));
+									
+									if (to < 0 || to > 50 || from < 0 || from > 50) {
+										errorHandler.flag(node, ELEMENT_OUT_OF_RANGE, this);
+										return 0;
+									}
+									
 									for (int i = from; i <= to; i++) {
 										if ((mask & (1l << i)) != 0l) {
 											errorHandler.flag(node, NON_UNIQUE_SET_ELEMENTS, this);
@@ -118,7 +124,8 @@ public class ExpressionExecutor extends StatementExecutor
 											return 0;
 										}
 									if (val < 0 || val > 50) {
-										//runtime error, set element out of range
+										errorHandler.flag(node, ELEMENT_OUT_OF_RANGE, this);
+										return 0;
 									}
 									long one = 1;
 									one <<= val;
