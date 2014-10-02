@@ -101,6 +101,10 @@ public class ExpressionExecutor extends StatementExecutor
 									int from = (int) execute(child.getChildren().get(0));
 									int to = (int) execute(child.getChildren().get(1));
 									for (int i = from; i <= to; i++) {
+										if ((mask & (1l << i)) != 0l) {
+											errorHandler.flag(node, NON_UNIQUE_SET_ELEMENTS, this);
+											return 0;
+										}
 										mask |= (1l<<i);
 									}
 								} else {
@@ -109,6 +113,10 @@ public class ExpressionExecutor extends StatementExecutor
 										// this should have been caught at compile time...
 									}
 									int val = (int)value;
+									if ((mask & (1l << val)) != 0l) {
+											errorHandler.flag(node, NON_UNIQUE_SET_ELEMENTS, this);
+											return 0;
+										}
 									if (val < 0 || val > 50) {
 										//runtime error, set element out of range
 									}

@@ -18,7 +18,8 @@ public enum RuntimeErrorCode
     INVALID_STANDARD_FUNCTION_ARGUMENT("Invalid standard function argument"),
     INVALID_INPUT("Invalid input"),
     STACK_OVERFLOW("Runtime stack overflow"),
-    UNIMPLEMENTED_FEATURE("Unimplemented runtime feature");
+    UNIMPLEMENTED_FEATURE("Unimplemented runtime feature"),
+    NON_UNIQUE_SET_ELEMENTS("Non-unique set elements");
 
     private final String message;  // error message
 
