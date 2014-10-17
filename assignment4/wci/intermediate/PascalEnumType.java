@@ -1,6 +1,6 @@
 package wci.intermediate;
 
-public class PascalEnumType extends PascalValueType {
+public class PascalEnumType extends PascalIntegralType {
 	private List<String> members;
 	public PascalEnumType(List<String> members) {
 		this.members = members;

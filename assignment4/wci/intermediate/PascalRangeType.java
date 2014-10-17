@@ -2,11 +2,11 @@ package wci.intermediate;
 
 //The type parameter here is actually the java type of the value.
 //it is needed for range checking
-public class PascalRangeType<T> extends PascalValueType {
-	private PascalValueType rangeOf;
+public class PascalRangeType<T> extends PascalIntegralType {
+	private PascalIntegralType rangeOf;
 	private Comparable<T> low, high;
 	
-	public PascalRangeType(PascalValueType rangeOf, Comparable<T> low, Comparable<T> high) {
+	public PascalRangeType(PascalIntegralType rangeOf, Comparable<T> low, Comparable<T> high) {
 		this.rangeOf = rangeOf;
 		this.low = low;
 		this.high = high;
