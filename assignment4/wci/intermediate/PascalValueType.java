@@ -1,6 +1,7 @@
 package wci.intermediate;
 
-public class PascalValueType {
+public class PascalValueType 
+{
 	public PascalValueType() {
 	}
 

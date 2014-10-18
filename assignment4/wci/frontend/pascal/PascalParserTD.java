@@ -70,7 +70,7 @@ public class PascalParserTD extends Parser
 					rootNode = statementParser.parse(token);
 					token = currentToken();
 				} 
-				else if (token.getType() == CONST) {
+				else if (token.getType() == CONST || token.getType() == TYPE || token.getType() == VAR) {
 					DeclarationsParser declarParser = new DeclarationsParser(this);
 					declarParser.parse(token);
 					token = currentToken();
@@ -79,13 +79,8 @@ public class PascalParserTD extends Parser
 				{
 					errorHandler.flag(token, UNEXPECTED_TOKEN, this);
 				}
-				
-				if (token.getType() == DOT) 
-				{
-					break;
-				}
  			}
-			while(true);
+			while(!(token instanceof EofToken));
  
             // Set the parse tree root node.
             if (rootNode != null) {
