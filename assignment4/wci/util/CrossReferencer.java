@@ -21,6 +21,8 @@ public class CrossReferencer
     private static final String NUMBERS_LABEL     = " Line numbers    ";
     private static final String NUMBERS_UNDERLINE = " ------------    ";
     private static final String NUMBER_FORMAT = " %03d";
+    private static final String SET_FORMAT = "%-" + NAME_WIDTH + "d";
+    private static final String SET_LABEL     = " Is a Set?       ";
 
     private static final int LABEL_WIDTH  = NUMBERS_LABEL.length();
     private static final int INDENT_WIDTH = NAME_WIDTH + LABEL_WIDTH;
@@ -49,9 +51,9 @@ public class CrossReferencer
     {
         System.out.println();
         System.out.println(String.format(NAME_FORMAT, "Identifier")
-                           + NUMBERS_LABEL);
+                            + SET_LABEL + NUMBERS_LABEL);
         System.out.println(String.format(NAME_FORMAT, "----------")
-                           + NUMBERS_UNDERLINE);
+                           + NUMBERS_UNDERLINE + NUMBERS_UNDERLINE);
     }
 
     /**
@@ -68,6 +70,7 @@ public class CrossReferencer
             // For each entry, print the identifier name
             // followed by the line numbers.
             System.out.print(String.format(NAME_FORMAT, entry.getName()));
+            System.out.print(String.format(SET_FORMAT, entry.getAttribute(DATA_VALUE)));
             if (lineNumbers != null) {
                 for (Integer lineNumber : lineNumbers) {
                     System.out.print(String.format(NUMBER_FORMAT, lineNumber));
