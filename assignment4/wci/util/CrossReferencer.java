@@ -12,6 +12,7 @@ package wci.util;
 import java.util.ArrayList;
 import wci.intermediate.*;
 import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
+import static wci.intermediate.typeimpl.TypeKeyImpl.RECORD_SYMTAB;
 
 public class CrossReferencer
 {
@@ -72,12 +73,13 @@ public class CrossReferencer
             // followed by the line numbers.
 			
 			String name = entry.getName();
-            System.out.print(String.format(NAME_FORMAT, name));
-			
+            System.out.print(String.format(NAME_FORMAT, name));		
+
 			TypeSpec type = entry.getTypeSpec();
-            System.out.print(String.format(SET_FORMAT, type.toString()));
-			
-            if (lineNumbers != null) 
+			String typeStr = type.toString();
+            System.out.print(String.format(SET_FORMAT, typeStr));
+
+			if (lineNumbers != null) 
 			{
                 for (Integer lineNumber : lineNumbers)
 				{
@@ -85,6 +87,19 @@ public class CrossReferencer
                 }
             }
             System.out.println();
-        }
+
+			SymTab recTab = (SymTab)type.getAttribute(RECORD_SYMTAB);
+			if(recTab != null)
+			{
+				ArrayList<SymTabEntry> arr = recTab.sortedEntries();
+				for (SymTabEntry e : arr) 
+				{
+					String fldName = e.getName();
+					TypeSpec fldtype = e.getTypeSpec();
+					System.out.println("                    " + fldName + " " + fldtype.toString());	
+				}
+			}
+								
+         }
     }
 }
