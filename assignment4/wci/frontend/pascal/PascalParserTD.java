@@ -14,6 +14,7 @@ import wci.frontend.*;
 import wci.frontend.pascal.parsers.*;
 import wci.intermediate.*;
 import wci.message.*;
+import wci.intermediate.typeimpl.TypeChecker;
 import static wci.frontend.pascal.PascalTokenType.*;
 import static wci.frontend.pascal.PascalErrorCode.*;
 import wci.intermediate.symtabimpl.Predefined;
@@ -59,7 +60,7 @@ public class PascalParserTD extends Parser
         throws Exception
     {
         long startTime = System.currentTimeMillis();
-		
+
         iCode = ICodeFactory.createICode();
 		Predefined.initialize(symTabStack);
 
@@ -72,7 +73,7 @@ public class PascalParserTD extends Parser
 					StatementParser statementParser = new StatementParser(this);
 					rootNode = statementParser.parse(token);
 					token = currentToken();
-				} 
+				}
 				else if (token.getType() == CONST || token.getType() == TYPE || token.getType() == VAR) {
 					DeclarationsParser declarParser = new DeclarationsParser(this);
 					declarParser.parse(token);
@@ -87,7 +88,7 @@ public class PascalParserTD extends Parser
 				}
  			}
 			while(!(token instanceof EofToken));
- 
+
             // Set the parse tree root node.
             if (rootNode != null) {
                 iCode.setRoot(rootNode);
@@ -141,5 +142,51 @@ public class PascalParserTD extends Parser
        }
 
        return token;
+    }
+
+
+    private boolean CompareTypesHelper(ICodeNode parent, ICodeNode child)
+    {
+        boolean b = false;
+        int ind = 0;
+        TypeSpec t_parent = parent.getTypeSpec();
+        while (child.getChildren().size() > ind)
+        {
+            TypeSpec t_child = child.getChildren().get(ind).getTypeSpec();
+            if (t_child != null)
+            {
+                return TypeChecker.areAssignmentCompatible(t_parent,t_child);
+            } else {
+                ind += 1;
+            }
+        }
+
+        return b;
+    }
+
+
+    /*
+        Compares the parent to the child types returns true if they can be assigned
+        returns false if they cannot be assigned
+    */
+    public boolean CompareTypes(ICodeNode i)
+    {
+        boolean b = false;
+        int ind = 0;
+        TypeSpec t_parent = i.getTypeSpec();
+        while (i.getChildren().size() > ind)
+        {
+            TypeSpec t_child = i.getChildren().get(ind).getTypeSpec();
+            if (t_child != null)
+            {
+                return TypeChecker.areAssignmentCompatible(t_parent,t_child);
+            } else {
+                if (i.getChildren().get(ind).getChildren().size() > 0 && i.getChildren().get(ind).getChildren().size() > ind) {
+                    return CompareTypesHelper(i,i.getChildren().get(ind).getChildren().get(ind));
+                }
+            }
+            ind += 1;
+        }
+        return b;
     }
 }

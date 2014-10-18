@@ -81,6 +81,10 @@ public class AssignmentStatementParser extends StatementParser
         ExpressionParser expressionParser = new ExpressionParser(this);
         assignNode.addChild(expressionParser.parse(token));
 
+        if (!this.CompareTypes(assignNode)) {
+            errorHandler.flag(token, INCOMPATIBLE_TYPES, this);
+        }
+
         return assignNode;
     }
 }
