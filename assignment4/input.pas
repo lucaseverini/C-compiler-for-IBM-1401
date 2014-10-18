@@ -1,4 +1,4 @@
-{
+
 CONST
     high = 50;
 
@@ -28,7 +28,7 @@ VAR
 
 BEGIN
 END.
-}
+{
 
 BEGIN
     low := 15;
@@ -64,3 +64,4 @@ BEGIN
                    ELSE s7 := s7 - [4]
     END
 END.
+}
