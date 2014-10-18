@@ -16,5 +16,4 @@ public class PascalValueType {
 	public static PascalValueType INTEGER = new PascalIntegralType();
 	public static PascalValueType CHAR = new PascalIntegralType();
 	public static PascalValueType BOOLEAN = new PascalIntegralType();
-	public static PascalValueType SET = new PascalSetType();
 }
