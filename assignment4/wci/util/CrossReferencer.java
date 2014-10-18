@@ -75,7 +75,8 @@ public class CrossReferencer
             System.out.print(String.format(NAME_FORMAT, name));
 			
 			TypeSpec type = entry.getTypeSpec();
-            System.out.print(String.format(SET_FORMAT, type));
+            System.out.print(String.format(SET_FORMAT, type.toString()));
+			
             if (lineNumbers != null) 
 			{
                 for (Integer lineNumber : lineNumbers)
