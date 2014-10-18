@@ -1,3 +1,13 @@
+package wci.intermediate.icodeimpl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import wci.intermediate.*;
+
 /**
  * <h1>ICodeNodeImpl</h1>
  *
@@ -6,16 +16,6 @@
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
-
-package wci.intermediate.icodeimpl;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import wci.intermediate.*;
-
 public class ICodeNodeImpl
     extends HashMap<ICodeKey, Object>
     implements ICodeNode
@@ -23,6 +23,7 @@ public class ICodeNodeImpl
     private ICodeNodeType type;             // node type
     private ICodeNode parent;               // parent node
     private ArrayList<ICodeNode> children;  // children array list
+    private TypeSpec typeSpec;              // data type specification
 
     /**
      * Constructor.
@@ -51,6 +52,24 @@ public class ICodeNodeImpl
     public ICodeNode getParent()
     {
         return parent;
+    }
+
+    /**
+     * Set the type specification of this node.
+     * @param typeSpec the type sprcification to set.
+     */
+    public void setTypeSpec(TypeSpec typeSpec)
+    {
+        this.typeSpec = typeSpec;
+    }
+
+    /**
+     * Return the type specification of this node.
+     * @return the type specification.
+     */
+    public TypeSpec getTypeSpec()
+    {
+        return typeSpec;
     }
 
     /**
@@ -103,9 +122,10 @@ public class ICodeNodeImpl
      */
     public ICodeNode copy()
     {
-        // Create a copy with the same type.
+        // Create a copy with the same type and type specification.
         ICodeNodeImpl copy =
             (ICodeNodeImpl) ICodeFactory.createICodeNode(type);
+        copy.setTypeSpec(typeSpec);
 
         Set<Map.Entry<ICodeKey, Object>> attributes = entrySet();
         Iterator<Map.Entry<ICodeKey, Object>> it = attributes.iterator();

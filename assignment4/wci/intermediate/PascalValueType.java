@@ -13,7 +13,7 @@ public class PascalValueType {
 	//most compound types are built recursively from these, except enums
 	//and ranges, which are weird
 	public static PascalValueType REAL = new PascalValueType();
-	public static PascalIntegralType INTEGER = new PascalValueType();
-	public static PascalIntegralType CHAR = new PascalValueType();
-	public static PascalIntegralType BOOLEAN = new PascalValueType();
+	public static PascalIntegralType INTEGER = (PascalIntegralType) new PascalValueType();
+	public static PascalIntegralType CHAR = (PascalIntegralType) new PascalValueType();
+	public static PascalIntegralType BOOLEAN = (PascalIntegralType) new PascalValueType();
 }

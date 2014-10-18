@@ -61,23 +61,32 @@ public class PascalParserTD extends Parser
         iCode = ICodeFactory.createICode();
 
         try {
-            Token token = nextToken();
-            ICodeNode rootNode = null;
+				Token token = nextToken();
+				ICodeNode rootNode = null;
 
-            if (token.getType() == BEGIN) {
-                StatementParser statementParser = new StatementParser(this);
-                rootNode = statementParser.parse(token);
-                token = currentToken();
-            } else {
-                errorHandler.flag(token, UNEXPECTED_TOKEN, this);
-            }
-
-            // Look for the final period.
-            if (token.getType() != DOT) {
-                errorHandler.flag(token, MISSING_PERIOD, this);
-            }
-            token = currentToken();
-
+				do {
+				if (token.getType() == BEGIN) {
+					StatementParser statementParser = new StatementParser(this);
+					rootNode = statementParser.parse(token);
+					token = currentToken();
+				} 
+				else if (token.getType() == CONST) {
+					DeclarationsParser declarParser = new DeclarationsParser(this);
+					declarParser.parse(token);
+					token = currentToken();
+				}
+				else
+				{
+					errorHandler.flag(token, UNEXPECTED_TOKEN, this);
+				}
+				
+				if (token.getType() == DOT) 
+				{
+					break;
+				}
+ 			}
+			while(true);
+ 
             // Set the parse tree root node.
             if (rootNode != null) {
                 iCode.setRoot(rootNode);
