@@ -78,6 +78,9 @@ public class PascalParserTD extends Parser
 					declarParser.parse(token);
 					token = currentToken();
 				}
+				else if(token.getType() == DOT) {
+					token = nextToken();
+				}
 				else
 				{
 					errorHandler.flag(token, UNEXPECTED_TOKEN, this);
