@@ -64,15 +64,22 @@ public class CrossReferencer
     {
         // Loop over the sorted list of symbol table entries.
         ArrayList<SymTabEntry> sorted = symTab.sortedEntries();
-        for (SymTabEntry entry : sorted) {
+        for (SymTabEntry entry : sorted) 
+		{
             ArrayList<Integer> lineNumbers = entry.getLineNumbers();
 
             // For each entry, print the identifier name
             // followed by the line numbers.
-            System.out.print(String.format(NAME_FORMAT, entry.getName()));
-            System.out.print(String.format(SET_FORMAT, entry.getTypeSpec().toString()));
-            if (lineNumbers != null) {
-                for (Integer lineNumber : lineNumbers) {
+			
+			String name = entry.getName();
+            System.out.print(String.format(NAME_FORMAT, name));
+			
+			TypeSpec type = entry.getTypeSpec();
+            System.out.print(String.format(SET_FORMAT, type));
+            if (lineNumbers != null) 
+			{
+                for (Integer lineNumber : lineNumbers)
+				{
                     System.out.print(String.format(NUMBER_FORMAT, lineNumber));
                 }
             }

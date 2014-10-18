@@ -16,6 +16,7 @@ import wci.intermediate.*;
 import wci.message.*;
 import static wci.frontend.pascal.PascalTokenType.*;
 import static wci.frontend.pascal.PascalErrorCode.*;
+import wci.intermediate.symtabimpl.Predefined;
 import static wci.message.MessageType.PARSER_SUMMARY;
 
 public class PascalParserTD extends Parser
@@ -58,7 +59,9 @@ public class PascalParserTD extends Parser
         throws Exception
     {
         long startTime = System.currentTimeMillis();
+		
         iCode = ICodeFactory.createICode();
+		Predefined.initialize(symTabStack);
 
         try {
 				Token token = nextToken();
