@@ -23,7 +23,7 @@ public class CrossReferencer
     private static final String NUMBERS_UNDERLINE = " ------------    ";
     private static final String NUMBER_FORMAT = " %03d";
     private static final String SET_FORMAT = "%-" + NAME_WIDTH + "s";
-    private static final String SET_LABEL     = " Is a Set?       ";
+    private static final String SET_LABEL     = " Type Information       ";
 
     private static final int LABEL_WIDTH  = NUMBERS_LABEL.length();
     private static final int INDENT_WIDTH = NAME_WIDTH + LABEL_WIDTH;
@@ -65,21 +65,21 @@ public class CrossReferencer
     {
         // Loop over the sorted list of symbol table entries.
         ArrayList<SymTabEntry> sorted = symTab.sortedEntries();
-        for (SymTabEntry entry : sorted) 
+        for (SymTabEntry entry : sorted)
 		{
             ArrayList<Integer> lineNumbers = entry.getLineNumbers();
 
             // For each entry, print the identifier name
             // followed by the line numbers.
-			
+
 			String name = entry.getName();
-            System.out.print(String.format(NAME_FORMAT, name));		
+            System.out.print(String.format(NAME_FORMAT, name));
 
 			TypeSpec type = entry.getTypeSpec();
 			String typeStr = type.toString();
             System.out.print(String.format(SET_FORMAT, typeStr));
 
-			if (lineNumbers != null) 
+			if (lineNumbers != null)
 			{
                 for (Integer lineNumber : lineNumbers)
 				{
@@ -92,14 +92,14 @@ public class CrossReferencer
 			if(recTab != null)
 			{
 				ArrayList<SymTabEntry> arr = recTab.sortedEntries();
-				for (SymTabEntry e : arr) 
+				for (SymTabEntry e : arr)
 				{
 					String fldName = e.getName();
 					TypeSpec fldtype = e.getTypeSpec();
-					System.out.println("                    " + fldName + " " + fldtype.toString());	
+					System.out.println("                    " + fldName + " " + fldtype.toString());
 				}
 			}
-								
+
          }
     }
 }
