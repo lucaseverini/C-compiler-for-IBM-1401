@@ -1,7 +1,7 @@
 package wci.intermediate;
 
 public class PascalArrayType extends PascalValueType {
-	private PascalIntegralType  indexType
+	private PascalIntegralType  indexType;
 	private PascalValueType valueType;
 	public PascalArrayType (PascalIntegralType indexType, PascalValueType valueType) {
 		this.indexType = indexType;

@@ -61,6 +61,8 @@ public class PascalParserTD extends Parser
         iCode = ICodeFactory.createICode();
         
         try {
+					/*
+<<<<<<< HEAD
 					Token token;
 					ICodeNode rootNode = null;
 					token = nextToken();
@@ -97,6 +99,46 @@ public class PascalParserTD extends Parser
 																								elapsedTime}));
 				
 				
+=======
+*/
+				Token token = nextToken();
+				ICodeNode rootNode = null;
+
+				do {
+				if (token.getType() == BEGIN) {
+					StatementParser statementParser = new StatementParser(this);
+					rootNode = statementParser.parse(token);
+					token = currentToken();
+				} 
+				else if (token.getType() == CONST) {
+					DeclarationsParser declarParser = new DeclarationsParser(this);
+					declarParser.parse(token);
+					token = currentToken();
+				}
+				else
+				{
+					errorHandler.flag(token, UNEXPECTED_TOKEN, this);
+				}
+				
+				if (token.getType() == DOT) 
+				{
+					break;
+				}
+ 			}
+			while(true);
+ 
+            // Set the parse tree root node.
+            if (rootNode != null) {
+                iCode.setRoot(rootNode);
+            }
+
+            // Send the parser summary message.
+            float elapsedTime = (System.currentTimeMillis() - startTime)/1000f;
+            sendMessage(new Message(PARSER_SUMMARY,
+                                    new Number[] {token.getLineNumber(),
+                                                  getErrorCount(),
+                                                  elapsedTime}));
+//>>>>>>> 87edcfc1387361235ba3c759698d3038c42e1bab
         }
         catch (java.io.IOException ex) {
             errorHandler.abortTranslation(IO_ERROR, this);
