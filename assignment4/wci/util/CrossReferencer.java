@@ -10,6 +10,8 @@
 package wci.util;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import wci.intermediate.*;
 import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
 import static wci.intermediate.typeimpl.TypeKeyImpl.RECORD_SYMTAB;
@@ -71,14 +73,20 @@ public class CrossReferencer
 
             // For each entry, print the identifier name
             // followed by the line numbers.
-
+		
 			String name = entry.getName();
             System.out.print(String.format(NAME_FORMAT, name));
 
 			TypeSpec type = entry.getTypeSpec();
 			String typeStr = type.toString();
+			
+			// Constants don't have the type set for any reason so here we use a dirty trick because we are running out of time...
+			if(typeStr == "{}")
+			{
+				typeStr = (String)entry.getAttribute(DATA_TYPE);
+			}
             System.out.print(String.format(SET_FORMAT, typeStr));
-
+			
 			if (lineNumbers != null)
 			{
                 for (Integer lineNumber : lineNumbers)
@@ -87,7 +95,7 @@ public class CrossReferencer
                 }
             }
             System.out.println();
-
+			
 			SymTab recTab = (SymTab)type.getAttribute(RECORD_SYMTAB);
 			if(recTab != null)
 			{
@@ -99,7 +107,6 @@ public class CrossReferencer
 					System.out.println("                    " + fldName + " " + fldtype.toString());
 				}
 			}
-
          }
     }
 }

@@ -118,17 +118,30 @@ public class ConstantDefinitionsParser extends DeclarationsParser
             Object value = parseConstant(token);
 
             // Set identifier to be a constant and set its value.
-            if (constantId != null) {
+            if (constantId != null) 
+			{
                 constantId.setDefinition(CONSTANT);
                 constantId.setAttribute(CONSTANT_VALUE, value);
 
                 // Set the constant's type.
-                TypeSpec constantType =
-                    constantToken.getType() == IDENTIFIER
-                        ? getConstantType(constantToken)
-                        : getConstantType(value);
+                TypeSpec constantType = constantToken.getType() == IDENTIFIER ? getConstantType(constantToken) : getConstantType(value);
                 constantId.setTypeSpec(constantType);
-            }
+
+				if (value instanceof Integer) {
+					constantId.setAttribute(DATA_TYPE, "{INTEGER}");
+				}
+				else if (value instanceof Float) {
+					constantId.setAttribute(DATA_TYPE, "{REAL}");
+				}
+				else if (value instanceof String) {
+					if (((String) value).length() == 1) {
+						constantId.setAttribute(DATA_TYPE, "{CHAR}");
+					}
+					else {
+						constantId.setAttribute(DATA_TYPE, "{STRING}");
+					}
+				}
+			}
 
             token = currentToken();
             TokenType tokenType = token.getType();

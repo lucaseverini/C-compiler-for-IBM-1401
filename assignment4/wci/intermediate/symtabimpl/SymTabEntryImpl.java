@@ -13,9 +13,7 @@ import wci.intermediate.*;
  * <p>Copyright (c) 2009 by Ronald Mak</p>
  * <p>For instructional purposes only.  No warranties.</p>
  */
-public class SymTabEntryImpl
-    extends HashMap<SymTabKey, Object>
-    implements SymTabEntry
+public class SymTabEntryImpl extends HashMap<SymTabKey, Object> implements SymTabEntry
 {
     private String name;                     // entry name
     private SymTab symTab;                   // parent symbol table
