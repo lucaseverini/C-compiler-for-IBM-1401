@@ -59,36 +59,44 @@ public class PascalParserTD extends Parser
     {
         long startTime = System.currentTimeMillis();
         iCode = ICodeFactory.createICode();
-
+        
         try {
-            Token token = nextToken();
-            ICodeNode rootNode = null;
+					Token token;
+					ICodeNode rootNode = null;
+					token = nextToken();
+					do {            
 
-            if (token.getType() == BEGIN) {
+            if (token.getType() == BEGIN && rootNode == null) {
                 StatementParser statementParser = new StatementParser(this);
                 rootNode = statementParser.parse(token);
                 token = currentToken();
-            } else {
+            } else if (token.getType() == CONST) {
+							ConstBlockParser constBlockParser = new ConstBlockParser(this);
+							token = constBlockParser.parse(token);
+						} else {
                 errorHandler.flag(token, UNEXPECTED_TOKEN, this);
+                token = nextToken();
             }
 
-            // Look for the final period.
-            if (token.getType() != DOT) {
-                errorHandler.flag(token, MISSING_PERIOD, this);
-            }
-            token = currentToken();
+					} while (token.getType() != END_OF_FILE && token.getType() != DOT);
+					// Look for the final period.
+					if (token.getType() != DOT) {
+							errorHandler.flag(token, MISSING_PERIOD, this);
+					}
+					
+					// Set the parse tree root node.
+					if (rootNode != null) {
+							iCode.setRoot(rootNode);
+					}
 
-            // Set the parse tree root node.
-            if (rootNode != null) {
-                iCode.setRoot(rootNode);
-            }
-
-            // Send the parser summary message.
-            float elapsedTime = (System.currentTimeMillis() - startTime)/1000f;
-            sendMessage(new Message(PARSER_SUMMARY,
-                                    new Number[] {token.getLineNumber(),
-                                                  getErrorCount(),
-                                                  elapsedTime}));
+					// Send the parser summary message.
+					float elapsedTime = (System.currentTimeMillis() - startTime)/1000f;
+					sendMessage(new Message(PARSER_SUMMARY,
+																	new Number[] {token.getLineNumber(),
+																								getErrorCount(),
+																								elapsedTime}));
+				
+				
         }
         catch (java.io.IOException ex) {
             errorHandler.abortTranslation(IO_ERROR, this);
