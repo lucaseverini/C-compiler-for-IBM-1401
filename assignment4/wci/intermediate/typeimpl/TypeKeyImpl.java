@@ -11,7 +11,7 @@ import wci.intermediate.TypeKey;
  * <p>For instructional purposes only.  No warranties.</p>
  */
 public enum TypeKeyImpl implements TypeKey
-{
+{	
     // Enumeration
     ENUMERATION_CONSTANTS,
 
@@ -22,5 +22,7 @@ public enum TypeKeyImpl implements TypeKey
     ARRAY_INDEX_TYPE, ARRAY_ELEMENT_TYPE, ARRAY_ELEMENT_COUNT,
 
     // Record
-    RECORD_SYMTAB
+    RECORD_SYMTAB,
+	
+	DATA_TYPE
 }

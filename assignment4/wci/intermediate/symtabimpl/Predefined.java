@@ -2,10 +2,11 @@ package wci.intermediate.symtabimpl;
 
 import java.util.ArrayList;
 
+import wci.frontend.pascal.*;
 import wci.intermediate.*;
-
 import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
 import static wci.intermediate.typeimpl.TypeFormImpl.*;
+import wci.intermediate.typeimpl.TypeKeyImpl;
 import static wci.intermediate.typeimpl.TypeKeyImpl.*;
 
 /**
@@ -36,7 +37,7 @@ public class Predefined
 
     /**
      * Initialize a symbol table stack with predefined identifiers.
-     * @param symTab the symbol table stack to initialize.
+     * @param symTabStack the symbol table stack to initialize.
      */
     public static void initialize(SymTabStack symTabStack)
     {
@@ -54,33 +55,34 @@ public class Predefined
         integerId = symTabStack.enterLocal("integer");
         integerType = TypeFactory.createType(SCALAR);
         integerType.setIdentifier(integerId);
+		integerType.setAttribute(TypeKeyImpl.DATA_TYPE, PascalTokenType.INTEGER);
         integerId.setDefinition(DefinitionImpl.TYPE);
         integerId.setTypeSpec(integerType);
-		integerId.setAttribute(DATA_TYPE, "{INTEGER}");
 
         // Type real.
         realId = symTabStack.enterLocal("real");
         realType = TypeFactory.createType(SCALAR);
         realType.setIdentifier(realId);
+ 		realType.setAttribute(TypeKeyImpl.DATA_TYPE, PascalTokenType.REAL);
         realId.setDefinition(DefinitionImpl.TYPE);
         realId.setTypeSpec(realType);
-		realId.setAttribute(DATA_TYPE, "{REAL}");
 
         // Type boolean.
         booleanId = symTabStack.enterLocal("boolean");
-        booleanType = TypeFactory.createType(ENUMERATION);
+        booleanType = TypeFactory.createType(SCALAR);
         booleanType.setIdentifier(booleanId);
+		booleanType.setAttribute(TypeKeyImpl.DATA_TYPE, PascalTokenType.BOOLEAN);
         booleanId.setDefinition(DefinitionImpl.TYPE);
         booleanId.setTypeSpec(booleanType);
-		booleanId.setAttribute(DATA_TYPE, "{BOOLEAN}");
+		//booleanId.setAttribute(DATA_TYPE, BOOLEAN_TYPE);
 
         // Type char.
         charId = symTabStack.enterLocal("char");
         charType = TypeFactory.createType(SCALAR);
         charType.setIdentifier(charId);
-        charId.setDefinition(DefinitionImpl.TYPE);
+		charType.setAttribute(TypeKeyImpl.DATA_TYPE, PascalTokenType.CHAR);
+		charId.setDefinition(DefinitionImpl.TYPE);
         charId.setTypeSpec(charType);
-		charId.setAttribute(DATA_TYPE, "{CHAR}");
 
         // Undefined type.
         undefinedType = TypeFactory.createType(SCALAR);
@@ -94,18 +96,18 @@ public class Predefined
     {
         // Boolean enumeration constant false.
         falseId = symTabStack.enterLocal("false");
-        falseId.setDefinition(DefinitionImpl.ENUMERATION_CONSTANT);
+        falseId.setDefinition(DefinitionImpl.CONSTANT);
         falseId.setTypeSpec(booleanType);
-        falseId.setAttribute(CONSTANT_VALUE, new Integer(0));
+        falseId.setAttribute(CONSTANT_VALUE, 0);
 
         // Boolean enumeration constant true.
         trueId = symTabStack.enterLocal("true");
-        trueId.setDefinition(DefinitionImpl.ENUMERATION_CONSTANT);
+        trueId.setDefinition(DefinitionImpl.CONSTANT);
         trueId.setTypeSpec(booleanType);
-        trueId.setAttribute(CONSTANT_VALUE, new Integer(1));
+        trueId.setAttribute(CONSTANT_VALUE, 1);
 
         // Add false and true to the boolean enumeration type.
-        ArrayList<SymTabEntry> constants = new ArrayList<SymTabEntry>();
+        ArrayList<SymTabEntry> constants = new ArrayList<>();
         constants.add(falseId);
         constants.add(trueId);
         booleanType.setAttribute(ENUMERATION_CONSTANTS, constants);

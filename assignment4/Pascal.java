@@ -58,8 +58,7 @@ public class Pascal
                 }
 
                 if (intermediate) {
-                    ParseTreePrinter treePrinter =
-                                         new ParseTreePrinter(System.out);
+                    ParseTreePrinter treePrinter = new ParseTreePrinter(System.out);
                     treePrinter.print(iCode);
                 }
 

@@ -126,21 +126,6 @@ public class ConstantDefinitionsParser extends DeclarationsParser
                 // Set the constant's type.
                 TypeSpec constantType = constantToken.getType() == IDENTIFIER ? getConstantType(constantToken) : getConstantType(value);
                 constantId.setTypeSpec(constantType);
-
-				if (value instanceof Integer) {
-					constantId.setAttribute(DATA_TYPE, "{INTEGER}");
-				}
-				else if (value instanceof Float) {
-					constantId.setAttribute(DATA_TYPE, "{REAL}");
-				}
-				else if (value instanceof String) {
-					if (((String) value).length() == 1) {
-						constantId.setAttribute(DATA_TYPE, "{CHAR}");
-					}
-					else {
-						constantId.setAttribute(DATA_TYPE, "{STRING}");
-					}
-				}
 			}
 
             token = currentToken();
@@ -233,9 +218,6 @@ public class ConstantDefinitionsParser extends DeclarationsParser
     {
         String name = token.getText().toLowerCase();
         SymTabEntry id = symTabStack.lookup(name);
-		
-		//System.out.println(id.getTypeSpec());
-		//System.out.println(id.getDefinition());
 
         nextToken();  // consume the identifier
 

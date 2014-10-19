@@ -32,7 +32,7 @@ public enum PascalTokenType implements TokenType
     UP_ARROW("^"), DOT_DOT(".."),
 
     // Data types
-	IDENTIFIER, INTEGER, REAL, STRING,
+	IDENTIFIER, INTEGER, REAL, CHAR, BOOLEAN, STRING,
 	
     ERROR, END_OF_FILE;
 

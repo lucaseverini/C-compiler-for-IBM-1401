@@ -95,7 +95,8 @@ class ArrayTypeParser extends TypeSpecificationParser
         }
 
         // Parse the element type.
-        elementType.setAttribute(ARRAY_ELEMENT_TYPE, parseElementType(token));
+		TypeSpec type = parseElementType(token);
+        elementType.setAttribute(ARRAY_ELEMENT_TYPE, type);
 
         return arrayType;
     }
@@ -217,8 +218,7 @@ class ArrayTypeParser extends TypeSpecificationParser
     private TypeSpec parseElementType(Token token)
         throws Exception
     {
-        TypeSpecificationParser typeSpecificationParser =
-            new TypeSpecificationParser(this);
+        TypeSpecificationParser typeSpecificationParser = new TypeSpecificationParser(this);
         return typeSpecificationParser.parse(token);
     }
 }

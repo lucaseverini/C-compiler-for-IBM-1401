@@ -108,7 +108,7 @@ public class TypeSpecImpl
             TypeSpec elmtType  = (TypeSpec) getAttribute(ARRAY_ELEMENT_TYPE);
             TypeSpec indexType = (TypeSpec) getAttribute(ARRAY_INDEX_TYPE);
 
-            return (elmtType.baseType()  == Predefined.charType) &&
+            return (elmtType.baseType() == Predefined.charType) &&
                    (indexType.baseType() == Predefined.integerType);
         }
         else {

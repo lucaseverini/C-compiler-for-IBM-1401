@@ -19,7 +19,7 @@ public enum DefinitionImpl implements Definition
     PROGRAM, PROCEDURE, FUNCTION,
     UNDEFINED;
 
-    private String text;
+    private final String text;
 
     /**
      * Constructor.
@@ -42,6 +42,7 @@ public enum DefinitionImpl implements Definition
      * Getter.
      * @return the text of the definition code.
      */
+	@Override
     public String getText()
     {
         return text;

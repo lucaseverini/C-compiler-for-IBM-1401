@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import wci.intermediate.*;
+import wci.intermediate.symtabimpl.DefinitionImpl;
 import static wci.intermediate.symtabimpl.SymTabKeyImpl.*;
 import static wci.intermediate.typeimpl.TypeKeyImpl.RECORD_SYMTAB;
 
@@ -20,15 +21,23 @@ public class CrossReferencer
 {
     private static final int NAME_WIDTH = 16;
 
-    private static final String NAME_FORMAT       = "%-" + NAME_WIDTH + "s";
-    private static final String NUMBERS_LABEL     = " Line numbers    ";
-    private static final String NUMBERS_UNDERLINE = " ------------    ";
-    private static final String NUMBER_FORMAT = " %03d";
-    private static final String SET_FORMAT = "%-" + NAME_WIDTH + "s";
-    private static final String SET_LABEL     = " Type Information       ";
-
+    private static final String NAME_FORMAT        = "%-" + NAME_WIDTH + "s";
+    private static final String NAME_LABEL         = "Identifier      ";
+    private static final String NAME_UNDERLINE     = "----------      ";
+	private static final String TYPE_LABEL         = "Type Information   ";
+    private static final String TYPE_UNDERLINE     = "----------------   ";
+	private static final String VALUE_LABEL        = "[Value]   ";
+    private static final String VALUE_UNDERLINE    = "-------   ";
+    private static final String NUMBERS_LABEL      = "Line numbers";
+    private static final String NUMBERS_UNDERLINE  = "------------";
+    private static final String NUMBER_FORMAT = "%03d ";
+    private static final String TYPE_FORMAT = "%s   ";
+ 
     private static final int LABEL_WIDTH  = NUMBERS_LABEL.length();
     private static final int INDENT_WIDTH = NAME_WIDTH + LABEL_WIDTH;
+	
+	private static final String CONSTANT_FORMAT = "{CONSTANT_VALUE=%s}   ";
+	private static final String VALUE_FORMAT = "{DATA_VALUE=%s}   ";
 
     private static final StringBuilder INDENT = new StringBuilder(INDENT_WIDTH);
     static {
@@ -53,10 +62,8 @@ public class CrossReferencer
     private void printColumnHeadings()
     {
         System.out.println();
-        System.out.println(String.format(NAME_FORMAT, "Identifier")
-                            + SET_LABEL + NUMBERS_LABEL);
-        System.out.println(String.format(NAME_FORMAT, "----------")
-                           + NUMBERS_UNDERLINE + NUMBERS_UNDERLINE);
+        System.out.println(NAME_LABEL + TYPE_LABEL + VALUE_LABEL + NUMBERS_LABEL);
+        System.out.println(NAME_UNDERLINE + TYPE_UNDERLINE + VALUE_UNDERLINE + NUMBERS_UNDERLINE);
     }
 
     /**
@@ -74,19 +81,29 @@ public class CrossReferencer
             // For each entry, print the identifier name
             // followed by the line numbers.
 		
-			String name = entry.getName();
-            System.out.print(String.format(NAME_FORMAT, name));
+           System.out.print(String.format(NAME_FORMAT, entry.getName()));
 
-			TypeSpec type = entry.getTypeSpec();
-			String typeStr = type.toString();
-			
-			// Constants don't have the type set for any reason so here we use a dirty trick because we are running out of time...
-			if(typeStr == "{}")
+			TypeSpec type = entry.getTypeSpec();			
+			System.out.print(String.format(TYPE_FORMAT, entry.getTypeSpec().toString()));
+
+			Definition def = entry.getDefinition();
+			if(def == DefinitionImpl.CONSTANT)
 			{
-				typeStr = (String)entry.getAttribute(DATA_TYPE);
+				Object value = entry.getAttribute(CONSTANT_VALUE);
+				if(value != null)
+				{
+					System.out.print(String.format(CONSTANT_FORMAT, value.toString()));			
+				}
 			}
-            System.out.print(String.format(SET_FORMAT, typeStr));
-			
+			else if(def == DefinitionImpl.VARIABLE)
+			{
+				Object value = entry.getAttribute(DATA_VALUE);
+				if(value != null)
+				{
+					System.out.print(String.format(VALUE_FORMAT, value.toString()));			
+				}
+			}
+
 			if (lineNumbers != null)
 			{
                 for (Integer lineNumber : lineNumbers)
