@@ -1,0 +1,106 @@
+options {
+}
+
+PARSER_BEGIN(JavaTokens)
+ import java.io.*;
+    public class JavaTokens {
+        public static void main(String[] args)
+        {
+            Reader sr = new StringReader(args[0]);
+            JavaTokens parser = new JavaTokens(sr);
+
+            try {
+                parser.Tokens();
+            }
+                catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        public static String getTokenTypeString(int type) {
+            switch(type) {
+                case 1:
+                    return "Reserved Word";
+                default:
+                    return "Unkown: " + type;
+            }
+        }
+    }
+PARSER_END(JavaTokens)
+
+TOKEN : {
+    <RESERVED_WORDS : "abstract" | "assert" | "boolean" | "break" | "boolean" | "break" |
+                        "byte" | "case" | "catch" | "char" | "class" | "const" | "continue" |
+                        "default" | "do" | "double" | "else" | "enum" | "extends" | "false" | "final" |
+                        "finally" | "float" | "for" | "goto" | "if" | "implements" | "import" | "instanceof" |
+                        "int" | "interface" | "long" | "native" | "new" | "null" | "package" | "private" | "protected"
+                        "public" | "return" | "short" | "static" | "strictfp" | "super" | "switch" | "synchronized" |
+                        "this" | "throw" | "throws" | "transient" | "true" | "try" | "void" | "volatile" | "while">
+  | <IDENTIFIER : (<CHAR>)+(["0"-"9","_"])*>
+  | <NUMBER : (<DIGIT>)+>
+  | <STRING_LIT : <STRING_LIT_START>(<CHAR>)+<STRING_LIT_START>>
+  | <CHARACTER : <CHAR_LIT_START><CHAR><CHAR_LIT_START>>
+  | <SYMBOL: <SYMBOLS>>
+  | <#CHAR : ["A"-"Z","a"-"z"," ",","]>
+  | <#STRING_LIT_START : "\"">
+  | <#CHAR_LIT_START : "\'">
+  | <#DIGIT : ["0"-"9"]>
+  | <#SYMBOLS : ["*","&","^","%","+","-","~","/",".","=",">","<","|",";",",",":","="]>
+}
+
+void Identifier(StringBuffer buf) : {}
+{
+    <IDENTIFIER>
+    {
+        buf.append("Type: Identifier").append(", Value: ").append(token.image).append("\n");
+    }
+}
+
+void Reserved_words(StringBuffer buf) : {}
+{
+    <RESERVED_WORDS>
+    {
+        buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\n");
+    }
+}
+
+void Number(StringBuffer buf) : {}
+{
+    <NUMBER>
+    {
+        buf.append("Type: Number").append(", Value: ").append(token.image).append("\n");
+    }
+}
+
+void Character(StringBuffer buf) : {}
+{
+    <CHARACTER>
+    {
+        buf.append("Type: Character").append(", Value: ").append(token.image).append("\n");
+    }
+}
+
+void String(StringBuffer buf) : {}
+{
+    <STRING_LIT>
+    {
+        buf.append("Type: String").append(", Value: ").append(token.image).append("\n");
+    }
+}
+
+void Symbols(StringBuffer buf) : {}
+{
+    <SYMBOL>
+    {
+        buf.append("Type: Symbol").append(", Value: ").append(token.image).append("\n");
+    }
+}
+
+
+void Tokens() : {
+StringBuffer sb = new StringBuffer();
+}
+{
+    (Reserved_words(sb) | Identifier(sb) | Number(sb) | String(sb) | Character(sb) | Symbols(sb))*
+    { System.out.println("Parsed tokends\n" + sb.toString()); }
+}
