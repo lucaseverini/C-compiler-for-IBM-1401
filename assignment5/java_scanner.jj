@@ -16,15 +16,6 @@ PARSER_BEGIN(JavaTokens)
                 ex.printStackTrace();
             }
         }
-
-        public static String getTokenTypeString(int type) {
-            switch(type) {
-                case 1:
-                    return "Reserved Word";
-                default:
-                    return "Unkown: " + type;
-            }
-        }
     }
 PARSER_END(JavaTokens)
 
