@@ -4,9 +4,10 @@ options {
 PARSER_BEGIN(JavaTokens)
  import java.io.*;
     public class JavaTokens {
-        public static void main(String[] args)
+        public static void main(String[] args) throws Exception
         {
-            Reader sr = new StringReader(args[0]);
+						File file = new File(args[0]);
+            Reader sr = new FileReader(file);
             JavaTokens parser = new JavaTokens(sr);
 
             try {
@@ -27,16 +28,31 @@ TOKEN : {
                         "int" | "interface" | "long" | "native" | "new" | "null" | "package" | "private" | "protected"
                         "public" | "return" | "short" | "static" | "strictfp" | "super" | "switch" | "synchronized" |
                         "this" | "throw" | "throws" | "transient" | "true" | "try" | "void" | "volatile" | "while">
-  | <IDENTIFIER : (<CHAR>)+(["0"-"9","_"])*>
+  | <IDENTIFIER : (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9","_"])*>
   | <NUMBER : (<DIGIT>)+>
-  | <STRING_LIT : <STRING_LIT_START>(<CHAR>)+<STRING_LIT_START>>
-  | <CHARACTER : <CHAR_LIT_START><CHAR><CHAR_LIT_START>>
+  | <STRING_LIT : "\""(~["\"", "\n"])*"\"">
+  | <CHARACTER : "\'" (<NOT_NEWLINE>)+  "\'">
   | <SYMBOL: <SYMBOLS>>
-  | <#CHAR : ["A"-"Z","a"-"z"," ",","]>
-  | <#STRING_LIT_START : "\"">
-  | <#CHAR_LIT_START : "\'">
+  | <COMMENT: <LINE_COMMENT> | <MULTI_LINE_COMMENT>>
+  | <LINE_COMMENT : "//" (~["\n"])* <NEWLINE> >
+  | <WHITESPACE : (" " | "\r" | "\n")+>
+  | <MULTI_LINE_COMMENT: "/*" (~["*"] | ("*")* ~["/"])* "*/">
+  | <NEWLINE : "\r\n" | "\n" >
+  | <NOT_NEWLINE : ~["\n","\r"]>
+  | <#IDENTIFIER_CHAR : ["A"-"Z","a"-"z","_"]>
   | <#DIGIT : ["0"-"9"]>
-  | <#SYMBOLS : ["*","&","^","%","+","-","~","/",".","=",">","<","|",";",",",":","="]>
+  | <#SYMBOLS : "~"|"!"|"@"|"%"|"^"|"&"|"*"|"-"|"+"|"="|"|"|"/"|":"|";"
+		|"?"|"<"|">"|"."|","|"'"|"\""|"("|")"|"["|"]"|"{"|"}"|"++"|"--"|"<<"
+		|">>"|"<="|">="|"+="|"-="|"*="|"/="|"=="|"|="|"%="|"&="|"^="|"||"
+		|"&&"|"!="|"<<="|">>=" >
+ }
+
+void Reserved_words(StringBuffer buf) : {}
+{
+    <RESERVED_WORDS>
+    {
+        buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\n");
+    }
 }
 
 void Identifier(StringBuffer buf) : {}
@@ -44,14 +60,6 @@ void Identifier(StringBuffer buf) : {}
     <IDENTIFIER>
     {
         buf.append("Type: Identifier").append(", Value: ").append(token.image).append("\n");
-    }
-}
-
-void Reserved_words(StringBuffer buf) : {}
-{
-    <RESERVED_WORDS>
-    {
-        buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\n");
     }
 }
 
@@ -92,6 +100,6 @@ void Tokens() : {
 StringBuffer sb = new StringBuffer();
 }
 {
-    (Reserved_words(sb) | Identifier(sb) | Number(sb) | String(sb) | Character(sb) | Symbols(sb))*
-    { System.out.println("Parsed tokends\n" + sb.toString()); }
+    (Reserved_words(sb) | Identifier(sb) | Number(sb) | String(sb) | Character(sb) | Symbols(sb) | <WHITESPACE> | <COMMENT>)* <EOF>
+    { System.out.println("Parsed tokens\n" + sb.toString()); }
 }
