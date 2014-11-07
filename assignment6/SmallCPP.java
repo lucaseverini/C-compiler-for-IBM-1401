@@ -12,7 +12,7 @@
 						*/
             Reader sr = new FileReader(file) {
                                                         private int[] lookahead = {-1, -1};
-                                                        public int read() throws IOException{
+                                                        public int read() throws IOException {
                                                                 if (lookahead[0] >= 0) {
                                                                         int ch = lookahead[0];
                                                                         lookahead[0] = lookahead[1];
@@ -51,14 +51,18 @@
                                                                 }
                                                                 return ch;
                                                         }
+
+                                                        public int read(char[] cbuf, int offset, int length) throws IOException{
+                                                                int read = 0;
+                                                                while (read < length && offset + read < cbuf.length) {
+                                                                        int ch = read();
+                                                                        if (ch < 0) break;
+                                                                        cbuf[offset + (read++)] = (char) ch;
+                                                                }
+                                                                if (read == 0 && read < length) return -1;
+                                                                return read;
+                                                        }
             };
-            int ch;
-            while(true) {
-                                                        ch = sr.read();
-                                                        if (ch < 0) return;
-                                                        System.out.print((char)ch);
-            }
-            /*
             SmallCPP parser = new SmallCPP(sr);
 
             try {
@@ -67,7 +71,6 @@
                 catch (ParseException ex) {
                 ex.printStackTrace();
             }
-            */
         }
 
   static final public void Reserved_words(StringBuffer buf) throws ParseException {
