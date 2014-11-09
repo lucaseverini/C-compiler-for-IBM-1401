@@ -11,49 +11,56 @@ public interface SmallCPPConstants {
   /** RegularExpression Id. */
   int STRING = 1;
   /** RegularExpression Id. */
-  int RESERVED_WORDS = 2;
+  int COMMENTS = 2;
   /** RegularExpression Id. */
-  int IDENTIFIER = 3;
+  int RESERVED_WORDS = 3;
   /** RegularExpression Id. */
-  int STRING_LIT_1 = 4;
+  int IDENTIFIER = 4;
   /** RegularExpression Id. */
-  int STRING_LIT_2 = 5;
+  int STRING_LIT_1 = 5;
   /** RegularExpression Id. */
-  int ASM_BLOCK = 6;
+  int STRING_LIT_2 = 6;
   /** RegularExpression Id. */
-  int WHITESPACE = 7;
+  int ASM_BLOCK = 7;
   /** RegularExpression Id. */
-  int NEWLINE = 8;
+  int COMMENT = 8;
   /** RegularExpression Id. */
-  int IDENTIFIER_CHAR = 9;
+  int COMMENT_BLOCK = 9;
   /** RegularExpression Id. */
-  int VALUE = 10;
+  int WHITESPACE = 10;
   /** RegularExpression Id. */
-  int DIGITS = 11;
+  int NEWLINE = 11;
+  /** RegularExpression Id. */
+  int IDENTIFIER_CHAR = 12;
+  /** RegularExpression Id. */
+  int VALUE = 13;
+  /** RegularExpression Id. */
+  int DIGITS = 14;
+  /** RegularExpression Id. */
+  int SYMBOLS = 15;
 
   /** Lexical state. */
   int DEFAULT = 0;
-  /** Lexical state. */
-  int COMMENT = 1;
 
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
     "<STRING>",
+    "<COMMENTS>",
     "<RESERVED_WORDS>",
     "<IDENTIFIER>",
     "<STRING_LIT_1>",
     "<STRING_LIT_2>",
     "<ASM_BLOCK>",
+    "<COMMENT>",
+    "<COMMENT_BLOCK>",
     "<WHITESPACE>",
     "<NEWLINE>",
     "<IDENTIFIER_CHAR>",
     "<VALUE>",
     "<DIGITS>",
-    "<token of kind 12>",
-    "\"/*\"",
-    "\"*/\"",
-    "<token of kind 15>",
+    "<SYMBOLS>",
+    "<token of kind 16>",
   };
 
 }

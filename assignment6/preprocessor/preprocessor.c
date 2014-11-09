@@ -18,6 +18,11 @@
 // Define name
 #define DEBUG
 
+#define FOO printf("hello"
+#define BAR "worlf!\n");
+
+FOO BAR
+
 #ifdef DEBUG
 	#include "debug_file.h"
 #else

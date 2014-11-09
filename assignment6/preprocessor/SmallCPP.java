@@ -133,6 +133,7 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case STRING:
+      case COMMENTS:
       case RESERVED_WORDS:
       case IDENTIFIER:
       case ASM_BLOCK:
@@ -170,6 +171,10 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
         jj_consume_token(WHITESPACE);
         break;
         }
+      case COMMENTS:{
+        jj_consume_token(COMMENTS);
+        break;
+        }
       default:
         jj_la1[1] = jj_gen;
         jj_consume_token(-1);
@@ -196,7 +201,7 @@ System.out.println("Parsed tokens:\u005cn\u005cn" + sb.toString());
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x4ce,0x4ce,};
+      jj_la1_0 = new int[] {0x249e,0x249e,};
    }
 
   /** Constructor with InputStream. */
@@ -334,7 +339,7 @@ System.out.println("Parsed tokens:\u005cn\u005cn" + sb.toString());
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[16];
+    boolean[] la1tokens = new boolean[17];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -348,7 +353,7 @@ System.out.println("Parsed tokens:\u005cn\u005cn" + sb.toString());
         }
       }
     }
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 17; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
