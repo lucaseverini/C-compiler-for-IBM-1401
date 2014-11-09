@@ -1,5 +1,6 @@
-/* Multiline
- * comment
+/* preprocessor.c
+ * Test file for small-c preprocessor
+ * By Luca Severini
  */
 
 // another comment
