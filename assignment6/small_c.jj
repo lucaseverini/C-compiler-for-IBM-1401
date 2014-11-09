@@ -1,0 +1,132 @@
+options {
+}
+
+PARSER_BEGIN(SmallCPP)
+ import java.io.*;
+    public class SmallCPP {
+        public static void main(String[] args) throws Exception
+        {
+						File file = new File(args[0]);
+						/*
+							line continuations and newline encoding are hard to keep
+							track of at tokenization time, so we'll handle them
+							directly in the reader
+						*/
+            Reader sr = new FileReader(file) {
+							private int[] lookahead = {-1, -1};
+							public int read() throws IOException {
+								if (lookahead[0] >= 0) {
+									int ch = lookahead[0];
+									lookahead[0] = lookahead[1];
+									lookahead[1] = -1;
+									return ch;
+								}
+								int ch = super.read();
+								//possible line continuation
+								if (ch == '\\') {
+									lookahead[0] = super.read();
+
+									if (lookahead[0] == '\r') {
+										//the user is using windows, what a loser :P
+										lookahead[1] = super.read();
+										if (lookahead[1] != '\n') {
+											//carriage return with no line feed, what's going on?
+                                            // maybe we are printing a bold character or an underline
+											return ch;
+										} else {
+											lookahead[0] = '\n';
+										}
+									}
+									if (lookahead[0] == '\n') {
+										lookahead[0] = lookahead[1] = -1;
+										do {
+											ch = super.read();
+											if (ch < 0) return ch;
+										} while(Character.isWhitespace((char) ch));
+										return ch;
+									}
+								} else if (ch == '\r') {
+									lookahead[0] = super.read();
+									if (lookahead[0] == '\n') {
+										lookahead[0] = lookahead[1] = -1;
+										return '\n';
+									}
+								}
+								return ch;
+							}
+
+							public int read(char[] cbuf, int offset, int length) throws IOException{
+								int read = 0;
+								while (read < length && offset + read < cbuf.length) {
+									int ch = read();
+									if (ch < 0) break;
+									cbuf[offset + (read++)] = (char) ch;
+								}
+								if (read == 0 && read < length) return -1;
+								return read;
+							}
+            };
+            SmallCPP parser = new SmallCPP(sr);
+
+            try {
+                parser.Tokens();
+            }
+                catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+PARSER_END(SmallCPP)
+
+SKIP : {
+    " "
+  | "\t"
+}
+
+TOKEN : {
+    <BREAK : "break">
+  | <CASE: "case">
+  | <CHAR: "char">
+  | <CONTINUE: "continue">
+  | <DEFAULT: "default">
+  | <DO: "do">
+  | <ELSE: "else">
+  | <FOR: "for">
+  | <GOTO: "goto">
+  | <IF: "if">
+  | <INT: "int">
+  | <LONG: "long">
+  | <RETURN: "return">
+  | <SHORT: "short">
+  | <SIZEOF: "sizeof">
+  | <STATIC: "static">
+  | <SWITCH: "switch">
+  | <TYPEDEF: "typedef">
+  | <UNSIGNED: "unsigned">
+  | <WHILE: "while">
+  | <SEMI_COLON: ";">
+  | <RESERVED_WORDS: (<BREAK>, <CASE>,<CHAR>,<CONTINUE>,<DEFAULT>,<DO>,<ELSE>,<FOR>,
+                      <GOTO>,<IF>,<INT>,<LONG>,<RETURN>,<SHORT>,<SIZEOF>,<STATIC>,<SWITCH>
+                      <TYPEDEF>,<UNSIGNED>, <WHILE>)>
+  | <IDENTIFIER : (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9","_"])*>
+  | <NUMBER : (<DIGIT>)+>
+  | <STRING_LIT : "\"" (~["\"", "\n", "\\"] | ("\\" ~[]))* "\"">
+  | <CHARACTER_CONST  : "\'" (~["\'", "\n", "\\"] | ("\\" ~[]))* "\'">
+  | <COMMENT: <LINE_COMMENT> | <MULTI_LINE_COMMENT>>
+  | <LINE_COMMENT : "//" (~["\n"])* <NEWLINE> >
+  | <WHITESPACE : ("\r" | "\n")+>
+  | <MULTI_LINE_COMMENT: "/*" (~["*"] | ("*")* ~["/"])* "*/">
+  | <MULTI_ASM_BLOCK: "#asm" (~["*"] | ("*")* ~["/"])* "#endasm">
+  | <NEWLINE : "\r\n" | "\n" >
+  | <#NOT_NEWLINE : ~["\n","\r"]>
+  | <#IDENTIFIER_CHAR : ["A"-"Z","a"-"z","_"]>
+  | <#DIGIT : ["0"-"9"]>
+ }
+
+void Tokens() : {
+StringBuffer sb = new StringBuffer();
+}
+{
+    (Statement(sb) | String(sb) | Character(sb) | <WHITESPACE> | <COMMENT>)* <EOF>
+    { System.out.println("Parsed tokens\n" + sb.toString()); }
+}
