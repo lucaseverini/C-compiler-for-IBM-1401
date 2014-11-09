@@ -1,87 +1,51 @@
-/*
-	java_scanner.jj
-
-    Assignment #5 - CS153 - SJSU
-	October-31-2014
-
-	By Sean Papay, Matt Pleva, Luca Severini
-*/
-
-options 
-{
+options {
 }
 
 PARSER_BEGIN(JavaTokens)
-
-import java.io.*; 
-
-public class JavaTokens 
-{
+ import java.io.*;
+    public class JavaTokens {
         public static void main(String[] args) throws Exception
         {
-			System.out.println("CS153 - Assignment #5");
-			System.out.println("Luca Severini - Matt Pleva - Sean Papay");
-			System.out.println("");
-
-			System.out.println("Input file: " + args[0]);
-
 			File file = new File(args[0]);
             Reader sr = new FileReader(file);
             JavaTokens parser = new JavaTokens(sr);
 
             try {
                 parser.Tokens();
-
-				System.out.println("Parsing completed successfully.");
             }
                 catch (ParseException ex) {
                 ex.printStackTrace();
             }
         }
     }
-
 PARSER_END(JavaTokens)
 
-TOKEN : 
-{
-  <RESERVED_WORDS : "abstract" | "assert" | "boolean" | "break" | "boolean" | "break" |
+TOKEN : {
+    <RESERVED_WORDS : "abstract" | "assert" | "boolean" | "break" | "boolean" | "break" |
                         "byte" | "case" | "catch" | "char" | "class" | "const" | "continue" |
                         "default" | "do" | "double" | "else" | "enum" | "extends" | "false" | "final" |
                         "finally" | "float" | "for" | "goto" | "if" | "implements" | "import" | "instanceof" |
-                        "int" | "interface" | "long" | "native" | "new" | "null" | "package" | "private" | "protected" |
+                        "int" | "interface" | "long" | "native" | "new" | "null" | "package" | "private" | "protected"
                         "public" | "return" | "short" | "static" | "strictfp" | "super" | "switch" | "synchronized" |
                         "this" | "throw" | "throws" | "transient" | "true" | "try" | "void" | "volatile" | "while">
-
-  | <IDENTIFIER : (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9","_","-"])*>
-  | <NUMBER : ((["+","-"])? <INTEGER> | <SCI_NOTATION> | <DECIMAL>) | <HEX> >
-  | < SCI_NOTATION: ((["0"-"9"])+ "." (["0"-"9"])* <EXPONENT> | "." (["0"-"9"])+ (<EXPONENT>) | (["0"-"9"])+ <EXPONENT>)>
-  | < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
-  | < #DIGITS: (["0"-"9"])+ >
-  | < INTEGER: <DIGITS> >
-  | < DECIMAL: ( <DIGITS> "." (<DIGITS>)* | "." <DIGITS> ) >
-  | < #HEX: ("0" "x" | "0" "X") (["0"-"9","A"-"F","a"-"f"])+ >
+  | <IDENTIFIER : (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9","_"])*>
+  | <NUMBER : (<DIGIT>)>
   | <STRING_LITERAL : "\""(~["\"", "\n"])*"\"">
   | <CHARACTER : "\'" (<NOT_NEWLINE>)+  "\'">
   | <SYMBOL: <SYMBOLS>>
+  | <COMMENT: <LINE_COMMENT> | <MULTI_LINE_COMMENT>>
+  | <LINE_COMMENT : "//" (~["\n"])* <NEWLINE> >
   | <WHITESPACE : (" " | "\r" | "\n")+>
+  | <MULTI_LINE_COMMENT: "/*" (~["*"] | ("*")* ~["/"])* "*/">
   | <NEWLINE : "\r\n" | "\n" >
   | <NOT_NEWLINE : ~["\n","\r"]>
   | <#IDENTIFIER_CHAR : ["A"-"Z","a"-"z","_"]>
+  | <#DIGIT : ["0"-"9"]>
   | <#SYMBOLS : "~"|"!"|"@"|"%"|"^"|"&"|"*"|"-"|"+"|"="|"|"|"/"|":"|";"
 		|"?"|"<"|">"|"."|","|"'"|"\""|"("|")"|"["|"]"|"{"|"}"|"++"|"--"|"<<"
 		|">>"|"<="|">="|"+="|"-="|"*="|"/="|"=="|"|="|"%="|"&="|"^="|"||"
 		|"&&"|"!="|"<<="|">>=" >
-}
-
-SKIP :
-{
-  < "//" (~["\r", "\n"])* > | < "/*" > : COMMENT
-}
-
-<COMMENT> SKIP :
-{
-  < "*/" > : DEFAULT | < ~[] >   
-}
+ }
 
 void Reserved_words(StringBuffer buf) : {}
 {
@@ -131,9 +95,9 @@ void Symbols(StringBuffer buf) : {}
     }
 }
 
+
 void Tokens() : { StringBuffer sb = new StringBuffer(); }
 {
-    (Reserved_words(sb) | Identifier(sb) | Number(sb) | String(sb) | Character(sb) | Symbols(sb) | <WHITESPACE> )* <EOF>
-
-    { System.out.println("Parsed tokens:\n" + sb.toString()); }
+    (Reserved_words(sb) | Identifier(sb) | Number(sb) | String(sb) | Character(sb) | Symbols(sb) | <WHITESPACE> | <COMMENT>)* <EOF>
+    { System.out.println("Parsed tokens\n" + sb.toString()); }
 }
