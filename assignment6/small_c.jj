@@ -84,119 +84,44 @@ SKIP : {
 }
 
 TOKEN : {
-    <RESERVED_WORDS : "break" | "case" | "char" | "continue" | "default"
-			| "do" | "else" | "for" | "goto" | "if" | "int" | "long" | "return"
-			| "short" | "sizeof" | "static" | "switch" | "typedef" | "unsigned"
-			| "while">
+    <BREAK : "break">
+  | <CASE: "case">
+  | <CHAR: "char">
+  | <CONTINUE: "continue">
+  | <DEFAULT: "default">
+  | <DO: "do">
+  | <ELSE: "else">
+  | <FOR: "for">
+  | <GOTO: "goto">
+  | <IF: "if">
+  | <INT: "int">
+  | <LONG: "long">
+  | <RETURN: "return">
+  | <SHORT: "short">
+  | <SIZEOF: "sizeof">
+  | <STATIC: "static">
+  | <SWITCH: "switch">
+  | <TYPEDEF: "typedef">
+  | <UNSIGNED: "unsigned">
+  | <WHILE: "while">
+  | <SEMI_COLON: ";">
+  | <RESERVED_WORDS: (<BREAK>, <CASE>,<CHAR>,<CONTINUE>,<DEFAULT>,<DO>,<ELSE>,<FOR>,
+                      <GOTO>,<IF>,<INT>,<LONG>,<RETURN>,<SHORT>,<SIZEOF>,<STATIC>,<SWITCH>
+                      <TYPEDEF>,<UNSIGNED>, <WHILE>)>
   | <IDENTIFIER : (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9","_"])*>
   | <NUMBER : (<DIGIT>)+>
   | <STRING_LIT : "\"" (~["\"", "\n", "\\"] | ("\\" ~[]))* "\"">
-  | <CHARACTER  : "\'" (~["\'", "\n", "\\"] | ("\\" ~[]))* "\'">
+  | <CHARACTER_CONST  : "\'" (~["\'", "\n", "\\"] | ("\\" ~[]))* "\'">
   | <COMMENT: <LINE_COMMENT> | <MULTI_LINE_COMMENT>>
   | <LINE_COMMENT : "//" (~["\n"])* <NEWLINE> >
   | <WHITESPACE : ("\r" | "\n")+>
   | <MULTI_LINE_COMMENT: "/*" (~["*"] | ("*")* ~["/"])* "*/">
+  | <MULTI_ASM_BLOCK: "#asm" (~["*"] | ("*")* ~["/"])* "#endasm">
   | <NEWLINE : "\r\n" | "\n" >
   | <#NOT_NEWLINE : ~["\n","\r"]>
   | <#IDENTIFIER_CHAR : ["A"-"Z","a"-"z","_"]>
   | <#DIGIT : ["0"-"9"]>
-  | <OPS : (<INTEGRAL_OPS> | <BINARY_OPS> | <BOOLEAN_OPS>)>
-  | <#INTEGRAL_OPS : ("*" | "/" | "+" | "-" | "%")>
-  | <#BINARY_OPS : ("^" | "&" | "~" | "|")>
-  | <#BOOLEAN_OPS : ("!" | "==" | ">" | "<" | "<=" | ">=" | "||" | "&&")>
-  | <ASSIGNMENT : ("=" | "+=" | "-=" | "<<=" | ">>=" | "%=" | "*=" | "/=" | "^=" | "&=" | "|=" | "~=")>
-  | <END_STATEMENT: ";">
-  | <SYMBOL : "~"|"!"|"@"|"%"|"^"|"&"|"*"|"-"|"+"|"="|"|"|"/"|":"|";"
-		|"?"|"<"|">"|"."|","|"'"|"\""|"("|")"|"["|"]"|"{"|"}"|"<<"
-		|">>"|"<="|">="|"+="|"-="|"*="|"/="|"=="|"|="|"%="|"&="|"^="|"||"
-		|"&&"|"!="|"<<="|">>=" >
  }
-
-void Reserved_words(StringBuffer buf) : {}
-{
-    <RESERVED_WORDS>
-    {
-        buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\n");
-    }
-}
-
-void Identifier(StringBuffer buf) : {}
-{
-    <IDENTIFIER>
-    {
-        buf.append("Type: Identifier").append(", Value: ").append(token.image).append("\n");
-    }
-}
-
-void Number(StringBuffer buf) : {}
-{
-    <NUMBER>
-    {
-        buf.append("Type: Number").append(", Value: ").append(token.image).append("\n");
-    }
-}
-
-void Symbol(StringBuffer buf) : {}
-{
-    <SYMBOL>
-    {
-        buf.append("Type: Symbol").append(", Value: ").append(token.image).append("\n");
-    }
-}
-
-void Character(StringBuffer buf) : {}
-{
-    <CHARACTER>
-    {
-        buf.append("Type: Character").append(", Value: ").append(token.image).append("\n");
-    }
-}
-
-void String(StringBuffer buf) : {}
-{
-    <STRING_LIT>
-    {
-        buf.append("Type: String").append(", Value: ").append(token.image).append("\n");
-    }
-}
-
-void Ops(StringBuffer buf) : {}
-{
-    <OPS>
-    {
-        buf.append("Type: Operator: ").append(token.image).append("\n");
-    }
-}
-
-void Term(StringBuffer buf) : {}
-{
-    (Number(buf) | Identifier(buf))
-}
-
-void Expression(StringBuffer buf) : {}
-{
-    Term(buf) (Ops(buf) Term(buf))*
-}
-
-void CompoundExpression(StringBuffer buf) : {}
-{
-    (Symbol(buf))+ (Expression(buf) | Ops(buf) Term(buf)) (Symbol(buf))*
-}
-
-void Assignment(StringBuffer buf) : {}
-{
-    Identifier(buf) (<ASSIGNMENT> Expression(buf) | ("--" | "++")) <END_STATEMENT>
-}
-
-void SimpleControl(StringBuffer buf) : {}
-{
-    CompoundExpression(buf) <WHITESPACE> (Assignment(buf))* Symbol(buf) <WHITESPACE>
-}
-
-void Statement(StringBuffer buf) : {}
-{
-    (Reserved_words(buf))? (Assignment(buf) | SimpleControl(buf))
-}
 
 void Tokens() : {
 StringBuffer sb = new StringBuffer();
