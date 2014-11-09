@@ -6,8 +6,8 @@
         {
                                                 File file = new File(args[0]);
                                                 /*
-							line continuations and newline encoding are hard to keep 
-							track of at tokenization time, so we'll handle them 
+							line continuations and newline encoding are hard to keep
+							track of at tokenization time, so we'll handle them
 							directly in the reader
 						*/
             Reader sr = new FileReader(file) {
@@ -29,6 +29,7 @@
                                                                                 lookahead[1] = super.read();
                                                                                 if (lookahead[1] != '\u005cn') {
                                                                                         //carriage return with no line feed, what's going on?
+                                            // maybe we are printing a bold character or an underline
                                                                                         return ch;
                                                                                 } else {
                                                                                         lookahead[0] = '\u005cn';
@@ -88,6 +89,11 @@ buf.append("Type: Identifier").append(", Value: ").append(token.image).append("\
 buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005cn");
   }
 
+  static final public void Symbol(StringBuffer buf) throws ParseException {
+    jj_consume_token(SYMBOL);
+buf.append("Type: Symbol").append(", Value: ").append(token.image).append("\u005cn");
+  }
+
   static final public void Character(StringBuffer buf) throws ParseException {
     jj_consume_token(CHARACTER);
 buf.append("Type: Character").append(", Value: ").append(token.image).append("\u005cn");
@@ -98,41 +104,202 @@ buf.append("Type: Character").append(", Value: ").append(token.image).append("\u
 buf.append("Type: String").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  static final public void Symbols(StringBuffer buf) throws ParseException {
-    jj_consume_token(SYMBOL);
-buf.append("Type: Symbol").append(", Value: ").append(token.image).append("\u005cn");
+  static final public void Ops(StringBuffer buf) throws ParseException {
+    jj_consume_token(OPS);
+buf.append("Type: Operator: ").append(token.image).append("\u005cn");
   }
 
-  static final public void Tokens() throws ParseException {StringBuffer sb = new StringBuffer();
+  static final public void Term(StringBuffer buf) throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case NUMBER:{
+      Number(buf);
+      break;
+      }
+    case IDENTIFIER:{
+      Identifier(buf);
+      break;
+      }
+    default:
+      jj_la1[0] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  static final public void Expression(StringBuffer buf) throws ParseException {
+    Term(buf);
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case RESERVED_WORDS:
-      case IDENTIFIER:
-      case NUMBER:
-      case STRING_LIT:
-      case CHARACTER:
-      case SYMBOL:
-      case COMMENT:
-      case WHITESPACE:{
+      case OPS:{
         ;
         break;
         }
       default:
-        jj_la1[0] = jj_gen;
+        jj_la1[1] = jj_gen;
         break label_1;
       }
+      Ops(buf);
+      Term(buf);
+    }
+  }
+
+  static final public void CompoundExpression(StringBuffer buf) throws ParseException {
+    label_2:
+    while (true) {
+      Symbol(buf);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case RESERVED_WORDS:{
-        Reserved_words(sb);
+      case SYMBOL:{
+        ;
         break;
         }
+      default:
+        jj_la1[2] = jj_gen;
+        break label_2;
+      }
+    }
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case IDENTIFIER:
+    case NUMBER:{
+      Expression(buf);
+      break;
+      }
+    case OPS:{
+      Ops(buf);
+      Term(buf);
+      break;
+      }
+    default:
+      jj_la1[3] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case SYMBOL:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[4] = jj_gen;
+        break label_3;
+      }
+      Symbol(buf);
+    }
+  }
+
+  static final public void Assignment(StringBuffer buf) throws ParseException {
+    Identifier(buf);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case ASSIGNMENT:{
+      jj_consume_token(ASSIGNMENT);
+      Expression(buf);
+      break;
+      }
+    case 23:
+    case 24:{
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case 23:{
+        jj_consume_token(23);
+        break;
+        }
+      case 24:{
+        jj_consume_token(24);
+        break;
+        }
+      default:
+        jj_la1[5] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      break;
+      }
+    default:
+      jj_la1[6] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    jj_consume_token(END_STATEMENT);
+  }
+
+  static final public void SimpleControl(StringBuffer buf) throws ParseException {
+    CompoundExpression(buf);
+    jj_consume_token(WHITESPACE);
+    label_4:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case IDENTIFIER:{
-        Identifier(sb);
+        ;
         break;
         }
-      case NUMBER:{
-        Number(sb);
+      default:
+        jj_la1[7] = jj_gen;
+        break label_4;
+      }
+      Assignment(buf);
+    }
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case SYMBOL:{
+      Symbol(buf);
+      break;
+      }
+    default:
+      jj_la1[8] = jj_gen;
+      ;
+    }
+    jj_consume_token(WHITESPACE);
+  }
+
+  static final public void Statement(StringBuffer buf) throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case RESERVED_WORDS:{
+      Reserved_words(buf);
+      break;
+      }
+    default:
+      jj_la1[9] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case IDENTIFIER:{
+      Assignment(buf);
+      break;
+      }
+    case SYMBOL:{
+      SimpleControl(buf);
+      break;
+      }
+    default:
+      jj_la1[10] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  static final public void Tokens() throws ParseException {StringBuffer sb = new StringBuffer();
+    label_5:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case RESERVED_WORDS:
+      case IDENTIFIER:
+      case STRING_LIT:
+      case CHARACTER:
+      case COMMENT:
+      case WHITESPACE:
+      case SYMBOL:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[11] = jj_gen;
+        break label_5;
+      }
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case RESERVED_WORDS:
+      case IDENTIFIER:
+      case SYMBOL:{
+        Statement(sb);
         break;
         }
       case STRING_LIT:{
@@ -141,10 +308,6 @@ buf.append("Type: Symbol").append(", Value: ").append(token.image).append("\u005
         }
       case CHARACTER:{
         Character(sb);
-        break;
-        }
-      case SYMBOL:{
-        Symbols(sb);
         break;
         }
       case WHITESPACE:{
@@ -156,7 +319,7 @@ buf.append("Type: Symbol").append(", Value: ").append(token.image).append("\u005
         break;
         }
       default:
-        jj_la1[1] = jj_gen;
+        jj_la1[12] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -175,13 +338,13 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
   static public Token jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[2];
+  static final private int[] jj_la1 = new int[13];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x2fe,0x2fe,};
+      jj_la1_0 = new int[] {0x30,0x10000,0x400000,0x10030,0x400000,0x1800000,0x1900000,0x10,0x400000,0x8,0x400010,0x4005d8,0x4005d8,};
    }
 
   /** Constructor with InputStream. */
@@ -202,7 +365,7 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -216,7 +379,7 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -233,7 +396,7 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -243,7 +406,7 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -259,7 +422,7 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -268,7 +431,7 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
   }
 
   static private Token jj_consume_token(int kind) throws ParseException {
@@ -319,12 +482,12 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[16];
+    boolean[] la1tokens = new boolean[25];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 13; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -333,7 +496,7 @@ System.out.println("Parsed tokens\u005cn" + sb.toString());
         }
       }
     }
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 25; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
