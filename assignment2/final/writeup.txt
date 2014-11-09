@@ -1,0 +1,16 @@
+Write up for the Retros
+
+Assumptions made:
+- Misunderstanding the spec so we wrote our own java tokenizer
+- No invalid tokens
+
+We misunderstood the specs and we wrote our own java tokenizer. Everything was 
+going well until I reread the spec sheet and realized we were supposed to modify
+your existing code. As such our program tokenizes java very well and pascal not
+so well. One issue we ran into while trying to change our code to work with your
+code is that the syntax was entirely different. We could not change our code to
+fit yours. So we tried to add to your code but that was taking too long to
+complete and we would not have had a working program. So we did the only option
+left, change our code to parse pascal tokens. We will need to do more work
+reading the spec sheet for homework3. Also we will have to redo homework 2 in
+your framework so that we can do homework3.
