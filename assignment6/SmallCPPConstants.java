@@ -9,76 +9,51 @@ public interface SmallCPPConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int RESERVED_WORDS = 3;
+  int STRING = 1;
   /** RegularExpression Id. */
-  int IDENTIFIER = 4;
+  int RESERVED_WORDS = 2;
   /** RegularExpression Id. */
-  int NUMBER = 5;
+  int IDENTIFIER = 3;
   /** RegularExpression Id. */
-  int STRING_LIT = 6;
+  int STRING_LIT_1 = 4;
   /** RegularExpression Id. */
-  int CHARACTER = 7;
+  int STRING_LIT_2 = 5;
   /** RegularExpression Id. */
-  int COMMENT = 8;
+  int ASM_BLOCK = 6;
   /** RegularExpression Id. */
-  int LINE_COMMENT = 9;
+  int WHITESPACE = 7;
   /** RegularExpression Id. */
-  int WHITESPACE = 10;
+  int NEWLINE = 8;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 11;
+  int IDENTIFIER_CHAR = 9;
   /** RegularExpression Id. */
-  int NEWLINE = 12;
+  int VALUE = 10;
   /** RegularExpression Id. */
-  int NOT_NEWLINE = 13;
-  /** RegularExpression Id. */
-  int IDENTIFIER_CHAR = 14;
-  /** RegularExpression Id. */
-  int DIGIT = 15;
-  /** RegularExpression Id. */
-  int OPS = 16;
-  /** RegularExpression Id. */
-  int INTEGRAL_OPS = 17;
-  /** RegularExpression Id. */
-  int BINARY_OPS = 18;
-  /** RegularExpression Id. */
-  int BOOLEAN_OPS = 19;
-  /** RegularExpression Id. */
-  int ASSIGNMENT = 20;
-  /** RegularExpression Id. */
-  int END_STATEMENT = 21;
-  /** RegularExpression Id. */
-  int SYMBOL = 22;
+  int DIGITS = 11;
 
   /** Lexical state. */
   int DEFAULT = 0;
+  /** Lexical state. */
+  int COMMENT = 1;
 
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
-    "\" \"",
-    "\"\\t\"",
+    "<STRING>",
     "<RESERVED_WORDS>",
     "<IDENTIFIER>",
-    "<NUMBER>",
-    "<STRING_LIT>",
-    "<CHARACTER>",
-    "<COMMENT>",
-    "<LINE_COMMENT>",
+    "<STRING_LIT_1>",
+    "<STRING_LIT_2>",
+    "<ASM_BLOCK>",
     "<WHITESPACE>",
-    "<MULTI_LINE_COMMENT>",
     "<NEWLINE>",
-    "<NOT_NEWLINE>",
     "<IDENTIFIER_CHAR>",
-    "<DIGIT>",
-    "<OPS>",
-    "<INTEGRAL_OPS>",
-    "<BINARY_OPS>",
-    "<BOOLEAN_OPS>",
-    "<ASSIGNMENT>",
-    "\";\"",
-    "<SYMBOL>",
-    "\"--\"",
-    "\"++\"",
+    "<VALUE>",
+    "<DIGITS>",
+    "<token of kind 12>",
+    "\"/*\"",
+    "\"*/\"",
+    "<token of kind 15>",
   };
 
 }
