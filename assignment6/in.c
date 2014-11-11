@@ -1,27 +1,24 @@
-// int i = 5 * 6;
-// int mod = 523871 % 15;
-// int mod2 = 523871 % mod;
-// //if ((((mod2 | 5) & 24L) >> 5) / 15.0) {
-// if (mod == 5) {
-// 	what ++;
-// }
-// /*int i = 0;
-// for(; i < 15; i++) {
-// 	who
-// }*/
-// while(i > 0) {
-// 	i --;
-// 	when += i;
-// }
-
-#include <stdio.h>
-
-int foo (a,b){
-	return sizeof(a);
+int fact(int n) {
+	return n == 0 ? 1 : n * fact(n - 1);
 }
 
-int main() {
-	int i = 9;
-	printf("%d\n",foo(&i,2));
-	return 0;
+int is_prime(int n) {
+	int i;
+	for (i = 2; i*i <= n; ++i) if (! n%i) return 0;
+	return 1;
+}
+
+int main(int argc, char *argv[]) {
+	int n = 0;
+	do {
+		switch(n % 3) {
+			case 0:
+				printf("%d\n", fact(n));
+				break;
+			case 1:
+				printf("%d\n", is_prime(n));
+			default:
+				printf("%d, %d\n", fact(n), isPrime(n));
+		}
+	} while (n++ < 10);
 }
