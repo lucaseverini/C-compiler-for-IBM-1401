@@ -9,35 +9,39 @@ public interface SmallCPPConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int STRING = 1;
+  int COMMENTS = 1;
   /** RegularExpression Id. */
-  int COMMENTS = 2;
+  int COMMENT = 2;
   /** RegularExpression Id. */
-  int RESERVED_WORDS = 3;
+  int COMMENT_BLOCK = 3;
   /** RegularExpression Id. */
-  int IDENTIFIER = 4;
+  int STRINGS = 4;
   /** RegularExpression Id. */
-  int STRING_LIT_1 = 5;
+  int STATEMENTS = 5;
   /** RegularExpression Id. */
-  int STRING_LIT_2 = 6;
+  int RESERVED_WORDS_1 = 6;
   /** RegularExpression Id. */
-  int ASM_BLOCK = 7;
+  int RESERVED_WORDS_2 = 7;
   /** RegularExpression Id. */
-  int COMMENT = 8;
+  int IDENTIFIER = 8;
   /** RegularExpression Id. */
-  int COMMENT_BLOCK = 9;
+  int IDENTIFIER_CHAR = 9;
   /** RegularExpression Id. */
-  int WHITESPACE = 10;
+  int STRING_1 = 10;
   /** RegularExpression Id. */
-  int NEWLINE = 11;
+  int STRING_2 = 11;
   /** RegularExpression Id. */
-  int IDENTIFIER_CHAR = 12;
+  int ASM_BLOCK = 12;
   /** RegularExpression Id. */
   int VALUE = 13;
   /** RegularExpression Id. */
   int DIGITS = 14;
   /** RegularExpression Id. */
-  int SYMBOLS = 15;
+  int WHITESPACE = 15;
+  /** RegularExpression Id. */
+  int NEWLINE = 16;
+  /** RegularExpression Id. */
+  int SYMBOLS = 17;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -45,22 +49,23 @@ public interface SmallCPPConstants {
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
-    "<STRING>",
     "<COMMENTS>",
-    "<RESERVED_WORDS>",
-    "<IDENTIFIER>",
-    "<STRING_LIT_1>",
-    "<STRING_LIT_2>",
-    "<ASM_BLOCK>",
     "<COMMENT>",
     "<COMMENT_BLOCK>",
-    "<WHITESPACE>",
-    "<NEWLINE>",
+    "<STRINGS>",
+    "<STATEMENTS>",
+    "<RESERVED_WORDS_1>",
+    "<RESERVED_WORDS_2>",
+    "<IDENTIFIER>",
     "<IDENTIFIER_CHAR>",
+    "<STRING_1>",
+    "<STRING_2>",
+    "<ASM_BLOCK>",
     "<VALUE>",
     "<DIGITS>",
+    "<WHITESPACE>",
+    "<NEWLINE>",
     "<SYMBOLS>",
-    "<token of kind 16>",
   };
 
 }

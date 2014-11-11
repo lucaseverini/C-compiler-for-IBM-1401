@@ -14,20 +14,40 @@ options
 PARSER_BEGIN(SmallCPP)
 
 import java.io.*;
+import java.util.*;
 
 public class SmallCPP 
 {
+	static PreProcSymTab symTable = null;
+	static boolean ignore = false;
+	static int filePos = 0;
+	static ReaderWriter rw;
+
     public static void main(String[] args) throws Exception
     {
 		System.out.println("Small-C Pre-processor");
 
-		File file = new File(args[0]);
+		String inFile = args[0];
 
-		System.out.println("Parsing file " + args[0]);
+		String outFile = preprocessFile(inFile);
 
-        Reader sr = new FileReader(file) 
+		System.out.println("Preprocessed file to be parsed: " + outFile);
+    }
+
+	static String preprocessFile(String inFile) throws Exception
+	{
+		filePos = 0;
+
+		String outFile = inFile + ".preproc";
+
+		File file = new File(inFile);
+
+		System.out.println("Parsing file " + inFile + " size:" + file.length());
+
+		Reader sr = new FileReader(file) 
 		{
 			private int[] lookahead = {-1, -1};
+
 			public int read() throws IOException 
 			{
 				if (lookahead[0] >= 0) 
@@ -39,14 +59,28 @@ public class SmallCPP
 				}
 
 				int ch = super.read();
+				if (ch >= 0) 
+				{
+					filePos++;
+				}
+
 				// possible line continuation
 				if (ch == '\\') 
 				{
 					lookahead[0] = super.read();
+					if(lookahead[0] >= 0)
+					{
+						filePos++;
+					}
 
 					if (lookahead[0] == '\r')
 					{
 						lookahead[1] = super.read();
+						if(lookahead[1] >= 0)
+						{
+							filePos++;
+						}
+
 						if (lookahead[1] != '\n') 
 						{
 							return ch;
@@ -60,10 +94,20 @@ public class SmallCPP
 					if (lookahead[0] == '\n')
 					{
 						lookahead[0] = lookahead[1] = -1;
-						do {
+						do 
+						{
 							ch = super.read();
-							if (ch < 0) return ch;
-						} while(Character.isWhitespace((char) ch));
+							if(ch >= 0)
+							{
+								filePos++;
+							}
+
+							if (ch < 0) 
+							{
+								return ch;
+							}
+						} 
+						while(Character.isWhitespace((char) ch));
 
 						return ch;
 					}
@@ -71,6 +115,11 @@ public class SmallCPP
 				else if (ch == '\r')
 				{
 					lookahead[0] = super.read();
+					if(lookahead[0] >= 0)
+					{
+						filePos++;
+					}
+
 					if (lookahead[0] == '\n') 
 					{
 						lookahead[0] = lookahead[1] = -1;
@@ -92,7 +141,10 @@ public class SmallCPP
 						break;
 					}
 
-					cbuf[offset + (read++)] = (char)ch;
+					if(!ignore)
+					{
+						cbuf[offset + (read++)] = (char)ch;
+					}
 				}
 
 				if (read == 0 && read < length) 
@@ -106,48 +158,159 @@ public class SmallCPP
 
 		SmallCPP parser = new SmallCPP(sr);
 
-        try {
+		symTable = new PreProcSymTab();
+
+		rw = new ReaderWriter(inFile, outFile);
+
+        try 
+		{
             parser.Tokens();
 		
-			System.out.println("File parsed successfully.");
+			System.out.println("### File parsed successfully. " + filePos + " char(s) read.");
+
+			System.out.println("### Symbol table:\n" + symTable);
         }
         catch (ParseException ex) 
 		{
-            ex.printStackTrace();
+ 			System.out.println("### Parsing error! " + filePos + " char(s) read.");
+ 
+			ex.printStackTrace();
 		}
-    }
+
+		return outFile;
+	}
 }
 
 PARSER_END(SmallCPP)
 
-TOKEN : {
-	<STRING: <STRING_LIT_1> | <STRING_LIT_2>>
-  |	<COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
-  | <RESERVED_WORDS: "#include" | "#define" | "#ifdef" | "#ifndef" | "#else" | "#endif" | "#code" | "#data" | "#stack" | "#undef">
+TOKEN : 
+{
+    <COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
+  | <COMMENT: "//"(~["\n", "\r"])*>
+  | <COMMENT_BLOCK: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "/">
+  | <STRINGS: <STRING_1> | <STRING_2>>
+  |	<STATEMENTS: <RESERVED_WORDS_1> | <RESERVED_WORDS_2>>
+  | <RESERVED_WORDS_1: ("#include" | "#ifdef" | "#ifndef" | "#else" | "#endif" | "#define" | "#undef")(~["\r", "\n"])*>
+  | <RESERVED_WORDS_2: "#CODE" | "#STACK" | "#HEAP" | "#DATA">
   | <IDENTIFIER: (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9"])*>
-  | <STRING_LIT_1: "\""(~["\"", "\n"])*"\"">
-  | <STRING_LIT_2: "<"(~["\"", "\n"])*">">
-  | <ASM_BLOCK: "#asm"(~["*"] | ("*")* ~["/"])* "#endasm">
-  | <COMMENT: "//"(~["\"", "\n"])*(<NEWLINE>)>
-  | <COMMENT_BLOCK: "/*"(~["*"] | ("*")* ~["/"])* "*/">
-  | <WHITESPACE: (" " | "\t" | "\r" | "\n")+>
-  | <NEWLINE: "\r\n" | "\n">
   | <#IDENTIFIER_CHAR: ["A"-"Z", "a"-"z"] | <SYMBOLS>>
+  | <STRING_1: "\""(~["\"", "\n"])*"\"">
+  | <STRING_2: "<"(~["\"", "\n"])*">">
+  | <ASM_BLOCK: "#asm"(~["*"] | ("*")* ~["/"])* "#endasm">
   | <VALUE: <DIGITS>>
   | <DIGITS: (["0"-"9"])+>
-  | <SYMBOLS: "~"|"!"|"@"|"%"|"^"|"&"|"*"|"-"|"+"|"="|"|"|"/"|":"|";"|"?"|"<"|">"|"."|","|"'"|"\""|"("|")"|"["|"]"|"{"|"}"|"\\">
+  | <WHITESPACE: (" " | "\t" | "\r" | "\n")+>
+  | <NEWLINE: "\r\n" | "\r" | "\n">
+  | <SYMBOLS: "~" | "!" | "@" | "%" | "^" | "&" | "*" | "-" | "_" | "+" | "=" | "|" | "/" | ":" | ";" |
+						"?" | "<" | ">" | "." | "," | "'" | "\"" | "(" | ")" | "[" | "]" | "{" | "}" | "\\">
 }
 
-SKIP:
+void Comment(StringBuffer buf) : {}
 {
-	< "//" (~["\r", "\n"])* >
-}
-
-void Reserved_words(StringBuffer buf) : {}
-{
-    <RESERVED_WORDS>
+    <COMMENTS>
     {
-        buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\n");
+		// System.out.println("Comment:");
+		// System.out.println(token.image);
+    }
+}
+
+void Statement(StringBuffer buf) : {}
+{
+    <STATEMENTS>
+    {
+		int beginLine = token.beginLine;
+		int endLine = token.endLine;
+		int beginCol = token.beginColumn;
+		int endCol = token.endColumn;
+		String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
+
+		String statement = null, name = null, value = null;
+        StringTokenizer tokenizer = new StringTokenizer(token.image);
+
+		statement = tokenizer.nextToken(" ").trim();
+
+		if(tokenizer.hasMoreTokens())
+		{
+			name = tokenizer.nextToken(" ").trim();
+		}
+
+		if(tokenizer.hasMoreTokens())
+		{
+			value = tokenizer.nextToken("\r\n").trim();
+		}
+/*
+		System.out.println("position: " + position);
+		System.out.println("statement: " + statement);
+		System.out.println("name: " + name);
+		System.out.println("value: " + value);
+*/
+		if(statement.equals("#include"))
+		{
+			if(!ignore)
+			{
+				while((value = symTable.getValue(name)) != null)
+				{
+					name = value;
+				}
+
+				System.out.println("##### INCLUDE " + name + " at " + position + " #####");
+			}
+		}
+		else if(statement.equals("#define"))
+		{
+			symTable.setValue(name, value);
+		}
+		else if(statement.equals("#undef"))
+		{
+			symTable.remove(name);
+		}
+		else if(statement.equals("#ifdef"))
+		{
+			if(!ignore)
+			{
+				ignore = !symTable.isDefined(name);
+				if(ignore)
+				{
+					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+				}
+			}
+		}
+		else if(statement.equals("#ifndef"))
+		{
+			if(!ignore)
+			{
+				ignore = symTable.isDefined(name);
+				if(ignore)
+				{
+					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+				}
+			}
+		}
+		else if(statement.equals("#else"))
+		{
+			if(!ignore)
+			{
+				ignore = true;
+				System.out.println("##### BEGIN IGNORE at " + position + " #####");
+			}
+			else
+			{
+				ignore = false;
+				System.out.println("##### END IGNORE at " + position + " #####");
+			}
+		}
+		else if(statement.equals("#endif"))
+		{
+			if(ignore)
+			{
+				ignore = false;
+				System.out.println("##### END IGNORE at " + position + " #####");
+			}
+		}
+
+		// System.out.println();
+
+		buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\n");
     }
 }
 
@@ -155,19 +318,34 @@ void Identifier(StringBuffer buf) : {}
 {
     <IDENTIFIER>
     {
+		int beginLine = token.beginLine;
+		int endLine = token.endLine;
+		int beginCol = token.beginColumn;
+		int endCol = token.endColumn;
+		String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
+
+		if(!ignore)
+		{
+			String value = symTable.getValue(token.image);
+			if(value != null)
+			{
+				System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
+			}
+		}
+
         buf.append("Type: Identifier").append(", Value: ").append(token.image).append("\n");
     }
 }
 
 void String(StringBuffer buf) : {}
 {
-    <STRING>
+    <STRINGS>
     {
         buf.append("Type: String").append(", Value: ").append(token.image).append("\n");
     }
 }
 
-void asm_block(StringBuffer buf) : {}
+void Asm_block(StringBuffer buf) : {}
 {
     <ASM_BLOCK>
     {
@@ -185,6 +363,6 @@ void Value(StringBuffer buf) : {}
 
 void Tokens() : { StringBuffer sb = new StringBuffer(); }
 {
-    (Reserved_words(sb) | Identifier(sb) | String(sb) | Value(sb) | asm_block(sb) | <WHITESPACE> | <COMMENTS>)* <EOF>
-    { System.out.println("Parsed tokens:\n\n" + sb.toString()); }
+    (Statement(sb) | Identifier(sb) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
+    // { System.out.println("### Parsed tokens:\n" + sb.toString()); }
 }
