@@ -347,8 +347,7 @@ int beginLine = token.beginLine;
                         {
                                 System.out.println("##### REPLACE \u005c"" + token.image + "\u005c" with \u005c"" + value + "\u005c" at " + position + " #####");
 
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.copyLineAndReplace(token.image, value);
+                                rw.copyUntilLineAndReplace(beginLine, token.image, value);
                         }
                 }
 

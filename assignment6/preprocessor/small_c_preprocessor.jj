@@ -396,8 +396,7 @@ void Identifier(StringBuffer buf) : {}
 			{
 				System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
 
-				rw.copyUntilLine(beginLine - 1);
-				rw.copyLineAndReplace(token.image, value);
+				rw.copyUntilLineAndReplace(beginLine, token.image, value);
 			}
 		}
 

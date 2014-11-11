@@ -23,8 +23,8 @@
 #include file.h
 
 // Define PART_A and PART_B
-#define PART_A printf("Hello " 
-#define PART_B "World!\n");
+#define PART_A printf("HELLO " 
+#define PART_B "WORLD!\n");
 
 #ifdef DEBUG   
 	// Include "debug_file.h"
@@ -73,9 +73,11 @@
 	
 /* Hello World program */
 
+// Define HEADER and FOOTER
 #define HEADER printf("Example by Luca Severini\n");
 #define FOOTER printf("Done.\n");
 
+// Re-define PART_A and PART_B
 #define PART_A printf("Hello " 
 #define PART_B "World!\n");
 
@@ -99,6 +101,8 @@ int main(int argc, char *argv[])
 #undef FOOTER
 #undef STDIO
 #undef STDIO2
-	
 
 // End
+
+	
+	

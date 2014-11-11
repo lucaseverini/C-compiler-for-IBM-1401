@@ -12,21 +12,26 @@ import java.io.*;
 // ReaderWriter -----------------------------------------------------
 public class FileCopier
 {
-	BufferedReader reader;
-	BufferedWriter writer;
-	int lineCount = 0;
+	RandomAccessFile reader;
+	RandomAccessFile writer;
+	int lineCount;
+	long lastWriteStart;
+	String newLine = System.getProperty("line.separator");
 	
 	FileCopier(String fileToRead, String fileToWrite)
 	{
 		lineCount = 0;
+		lastWriteStart = 0;
 
 		try
 		{
 			File in = new File(fileToRead);
-			reader = new BufferedReader(new FileReader(in));
+			reader = new RandomAccessFile(in, "rws");
 
 			File out = new File(fileToWrite);
-			writer = new BufferedWriter(new FileWriter(out));
+			writer = new RandomAccessFile(out, "rws");
+			
+			writer.setLength(0);
 		}
         catch(Exception ex)
         {
@@ -64,12 +69,10 @@ public class FileCopier
 				theLine = theLine.trim();
 				if(theLine.length() > 0)
 				{
-					writer.write(theLine);
-					writer.newLine();
+					lastWriteStart = writer.getFilePointer();
+					writer.writeBytes(theLine + newLine);
 				}
 			}
-			writer.flush();
-
 		}
         catch(Exception ex)
         {
@@ -91,9 +94,8 @@ public class FileCopier
 				theLine = theLine.trim();
 				if(theLine.length() > 0)
 				{
-					writer.write(theLine);
-					writer.newLine();
-					writer.flush();
+					lastWriteStart = writer.getFilePointer();
+					writer.writeBytes(theLine + newLine);
 				}
 			}
 
@@ -106,24 +108,41 @@ public class FileCopier
 		return 0;
 	}
 
-	int copyLineAndReplace(String toReplace, String replacement)
-	{
+	int copyUntilLineAndReplace(int lineNum, String toReplace, String replacement)
+	{		
 		try
 		{
-			String theLine = reader.readLine();
-			if(theLine != null)
+			if(lineCount < lineNum - 1)
 			{
-				lineCount++;
-				
-				theLine = theLine.trim().replace(toReplace, replacement);
-				if(theLine.length() > 0)
+				copyUntilLine(lineNum - 1);
+			}
+			
+			String theLine;			
+			if(lineCount == lineNum)
+			{
+				writer.seek(lastWriteStart);
+				long filePos = writer.getFilePointer();
+				theLine = writer.readLine();
+				writer.setLength(filePos);
+			}
+			else
+			{
+				theLine = reader.readLine();
+				if(theLine != null)
 				{
-					writer.write(theLine);
-					writer.newLine();
-					writer.flush();
+					lineCount++;
 				}
 			}
-
+			
+			if(theLine != null)
+			{
+				theLine = theLine.trim().replace(toReplace, replacement);				
+				if(theLine.length() > 0)
+				{
+					lastWriteStart = writer.getFilePointer();
+					writer.writeBytes(theLine + newLine);
+				}
+			}
 		}
         catch(Exception ex)
         {
@@ -145,12 +164,10 @@ public class FileCopier
 				theLine = theLine.trim();
 				if(theLine.length() > 0)
 				{
-					writer.write(theLine);
-					writer.newLine();
+					lastWriteStart = writer.getFilePointer();
+					writer.writeBytes(theLine + newLine);
 				}
 			}
-			writer.flush();
-
 		}
         catch(Exception ex)
         {
@@ -173,11 +190,10 @@ public class FileCopier
 				theLine = theLine.trim();
 				if(theLine.length() > 0)
 				{
-					writer.write(theLine);
-					writer.newLine();
+					lastWriteStart = writer.getFilePointer();
+					writer.writeBytes(theLine + newLine);
 				}
 			}			
-			writer.flush();
 
 			rd.close();
 		}
