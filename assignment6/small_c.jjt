@@ -1,4 +1,13 @@
-/** Main production. */
+/*
+	small_c.jjt
+
+    Assignment #6 - CS153 - SJSU
+	November-8-2014
+
+	By Sean Papay, Matt Pleva, Luca Severini
+*/
+
+/* Main production. */
 SimpleNode Start() : {}
 {
 	/* TODO - replace this with top-level program structure */

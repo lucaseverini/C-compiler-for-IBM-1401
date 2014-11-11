@@ -1,0 +1,37 @@
+
+fact n n == 01 found expression
+n * fact n - 1 found expression
+ found expression
+ found return statement
+is_prime n i i = 2 found expression
+i * i < = n  found expression
+++ i  found expression
+! n % i  found expression
+0 found expression
+ found return statement
+ found if statement
+ found for statement
+1 found expression
+ found return statement
+main found main
+argc * argv n = 0 found expression
+n % 3 found expression
+0 found expression
+printf "%d\n"fact n  found expression
+ found expression
+ found expression
+ found statement
+ found break statement
+1 found expression
+printf "%d\n"is_prime n  found expression
+ found expression
+ found expression
+ found statement
+printf "%d, %d\n"fact n  found expression
+isPrime n  found expression
+ found expression
+ found expression
+ found statement
+ found switch statement
+n ++ < 10 found expression
+ found do while statement

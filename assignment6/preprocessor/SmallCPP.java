@@ -7,7 +7,7 @@ public class SmallCPP implements SmallCPPConstants {
         static PreProcSymTab symTable = null;
         static boolean ignore = false;
         static int filePos = 0;
-        static ReaderWriter rw;
+        static FileCopier rw = null;
 
     public static void main(String[] args) throws Exception
     {
@@ -146,7 +146,7 @@ public class SmallCPP implements SmallCPPConstants {
 
                 symTable = new PreProcSymTab();
 
-                rw = new ReaderWriter(inFile, outFile);
+                rw = new FileCopier(inFile, outFile);
 
         try
                 {
@@ -162,6 +162,8 @@ public class SmallCPP implements SmallCPPConstants {
 
                         ex.printStackTrace();
                 }
+
+                rw.close();
 
                 return outFile;
         }
@@ -208,7 +210,14 @@ int beginLine = token.beginLine;
                                         name = value;
                                 }
 
+                                name = name.replaceAll("\u005c"", "");
+                                name = name.replaceAll("<", "");
+                                name = name.replaceAll(">", "");
+
                                 System.out.println("##### INCLUDE " + name + " at " + position + " #####");
+
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.copyFile(name);
                         }
                 }
                 else if(statement.equals("#define"))
