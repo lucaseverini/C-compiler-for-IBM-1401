@@ -9,6 +9,7 @@
 
 options 
 {
+STATIC = false;
 }
 
 PARSER_BEGIN(SmallCPP)
@@ -18,9 +19,10 @@ import java.util.*;
 
 public class SmallCPP 
 {
-	static PreProcSymTab symTable = null;
-	static boolean ignore = false;
+	static PreProcSymTab symTable = new PreProcSymTab();
 	static int filePos = 0;
+	static int lastCopiedLine = 0;
+	static boolean ignore = false;
 	static FileCopier rw = null;
 
     public static void main(String[] args) throws Exception
@@ -30,19 +32,24 @@ public class SmallCPP
 		String inFile = args[0];
 
 		String outFile = preprocessFile(inFile);
-
-		System.out.println("Preprocessed file to be parsed: " + outFile);
-    }
+		
+		System.out.println();
+		System.out.println("Final Preprocessed file: " + outFile);
+ 		System.out.println("Final Symbol table:\n" + symTable);
+   }
 
 	static String preprocessFile(String inFile) throws Exception
 	{
 		filePos = 0;
+		ignore = false;
+		rw = null;
+		lastCopiedLine = 0;
 
 		String outFile = inFile + ".preproc";
 
 		File file = new File(inFile);
 
-		System.out.println("Parsing file " + inFile + " size:" + file.length());
+		System.out.println("Preprocessing file " + inFile + " size:" + file.length());
 
 		Reader sr = new FileReader(file) 
 		{
@@ -158,21 +165,19 @@ public class SmallCPP
 
 		SmallCPP parser = new SmallCPP(sr);
 
-		symTable = new PreProcSymTab();
-
 		rw = new FileCopier(inFile, outFile);
 
         try 
 		{
             parser.Tokens();
-		
-			System.out.println("### File parsed successfully. " + filePos + " char(s) read.");
 
-			System.out.println("### Symbol table:\n" + symTable);
+			rw.copyUntilEnd();
+		
+			System.out.println("### File preprocessed successfully. " + filePos + " char(s) read.");
         }
         catch (ParseException ex) 
 		{
- 			System.out.println("### Parsing error! " + filePos + " char(s) read.");
+ 			System.out.println("### Preprocessing error!! " + filePos + " char(s) read.");
  
 			ex.printStackTrace();
 		}
@@ -262,16 +267,49 @@ void Statement(StringBuffer buf) : {}
 				System.out.println("##### INCLUDE " + name + " at " + position + " #####");
 
 				rw.copyUntilLine(beginLine - 1);
-				rw.copyFile(name);
+				rw.jumpUntilLine(beginLine);
+
+				lastCopiedLine = beginLine;
+				
+				try
+				{
+					boolean saved_ignore = ignore;
+					FileCopier saved_rw = rw;
+					int saved_lastCopiedLine = lastCopiedLine;
+
+					String procFile = preprocessFile(name);
+
+					ignore = saved_ignore;
+					rw = saved_rw;
+					lastCopiedLine = saved_lastCopiedLine;
+
+					rw.copyFile(procFile);
+				}
+				catch(Exception ex) 
+				{
+					ex.printStackTrace();
+				}
 			}
 		}
 		else if(statement.equals("#define"))
 		{
-			symTable.setValue(name, value);
+			if(!ignore)
+			{
+				symTable.setValue(name, value);
+
+				rw.copyUntilLine(beginLine - 1);
+				rw.jumpUntilLine(beginLine);
+			}
 		}
 		else if(statement.equals("#undef"))
 		{
-			symTable.remove(name);
+			if(!ignore)
+			{
+				symTable.remove(name);
+
+				rw.copyUntilLine(beginLine - 1);
+				rw.jumpUntilLine(beginLine);
+			}
 		}
 		else if(statement.equals("#ifdef"))
 		{
@@ -282,6 +320,9 @@ void Statement(StringBuffer buf) : {}
 				{
 					System.out.println("##### BEGIN IGNORE at " + position + " #####");
 				}
+
+				rw.copyUntilLine(beginLine - 1);
+				rw.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#ifndef"))
@@ -293,6 +334,9 @@ void Statement(StringBuffer buf) : {}
 				{
 					System.out.println("##### BEGIN IGNORE at " + position + " #####");
 				}
+
+				rw.copyUntilLine(beginLine - 1);
+				rw.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#else"))
@@ -301,11 +345,16 @@ void Statement(StringBuffer buf) : {}
 			{
 				ignore = true;
 				System.out.println("##### BEGIN IGNORE at " + position + " #####");
+
+				rw.copyUntilLine(beginLine - 1);
+				rw.jumpUntilLine(beginLine);
 			}
 			else
 			{
 				ignore = false;
 				System.out.println("##### END IGNORE at " + position + " #####");
+
+				rw.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#endif"))
@@ -314,6 +363,13 @@ void Statement(StringBuffer buf) : {}
 			{
 				ignore = false;
 				System.out.println("##### END IGNORE at " + position + " #####");
+
+				rw.jumpUntilLine(beginLine);
+			}
+			else
+			{
+				rw.copyUntilLine(beginLine - 1);
+				rw.jumpUntilLine(beginLine);
 			}
 		}
 
@@ -339,6 +395,9 @@ void Identifier(StringBuffer buf) : {}
 			if(value != null)
 			{
 				System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
+
+				rw.copyUntilLine(beginLine - 1);
+				rw.copyLineAndReplace(token.image, value);
 			}
 		}
 

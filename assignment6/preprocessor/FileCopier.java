@@ -16,17 +16,123 @@ public class FileCopier
 	BufferedWriter writer;
 	int lineCount = 0;
 	
-	FileCopier(String fileToRead, String fileToWrite) throws Exception
+	FileCopier(String fileToRead, String fileToWrite)
 	{
-		File in = new File(fileToRead);
-		reader = new BufferedReader(new FileReader(in));
-
-		File out = new File(fileToWrite);
-		writer = new BufferedWriter(new FileWriter(out));
-		
 		lineCount = 0;
+
+		try
+		{
+			File in = new File(fileToRead);
+			reader = new BufferedReader(new FileReader(in));
+
+			File out = new File(fileToWrite);
+			writer = new BufferedWriter(new FileWriter(out));
+		}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }		
 	}
-	
+
+	int jumpUntilLine(int lineNum)
+	{
+		try
+		{
+			String theLine = null;		
+			while (lineCount < lineNum && (theLine = reader.readLine()) != null) 
+			{
+				lineCount++;
+			}
+		}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+		
+		return 0;
+	}
+
+	int copyUntilEnd()
+	{
+		try
+		{
+			String theLine = null;		
+			while ((theLine = reader.readLine()) != null) 
+			{
+				lineCount++;
+				
+				theLine = theLine.trim();
+				if(theLine.length() > 0)
+				{
+					writer.write(theLine);
+					writer.newLine();
+				}
+			}
+			writer.flush();
+
+		}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+		
+		return 0;
+	}
+
+	int copyLine()
+	{
+		try
+		{
+			String theLine = reader.readLine();
+			if(theLine != null)
+			{
+				lineCount++;
+				
+				theLine = theLine.trim();
+				if(theLine.length() > 0)
+				{
+					writer.write(theLine);
+					writer.newLine();
+					writer.flush();
+				}
+			}
+
+		}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+		
+		return 0;
+	}
+
+	int copyLineAndReplace(String toReplace, String replacement)
+	{
+		try
+		{
+			String theLine = reader.readLine();
+			if(theLine != null)
+			{
+				lineCount++;
+				
+				theLine = theLine.trim().replace(toReplace, replacement);
+				if(theLine.length() > 0)
+				{
+					writer.write(theLine);
+					writer.newLine();
+					writer.flush();
+				}
+			}
+
+		}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+		
+		return 0;
+	}
+
 	int copyUntilLine(int lineNum)
 	{
 		try
@@ -34,16 +140,24 @@ public class FileCopier
 			String theLine = null;		
 			while (lineCount < lineNum && (theLine = reader.readLine()) != null) 
 			{
-				writer.write(theLine + "\n");
-
 				lineCount++;
+				
+				theLine = theLine.trim();
+				if(theLine.length() > 0)
+				{
+					writer.write(theLine);
+					writer.newLine();
+				}
 			}
 			writer.flush();
 
 		}
-		catch(Exception ex) {}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
 		
-		return lineCount;
+		return 0;
 	}
 
 	int copyFile(String file)
@@ -56,20 +170,35 @@ public class FileCopier
 			String theLine = null;		
 			while ((theLine = rd.readLine()) != null) 
 			{
-				writer.write(theLine + "\n");
+				theLine = theLine.trim();
+				if(theLine.length() > 0)
+				{
+					writer.write(theLine);
+					writer.newLine();
+				}
 			}			
 			writer.flush();
 
 			rd.close();
 		}
-		catch(Exception ex) {}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
 
 		return 0;
 	}
 	
-	void close() throws Exception
+	void close()
 	{
-		reader.close();
-		writer.close();
+		try
+		{
+			reader.close();
+			writer.close();
+		}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
 	}
 }

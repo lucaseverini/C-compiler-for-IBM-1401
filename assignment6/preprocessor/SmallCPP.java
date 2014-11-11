@@ -4,9 +4,10 @@ import java.io.*;
 import java.util.*;
 
 public class SmallCPP implements SmallCPPConstants {
-        static PreProcSymTab symTable = null;
-        static boolean ignore = false;
+        static PreProcSymTab symTable = new PreProcSymTab();
         static int filePos = 0;
+        static int lastCopiedLine = 0;
+        static boolean ignore = false;
         static FileCopier rw = null;
 
     public static void main(String[] args) throws Exception
@@ -17,18 +18,23 @@ public class SmallCPP implements SmallCPPConstants {
 
                 String outFile = preprocessFile(inFile);
 
-                System.out.println("Preprocessed file to be parsed: " + outFile);
-    }
+                System.out.println();
+                System.out.println("Final Preprocessed file: " + outFile);
+                System.out.println("Final Symbol table:\u005cn" + symTable);
+   }
 
         static String preprocessFile(String inFile) throws Exception
         {
                 filePos = 0;
+                ignore = false;
+                rw = null;
+                lastCopiedLine = 0;
 
                 String outFile = inFile + ".preproc";
 
                 File file = new File(inFile);
 
-                System.out.println("Parsing file " + inFile + " size:" + file.length());
+                System.out.println("Preprocessing file " + inFile + " size:" + file.length());
 
                 Reader sr = new FileReader(file)
                 {
@@ -144,21 +150,19 @@ public class SmallCPP implements SmallCPPConstants {
 
                 SmallCPP parser = new SmallCPP(sr);
 
-                symTable = new PreProcSymTab();
-
                 rw = new FileCopier(inFile, outFile);
 
         try
                 {
             parser.Tokens();
 
-                        System.out.println("### File parsed successfully. " + filePos + " char(s) read.");
+                        rw.copyUntilEnd();
 
-                        System.out.println("### Symbol table:\u005cn" + symTable);
+                        System.out.println("### File preprocessed successfully. " + filePos + " char(s) read.");
         }
         catch (ParseException ex)
                 {
-                        System.out.println("### Parsing error! " + filePos + " char(s) read.");
+                        System.out.println("### Preprocessing error!! " + filePos + " char(s) read.");
 
                         ex.printStackTrace();
                 }
@@ -168,12 +172,12 @@ public class SmallCPP implements SmallCPPConstants {
                 return outFile;
         }
 
-  static final public void Comment(StringBuffer buf) throws ParseException {
+  final public void Comment(StringBuffer buf) throws ParseException {
     jj_consume_token(COMMENTS);
 
   }
 
-  static final public void Statement(StringBuffer buf) throws ParseException {
+  final public void Statement(StringBuffer buf) throws ParseException {
     jj_consume_token(STATEMENTS);
 int beginLine = token.beginLine;
                 int endLine = token.endLine;
@@ -217,16 +221,49 @@ int beginLine = token.beginLine;
                                 System.out.println("##### INCLUDE " + name + " at " + position + " #####");
 
                                 rw.copyUntilLine(beginLine - 1);
-                                rw.copyFile(name);
+                                rw.jumpUntilLine(beginLine);
+
+                                lastCopiedLine = beginLine;
+
+                                try
+                                {
+                                        boolean saved_ignore = ignore;
+                                        FileCopier saved_rw = rw;
+                                        int saved_lastCopiedLine = lastCopiedLine;
+
+                                        String procFile = preprocessFile(name);
+
+                                        ignore = saved_ignore;
+                                        rw = saved_rw;
+                                        lastCopiedLine = saved_lastCopiedLine;
+
+                                        rw.copyFile(procFile);
+                                }
+                                catch(Exception ex)
+                                {
+                                        ex.printStackTrace();
+                                }
                         }
                 }
                 else if(statement.equals("#define"))
                 {
-                        symTable.setValue(name, value);
+                        if(!ignore)
+                        {
+                                symTable.setValue(name, value);
+
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.jumpUntilLine(beginLine);
+                        }
                 }
                 else if(statement.equals("#undef"))
                 {
-                        symTable.remove(name);
+                        if(!ignore)
+                        {
+                                symTable.remove(name);
+
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.jumpUntilLine(beginLine);
+                        }
                 }
                 else if(statement.equals("#ifdef"))
                 {
@@ -237,6 +274,9 @@ int beginLine = token.beginLine;
                                 {
                                         System.out.println("##### BEGIN IGNORE at " + position + " #####");
                                 }
+
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#ifndef"))
@@ -248,6 +288,9 @@ int beginLine = token.beginLine;
                                 {
                                         System.out.println("##### BEGIN IGNORE at " + position + " #####");
                                 }
+
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#else"))
@@ -256,11 +299,16 @@ int beginLine = token.beginLine;
                         {
                                 ignore = true;
                                 System.out.println("##### BEGIN IGNORE at " + position + " #####");
+
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.jumpUntilLine(beginLine);
                         }
                         else
                         {
                                 ignore = false;
                                 System.out.println("##### END IGNORE at " + position + " #####");
+
+                                rw.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#endif"))
@@ -269,6 +317,13 @@ int beginLine = token.beginLine;
                         {
                                 ignore = false;
                                 System.out.println("##### END IGNORE at " + position + " #####");
+
+                                rw.jumpUntilLine(beginLine);
+                        }
+                        else
+                        {
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.jumpUntilLine(beginLine);
                         }
                 }
 
@@ -277,7 +332,7 @@ int beginLine = token.beginLine;
                 buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  static final public void Identifier(StringBuffer buf) throws ParseException {
+  final public void Identifier(StringBuffer buf) throws ParseException {
     jj_consume_token(IDENTIFIER);
 int beginLine = token.beginLine;
                 int endLine = token.endLine;
@@ -291,28 +346,31 @@ int beginLine = token.beginLine;
                         if(value != null)
                         {
                                 System.out.println("##### REPLACE \u005c"" + token.image + "\u005c" with \u005c"" + value + "\u005c" at " + position + " #####");
+
+                                rw.copyUntilLine(beginLine - 1);
+                                rw.copyLineAndReplace(token.image, value);
                         }
                 }
 
         buf.append("Type: Identifier").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  static final public void String(StringBuffer buf) throws ParseException {
+  final public void String(StringBuffer buf) throws ParseException {
     jj_consume_token(STRINGS);
 buf.append("Type: String").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  static final public void Asm_block(StringBuffer buf) throws ParseException {
+  final public void Asm_block(StringBuffer buf) throws ParseException {
     jj_consume_token(ASM_BLOCK);
 buf.append("Type: AsmBlock").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  static final public void Value(StringBuffer buf) throws ParseException {
+  final public void Value(StringBuffer buf) throws ParseException {
     jj_consume_token(VALUE);
 buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  static final public void Tokens() throws ParseException {StringBuffer sb = new StringBuffer();
+  final public void Tokens() throws ParseException {StringBuffer sb = new StringBuffer();
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -373,17 +431,16 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
     jj_consume_token(0);
   }
 
-  static private boolean jj_initialized_once = false;
   /** Generated Token Manager. */
-  static public SmallCPPTokenManager token_source;
-  static SimpleCharStream jj_input_stream;
+  public SmallCPPTokenManager token_source;
+  SimpleCharStream jj_input_stream;
   /** Current token. */
-  static public Token token;
+  public Token token;
   /** Next token. */
-  static public Token jj_nt;
-  static private int jj_ntk;
-  static private int jj_gen;
-  static final private int[] jj_la1 = new int[2];
+  public Token jj_nt;
+  private int jj_ntk;
+  private int jj_gen;
+  final private int[] jj_la1 = new int[2];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
@@ -398,13 +455,6 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
   }
   /** Constructor with InputStream and supplied encoding */
   public SmallCPP(java.io.InputStream stream, String encoding) {
-    if (jj_initialized_once) {
-      System.out.println("ERROR: Second call to constructor of static parser.  ");
-      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
-      System.out.println("       during parser generation.");
-      throw new Error();
-    }
-    jj_initialized_once = true;
     try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new SmallCPPTokenManager(jj_input_stream);
     token = new Token();
@@ -414,11 +464,11 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
   }
 
   /** Reinitialise. */
-  static public void ReInit(java.io.InputStream stream) {
+  public void ReInit(java.io.InputStream stream) {
      ReInit(stream, null);
   }
   /** Reinitialise. */
-  static public void ReInit(java.io.InputStream stream, String encoding) {
+  public void ReInit(java.io.InputStream stream, String encoding) {
     try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
     token = new Token();
@@ -429,13 +479,6 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
 
   /** Constructor. */
   public SmallCPP(java.io.Reader stream) {
-    if (jj_initialized_once) {
-      System.out.println("ERROR: Second call to constructor of static parser. ");
-      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
-      System.out.println("       during parser generation.");
-      throw new Error();
-    }
-    jj_initialized_once = true;
     jj_input_stream = new SimpleCharStream(stream, 1, 1);
     token_source = new SmallCPPTokenManager(jj_input_stream);
     token = new Token();
@@ -445,7 +488,7 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
   }
 
   /** Reinitialise. */
-  static public void ReInit(java.io.Reader stream) {
+  public void ReInit(java.io.Reader stream) {
     jj_input_stream.ReInit(stream, 1, 1);
     token_source.ReInit(jj_input_stream);
     token = new Token();
@@ -456,13 +499,6 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
 
   /** Constructor with generated Token Manager. */
   public SmallCPP(SmallCPPTokenManager tm) {
-    if (jj_initialized_once) {
-      System.out.println("ERROR: Second call to constructor of static parser. ");
-      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
-      System.out.println("       during parser generation.");
-      throw new Error();
-    }
-    jj_initialized_once = true;
     token_source = tm;
     token = new Token();
     jj_ntk = -1;
@@ -479,7 +515,7 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
     for (int i = 0; i < 2; i++) jj_la1[i] = -1;
   }
 
-  static private Token jj_consume_token(int kind) throws ParseException {
+  private Token jj_consume_token(int kind) throws ParseException {
     Token oldToken;
     if ((oldToken = token).next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -495,7 +531,7 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
 
 
 /** Get the next Token. */
-  static final public Token getNextToken() {
+  final public Token getNextToken() {
     if (token.next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
     jj_ntk = -1;
@@ -504,7 +540,7 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
   }
 
 /** Get the specific Token. */
-  static final public Token getToken(int index) {
+  final public Token getToken(int index) {
     Token t = token;
     for (int i = 0; i < index; i++) {
       if (t.next != null) t = t.next;
@@ -513,19 +549,19 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
     return t;
   }
 
-  static private int jj_ntk_f() {
+  private int jj_ntk_f() {
     if ((jj_nt=token.next) == null)
       return (jj_ntk = (token.next=token_source.getNextToken()).kind);
     else
       return (jj_ntk = jj_nt.kind);
   }
 
-  static private java.util.List<int[]> jj_expentries = new java.util.ArrayList<int[]>();
-  static private int[] jj_expentry;
-  static private int jj_kind = -1;
+  private java.util.List<int[]> jj_expentries = new java.util.ArrayList<int[]>();
+  private int[] jj_expentry;
+  private int jj_kind = -1;
 
   /** Generate ParseException. */
-  static public ParseException generateParseException() {
+  public ParseException generateParseException() {
     jj_expentries.clear();
     boolean[] la1tokens = new boolean[18];
     if (jj_kind >= 0) {
@@ -556,11 +592,11 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
   }
 
   /** Enable tracing. */
-  static final public void enable_tracing() {
+  final public void enable_tracing() {
   }
 
   /** Disable tracing. */
-  static final public void disable_tracing() {
+  final public void disable_tracing() {
   }
 
 }
