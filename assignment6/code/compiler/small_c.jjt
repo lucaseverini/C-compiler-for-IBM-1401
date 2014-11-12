@@ -121,18 +121,15 @@ void GreaterThanExpression(): {}
 	LessthanExpression (">" "="? LessThanExpression)*
 }
 
-
 void LessThanExpression(): {}
 {
 	BitshiftExpression ("<" "="? BitshiftExpression)*
 }
 
-
 void BitshiftExpression(): {}
 {
 	AdditiveExpression (("<<" | ">>") AdditiveExpression)*
 }
-
 
 void AdditiveExpression(): {}
 {
@@ -143,7 +140,6 @@ void MultiplicativeExpression(): {}
 {
 	PrefixExpression (("*" | "/" | "%") PrefixExpression)*
 }
-
 
 void PrefixExpression(): {}
 {

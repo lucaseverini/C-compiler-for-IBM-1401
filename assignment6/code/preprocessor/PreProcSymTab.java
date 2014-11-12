@@ -7,6 +7,8 @@
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
+package preprocessor;
+
 import java.util.*;
 
 // PreProcSymTab -----------------------------------------------------
@@ -62,6 +64,7 @@ public class PreProcSymTab extends HashMap<String, String>
 		put(name, value);
 	}
 
+	// Just for test
 	public static void main(String[] args) throws Exception
 	{
 		PreProcSymTab tab = new PreProcSymTab();

@@ -7,16 +7,28 @@
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
-options {
-    //DEBUG_PARSER=true;
+options 
+{
+	// DEBUG_PARSER=true;
 }
 
-PARSER_BEGIN(SmallCPP)
- import java.io.*;
-    public class SmallCPP {
-        public static void main(String[] args) throws Exception
+PARSER_BEGIN(SmallCC)
+
+package compiler;
+
+import preprocessor.*;
+import java.io.*;
+
+public class SmallCC 
+{
+        public static void main(String args[]) throws Exception
+		{
+			compile(args[0]);
+		}
+
+        public static void compile(String fileName) throws Exception
         {
-						File file = new File(args[0]);
+						File file = new File(fileName);
 						/*
 							line continuations and newline encoding are hard to keep
 							track of at tokenization time, so we'll handle them
@@ -76,7 +88,7 @@ PARSER_BEGIN(SmallCPP)
 								return read;
 							}
             };
-            SmallCPP parser = new SmallCPP(sr);
+            SmallCC parser = new SmallCC(sr);
 
             try {
                 parser.Tokens();
@@ -86,7 +98,8 @@ PARSER_BEGIN(SmallCPP)
             }
         }
     }
-PARSER_END(SmallCPP)
+    
+PARSER_END(SmallCC)
 
 SKIP : {
     " "
@@ -117,7 +130,6 @@ TOKEN : {
   | <UNSIGNED: "unsigned">
   | <WHILE: "while">
   | <SEMI_COLON: ";">
-
   | <PLUS_PLUS: "++">
   | <MINUS_MINUS: "--">
   | <PLUS: "+">
@@ -141,8 +153,6 @@ TOKEN : {
   | <NOT_EQUALS: "!=">
   | <L_PAREN: "(">
   | <R_PAREN: ")">
-
-
 
   | <IDENTIFIER : (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9","_"])*>
   | <NUMBER : (<DIGIT>)+>
@@ -226,7 +236,6 @@ void Expression() : {}
 void AssignmentExpression() : {}
 {
     TernaryExpression() ((Plus() | Minus() | Star() | Divide() | Mod() | Right_Shift() | Left_Shift() | Bit_And() | Bit_Xor() | Bit_Or())? Equals() TernaryExpression())*
-
 }
 
 void TernaryExpression(): {}
@@ -239,19 +248,16 @@ void TernaryExpression(): {}
 void OrExpression(): {}
 {
     AndExpression() (Boolean_Or() AndExpression())*
-
 }
 
 void AndExpression(): {}
 {
     BitOrExpression() (Boolean_Or() BitOrExpression())*
-
 }
 
 void BitOrExpression(): {}
 {
     BitXorExpression() (Bit_Or() BitXorExpression())*
-
 }
 
 void BitXorExpression(): {}
@@ -263,33 +269,27 @@ void BitXorExpression(): {}
 void BitAndExpression(): {}
 {
     EqualityExpression() (Bit_And() EqualityExpression())*
-
 }
 
 void EqualityExpression(): {}
 {
     GreaterThanExpression() ((Equals_Equals() | Not_Equals()) GreaterThanExpression())*
-
 }
 
 void GreaterThanExpression(): {}
 {
     LessThanExpression() (Greater_Than() (Equals())? LessThanExpression())*
-
 }
-
 
 void LessThanExpression(): {}
 {
     BitshiftExpression() (Less_Than() (Equals())? BitshiftExpression())*
-
 }
-
 
 void BitshiftExpression(): {}
 {
-    AdditiveExpression() ((Right_Shift() | Left_Shift()) AdditiveExpression())*}
-
+    AdditiveExpression() ((Right_Shift() | Left_Shift()) AdditiveExpression())*
+}
 
 void AdditiveExpression(): {}
 {
@@ -300,7 +300,6 @@ void MultiplicativeExpression(): {}
 {
     PrefixExpression() ((Star() | Divide() | Mod()) PrefixExpression())*
 }
-
 
 void PrefixExpression(): {}
 {

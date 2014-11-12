@@ -10,6 +10,12 @@
 // nested comment
 */
 
+#ifdef DEBUG
+	//DEBUG_IS_DEFINED
+#else
+	//DEBUG_IS_UNDEFINED
+#endif
+
 // Include file "file.h"
 #include "file.h"
 

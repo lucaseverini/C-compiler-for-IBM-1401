@@ -9,11 +9,14 @@
 
 options 
 {
-STATIC = false;
+	STATIC = false;
 }
 
 PARSER_BEGIN(SmallCPP)
 
+package preprocessor;
+
+import compiler.*;
 import java.io.*;
 import java.util.*;
 
@@ -23,11 +26,16 @@ public class SmallCPP
 	static List<String> paths = new ArrayList<String>();
 	static boolean ignore = false;
 
-	static String preprocessFile(String inFile, PreProcSymTab sTable) throws Exception
+	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable) throws Exception
 	{
-		if(sTable != null)
+		if(searchPaths != null)
 		{
-			symTable = sTable;
+			paths = searchPaths;
+		}
+
+		if(presetTable != null)
+		{
+			symTable = presetTable;
 		}
 
 		boolean savedIgnore = ignore;
@@ -233,7 +241,7 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				
 				try
 				{
-					String procFile = preprocessFile(name, symTable);
+					String procFile = preprocessFile(name, paths, symTable);
 					copier.copyFile(procFile);
 				}
 				catch(Exception ex) 

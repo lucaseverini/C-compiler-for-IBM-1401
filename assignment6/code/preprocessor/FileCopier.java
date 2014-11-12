@@ -7,6 +7,8 @@
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
+package preprocessor;
+
 import java.io.*;
 
 // ReaderWriter -----------------------------------------------------
