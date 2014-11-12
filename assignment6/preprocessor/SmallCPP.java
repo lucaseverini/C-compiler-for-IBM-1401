@@ -5,30 +5,18 @@ import java.util.*;
 
 public class SmallCPP implements SmallCPPConstants {
         static PreProcSymTab symTable = new PreProcSymTab();
-        static int filePos = 0;
-        static int lastCopiedLine = 0;
+        static List<String> paths = new ArrayList<String>();
         static boolean ignore = false;
-        static FileCopier rw = null;
 
-    public static void main(String[] args) throws Exception
-    {
-                System.out.println("Small-C Pre-processor");
-
-                String inFile = args[0];
-
-                String outFile = preprocessFile(inFile);
-
-                System.out.println();
-                System.out.println("Final Preprocessed file: " + outFile);
-                System.out.println("Final Symbol table:\u005cn" + symTable);
-   }
-
-        static String preprocessFile(String inFile) throws Exception
+        static String preprocessFile(String inFile, PreProcSymTab sTable) throws Exception
         {
-                filePos = 0;
+                if(sTable != null)
+                {
+                        symTable = sTable;
+                }
+
+                boolean savedIgnore = ignore;
                 ignore = false;
-                rw = null;
-                lastCopiedLine = 0;
 
                 String outFile = inFile + ".preproc";
 
@@ -51,28 +39,13 @@ public class SmallCPP implements SmallCPPConstants {
                                 }
 
                                 int ch = super.read();
-                                if (ch >= 0)
-                                {
-                                        filePos++;
-                                }
-
                                 // possible line continuation
                                 if (ch == '\u005c\u005c')
                                 {
                                         lookahead[0] = super.read();
-                                        if(lookahead[0] >= 0)
-                                        {
-                                                filePos++;
-                                        }
-
                                         if (lookahead[0] == '\u005cr')
                                         {
                                                 lookahead[1] = super.read();
-                                                if(lookahead[1] >= 0)
-                                                {
-                                                        filePos++;
-                                                }
-
                                                 if (lookahead[1] != '\u005cn')
                                                 {
                                                         return ch;
@@ -89,11 +62,6 @@ public class SmallCPP implements SmallCPPConstants {
                                                 do
                                                 {
                                                         ch = super.read();
-                                                        if(ch >= 0)
-                                                        {
-                                                                filePos++;
-                                                        }
-
                                                         if (ch < 0)
                                                         {
                                                                 return ch;
@@ -107,11 +75,6 @@ public class SmallCPP implements SmallCPPConstants {
                                 else if (ch == '\u005cr')
                                 {
                                         lookahead[0] = super.read();
-                                        if(lookahead[0] >= 0)
-                                        {
-                                                filePos++;
-                                        }
-
                                         if (lookahead[0] == '\u005cn')
                                         {
                                                 lookahead[0] = lookahead[1] = -1;
@@ -133,10 +96,7 @@ public class SmallCPP implements SmallCPPConstants {
                                                 break;
                                         }
 
-                                        if(!ignore)
-                                        {
-                                                cbuf[offset + (read++)] = (char)ch;
-                                        }
+                                        cbuf[offset + (read++)] = (char)ch;
                                 }
 
                                 if (read == 0 && read < length)
@@ -150,24 +110,26 @@ public class SmallCPP implements SmallCPPConstants {
 
                 SmallCPP parser = new SmallCPP(sr);
 
-                rw = new FileCopier(inFile, outFile);
+                FileCopier copier = new FileCopier(inFile, outFile);
 
         try
                 {
-            parser.Tokens();
+            parser.Tokens(copier);
 
-                        rw.copyUntilEnd();
+                        copier.copyUntilEnd();
 
-                        System.out.println("### File preprocessed successfully. " + filePos + " char(s) read.");
+                        System.out.println("### File " + inFile + " preprocessed successfully");
         }
         catch (ParseException ex)
                 {
-                        System.out.println("### Preprocessing error!! " + filePos + " char(s) read.");
+                        System.out.println("### Preprocessing error in file " + inFile);
 
                         ex.printStackTrace();
                 }
 
-                rw.close();
+                copier.close();
+
+                ignore = savedIgnore;
 
                 return outFile;
         }
@@ -177,7 +139,7 @@ public class SmallCPP implements SmallCPPConstants {
 
   }
 
-  final public void Statement(StringBuffer buf) throws ParseException {
+  final public void Statement(StringBuffer buf, FileCopier copier) throws ParseException {
     jj_consume_token(STATEMENTS);
 int beginLine = token.beginLine;
                 int endLine = token.endLine;
@@ -220,24 +182,13 @@ int beginLine = token.beginLine;
 
                                 System.out.println("##### INCLUDE " + name + " at " + position + " #####");
 
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.jumpUntilLine(beginLine);
-
-                                lastCopiedLine = beginLine;
+                                copier.copyUntilLine(beginLine - 1);
+                                copier.jumpUntilLine(beginLine);
 
                                 try
                                 {
-                                        boolean saved_ignore = ignore;
-                                        FileCopier saved_rw = rw;
-                                        int saved_lastCopiedLine = lastCopiedLine;
-
-                                        String procFile = preprocessFile(name);
-
-                                        ignore = saved_ignore;
-                                        rw = saved_rw;
-                                        lastCopiedLine = saved_lastCopiedLine;
-
-                                        rw.copyFile(procFile);
+                                        String procFile = preprocessFile(name, symTable);
+                                        copier.copyFile(procFile);
                                 }
                                 catch(Exception ex)
                                 {
@@ -251,8 +202,8 @@ int beginLine = token.beginLine;
                         {
                                 symTable.setValue(name, value);
 
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.jumpUntilLine(beginLine);
+                                copier.copyUntilLine(beginLine - 1);
+                                copier.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#undef"))
@@ -261,8 +212,8 @@ int beginLine = token.beginLine;
                         {
                                 symTable.remove(name);
 
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.jumpUntilLine(beginLine);
+                                copier.copyUntilLine(beginLine - 1);
+                                copier.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#ifdef"))
@@ -275,8 +226,8 @@ int beginLine = token.beginLine;
                                         System.out.println("##### BEGIN IGNORE at " + position + " #####");
                                 }
 
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.jumpUntilLine(beginLine);
+                                copier.copyUntilLine(beginLine - 1);
+                                copier.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#ifndef"))
@@ -289,8 +240,8 @@ int beginLine = token.beginLine;
                                         System.out.println("##### BEGIN IGNORE at " + position + " #####");
                                 }
 
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.jumpUntilLine(beginLine);
+                                copier.copyUntilLine(beginLine - 1);
+                                copier.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#else"))
@@ -300,15 +251,15 @@ int beginLine = token.beginLine;
                                 ignore = true;
                                 System.out.println("##### BEGIN IGNORE at " + position + " #####");
 
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.jumpUntilLine(beginLine);
+                                copier.copyUntilLine(beginLine - 1);
+                                copier.jumpUntilLine(beginLine);
                         }
                         else
                         {
                                 ignore = false;
                                 System.out.println("##### END IGNORE at " + position + " #####");
 
-                                rw.jumpUntilLine(beginLine);
+                                copier.jumpUntilLine(beginLine);
                         }
                 }
                 else if(statement.equals("#endif"))
@@ -318,12 +269,12 @@ int beginLine = token.beginLine;
                                 ignore = false;
                                 System.out.println("##### END IGNORE at " + position + " #####");
 
-                                rw.jumpUntilLine(beginLine);
+                                copier.jumpUntilLine(beginLine);
                         }
                         else
                         {
-                                rw.copyUntilLine(beginLine - 1);
-                                rw.jumpUntilLine(beginLine);
+                                copier.copyUntilLine(beginLine - 1);
+                                copier.jumpUntilLine(beginLine);
                         }
                 }
 
@@ -332,7 +283,7 @@ int beginLine = token.beginLine;
                 buf.append("Type: Reserved word").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  final public void Identifier(StringBuffer buf) throws ParseException {
+  final public void Identifier(StringBuffer buf, FileCopier copier) throws ParseException {
     jj_consume_token(IDENTIFIER);
 int beginLine = token.beginLine;
                 int endLine = token.endLine;
@@ -347,7 +298,7 @@ int beginLine = token.beginLine;
                         {
                                 System.out.println("##### REPLACE \u005c"" + token.image + "\u005c" with \u005c"" + value + "\u005c" at " + position + " #####");
 
-                                rw.copyUntilLineAndReplace(beginLine, token.image, value);
+                                copier.copyUntilLineAndReplace(beginLine, token.image, value);
                         }
                 }
 
@@ -369,7 +320,7 @@ buf.append("Type: AsmBlock").append(", Value: ").append(token.image).append("\u0
 buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005cn");
   }
 
-  final public void Tokens() throws ParseException {StringBuffer sb = new StringBuffer();
+  final public void Tokens(FileCopier copier) throws ParseException {StringBuffer sb = new StringBuffer();
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -390,11 +341,11 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case STATEMENTS:{
-        Statement(sb);
+        Statement(sb, copier);
         break;
         }
       case IDENTIFIER:{
-        Identifier(sb);
+        Identifier(sb, copier);
         break;
         }
       case STRINGS:{
@@ -428,6 +379,7 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
       }
     }
     jj_consume_token(0);
+
   }
 
   /** Generated Token Manager. */
@@ -445,7 +397,7 @@ buf.append("Type: Number").append(", Value: ").append(token.image).append("\u005
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x2b132,0x2b132,};
+      jj_la1_0 = new int[] {0x2b492,0x2b492,};
    }
 
   /** Constructor with InputStream. */

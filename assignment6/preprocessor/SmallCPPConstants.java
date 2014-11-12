@@ -17,19 +17,19 @@ public interface SmallCPPConstants {
   /** RegularExpression Id. */
   int STRINGS = 4;
   /** RegularExpression Id. */
-  int STATEMENTS = 5;
+  int STRING_1 = 5;
   /** RegularExpression Id. */
-  int RESERVED_WORDS_1 = 6;
+  int STRING_2 = 6;
   /** RegularExpression Id. */
-  int RESERVED_WORDS_2 = 7;
+  int STATEMENTS = 7;
   /** RegularExpression Id. */
-  int IDENTIFIER = 8;
+  int RESERVED_WORDS_1 = 8;
   /** RegularExpression Id. */
-  int IDENTIFIER_CHAR = 9;
+  int RESERVED_WORDS_2 = 9;
   /** RegularExpression Id. */
-  int STRING_1 = 10;
+  int IDENTIFIER = 10;
   /** RegularExpression Id. */
-  int STRING_2 = 11;
+  int IDENTIFIER_CHAR = 11;
   /** RegularExpression Id. */
   int ASM_BLOCK = 12;
   /** RegularExpression Id. */
@@ -53,13 +53,13 @@ public interface SmallCPPConstants {
     "<COMMENT>",
     "<COMMENT_BLOCK>",
     "<STRINGS>",
+    "<STRING_1>",
+    "<STRING_2>",
     "<STATEMENTS>",
     "<RESERVED_WORDS_1>",
     "<RESERVED_WORDS_2>",
     "<IDENTIFIER>",
     "<IDENTIFIER_CHAR>",
-    "<STRING_1>",
-    "<STRING_2>",
     "<ASM_BLOCK>",
     "<VALUE>",
     "<DIGITS>",

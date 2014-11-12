@@ -17,33 +17,21 @@ PARSER_BEGIN(SmallCPP)
 import java.io.*;
 import java.util.*;
 
-public class SmallCPP 
+public class SmallCPP
 {
 	static PreProcSymTab symTable = new PreProcSymTab();
-	static int filePos = 0;
-	static int lastCopiedLine = 0;
+	static List<String> paths = new ArrayList<String>();
 	static boolean ignore = false;
-	static FileCopier rw = null;
 
-    public static void main(String[] args) throws Exception
-    {
-		System.out.println("Small-C Pre-processor");
-
-		String inFile = args[0];
-
-		String outFile = preprocessFile(inFile);
-		
-		System.out.println();
-		System.out.println("Final Preprocessed file: " + outFile);
- 		System.out.println("Final Symbol table:\n" + symTable);
-   }
-
-	static String preprocessFile(String inFile) throws Exception
+	static String preprocessFile(String inFile, PreProcSymTab sTable) throws Exception
 	{
-		filePos = 0;
+		if(sTable != null)
+		{
+			symTable = sTable;
+		}
+
+		boolean savedIgnore = ignore;
 		ignore = false;
-		rw = null;
-		lastCopiedLine = 0;
 
 		String outFile = inFile + ".preproc";
 
@@ -65,29 +53,14 @@ public class SmallCPP
 					return ch;
 				}
 
-				int ch = super.read();
-				if (ch >= 0) 
-				{
-					filePos++;
-				}
-
+				int ch = super.read();	
 				// possible line continuation
 				if (ch == '\\') 
 				{
 					lookahead[0] = super.read();
-					if(lookahead[0] >= 0)
-					{
-						filePos++;
-					}
-
 					if (lookahead[0] == '\r')
 					{
 						lookahead[1] = super.read();
-						if(lookahead[1] >= 0)
-						{
-							filePos++;
-						}
-
 						if (lookahead[1] != '\n') 
 						{
 							return ch;
@@ -104,11 +77,6 @@ public class SmallCPP
 						do 
 						{
 							ch = super.read();
-							if(ch >= 0)
-							{
-								filePos++;
-							}
-
 							if (ch < 0) 
 							{
 								return ch;
@@ -122,11 +90,6 @@ public class SmallCPP
 				else if (ch == '\r')
 				{
 					lookahead[0] = super.read();
-					if(lookahead[0] >= 0)
-					{
-						filePos++;
-					}
-
 					if (lookahead[0] == '\n') 
 					{
 						lookahead[0] = lookahead[1] = -1;
@@ -148,10 +111,7 @@ public class SmallCPP
 						break;
 					}
 
-					if(!ignore)
-					{
-						cbuf[offset + (read++)] = (char)ch;
-					}
+					cbuf[offset + (read++)] = (char)ch;
 				}
 
 				if (read == 0 && read < length) 
@@ -165,24 +125,26 @@ public class SmallCPP
 
 		SmallCPP parser = new SmallCPP(sr);
 
-		rw = new FileCopier(inFile, outFile);
+		FileCopier copier = new FileCopier(inFile, outFile);
 
         try 
 		{
-            parser.Tokens();
+            parser.Tokens(copier);
 
-			rw.copyUntilEnd();
+			copier.copyUntilEnd();
 		
-			System.out.println("### File preprocessed successfully. " + filePos + " char(s) read.");
+			System.out.println("### File " + inFile + " preprocessed successfully");
         }
         catch (ParseException ex) 
 		{
- 			System.out.println("### Preprocessing error!! " + filePos + " char(s) read.");
+ 			System.out.println("### Preprocessing error in file " + inFile);
  
 			ex.printStackTrace();
 		}
 
-		rw.close();
+		copier.close();
+
+		ignore = savedIgnore;
 
 		return outFile;
 	}
@@ -196,13 +158,13 @@ TOKEN :
   | <COMMENT: "//"(~["\n", "\r"])*>
   | <COMMENT_BLOCK: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "/">
   | <STRINGS: <STRING_1> | <STRING_2>>
+  | <STRING_1: "\""(~["\"", "\n"])*"\"">
+  | <STRING_2: "<"(~["\"", "\n"])*">">
   |	<STATEMENTS: <RESERVED_WORDS_1> | <RESERVED_WORDS_2>>
   | <RESERVED_WORDS_1: ("#include" | "#ifdef" | "#ifndef" | "#else" | "#endif" | "#define" | "#undef")(~["\r", "\n"])*>
   | <RESERVED_WORDS_2: "#CODE" | "#STACK" | "#HEAP" | "#DATA">
   | <IDENTIFIER: (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9"])*>
-  | <#IDENTIFIER_CHAR: ["A"-"Z", "a"-"z"] | <SYMBOLS>>
-  | <STRING_1: "\""(~["\"", "\n"])*"\"">
-  | <STRING_2: "<"(~["\"", "\n"])*">">
+  | <IDENTIFIER_CHAR: ["A"-"Z", "a"-"z", "_"]>
   | <ASM_BLOCK: "#asm"(~["*"] | ("*")* ~["/"])* "#endasm">
   | <VALUE: <DIGITS>>
   | <DIGITS: (["0"-"9"])+>
@@ -221,7 +183,7 @@ void Comment(StringBuffer buf) : {}
     }
 }
 
-void Statement(StringBuffer buf) : {}
+void Statement(StringBuffer buf, FileCopier copier) : {}
 {
     <STATEMENTS>
     {
@@ -266,24 +228,13 @@ void Statement(StringBuffer buf) : {}
 
 				System.out.println("##### INCLUDE " + name + " at " + position + " #####");
 
-				rw.copyUntilLine(beginLine - 1);
-				rw.jumpUntilLine(beginLine);
-
-				lastCopiedLine = beginLine;
+				copier.copyUntilLine(beginLine - 1);
+				copier.jumpUntilLine(beginLine);
 				
 				try
 				{
-					boolean saved_ignore = ignore;
-					FileCopier saved_rw = rw;
-					int saved_lastCopiedLine = lastCopiedLine;
-
-					String procFile = preprocessFile(name);
-
-					ignore = saved_ignore;
-					rw = saved_rw;
-					lastCopiedLine = saved_lastCopiedLine;
-
-					rw.copyFile(procFile);
+					String procFile = preprocessFile(name, symTable);
+					copier.copyFile(procFile);
 				}
 				catch(Exception ex) 
 				{
@@ -297,8 +248,8 @@ void Statement(StringBuffer buf) : {}
 			{
 				symTable.setValue(name, value);
 
-				rw.copyUntilLine(beginLine - 1);
-				rw.jumpUntilLine(beginLine);
+				copier.copyUntilLine(beginLine - 1);
+				copier.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#undef"))
@@ -307,8 +258,8 @@ void Statement(StringBuffer buf) : {}
 			{
 				symTable.remove(name);
 
-				rw.copyUntilLine(beginLine - 1);
-				rw.jumpUntilLine(beginLine);
+				copier.copyUntilLine(beginLine - 1);
+				copier.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#ifdef"))
@@ -321,8 +272,8 @@ void Statement(StringBuffer buf) : {}
 					System.out.println("##### BEGIN IGNORE at " + position + " #####");
 				}
 
-				rw.copyUntilLine(beginLine - 1);
-				rw.jumpUntilLine(beginLine);
+				copier.copyUntilLine(beginLine - 1);
+				copier.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#ifndef"))
@@ -335,8 +286,8 @@ void Statement(StringBuffer buf) : {}
 					System.out.println("##### BEGIN IGNORE at " + position + " #####");
 				}
 
-				rw.copyUntilLine(beginLine - 1);
-				rw.jumpUntilLine(beginLine);
+				copier.copyUntilLine(beginLine - 1);
+				copier.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#else"))
@@ -346,15 +297,15 @@ void Statement(StringBuffer buf) : {}
 				ignore = true;
 				System.out.println("##### BEGIN IGNORE at " + position + " #####");
 
-				rw.copyUntilLine(beginLine - 1);
-				rw.jumpUntilLine(beginLine);
+				copier.copyUntilLine(beginLine - 1);
+				copier.jumpUntilLine(beginLine);
 			}
 			else
 			{
 				ignore = false;
 				System.out.println("##### END IGNORE at " + position + " #####");
 
-				rw.jumpUntilLine(beginLine);
+				copier.jumpUntilLine(beginLine);
 			}
 		}
 		else if(statement.equals("#endif"))
@@ -364,12 +315,12 @@ void Statement(StringBuffer buf) : {}
 				ignore = false;
 				System.out.println("##### END IGNORE at " + position + " #####");
 
-				rw.jumpUntilLine(beginLine);
+				copier.jumpUntilLine(beginLine);
 			}
 			else
 			{
-				rw.copyUntilLine(beginLine - 1);
-				rw.jumpUntilLine(beginLine);
+				copier.copyUntilLine(beginLine - 1);
+				copier.jumpUntilLine(beginLine);
 			}
 		}
 
@@ -379,7 +330,7 @@ void Statement(StringBuffer buf) : {}
     }
 }
 
-void Identifier(StringBuffer buf) : {}
+void Identifier(StringBuffer buf, FileCopier copier) : {}
 {
     <IDENTIFIER>
     {
@@ -396,7 +347,7 @@ void Identifier(StringBuffer buf) : {}
 			{
 				System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
 
-				rw.copyUntilLineAndReplace(beginLine, token.image, value);
+				copier.copyUntilLineAndReplace(beginLine, token.image, value);
 			}
 		}
 
@@ -428,8 +379,11 @@ void Value(StringBuffer buf) : {}
     }
 }
 
-void Tokens() : { StringBuffer sb = new StringBuffer(); }
+void Tokens(FileCopier copier) : { StringBuffer sb = new StringBuffer(); }
 {
-    (Statement(sb) | Identifier(sb) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
-    // { System.out.println("### Parsed tokens:\n" + sb.toString()); }
+    (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
+    
+	{ 
+		// System.out.println("### Parsed tokens:\n" + sb.toString()); 
+	}
 }
