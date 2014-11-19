@@ -1,4 +1,4 @@
-JAVACC="$(HOME)/bin/javacc-6.0"
+JAVACC=$(HOME)/bin/javacc-6.0
 
 all: 
 	mkdir temp; \
@@ -9,15 +9,15 @@ javacc: jjtree
 	mkdir temp/preprocessor; \
 	mkdir temp/compiler; \
 	cd temp/preprocessor; \
-	java -classpath "$(JAVACC)/bin/lib/javacc.jar" javacc ../../src/preprocessor/small_c_preprocessor.jj; \
+	java -classpath $(JAVACC)/bin/lib/javacc.jar javacc ../../src/preprocessor/small_c_preprocessor.jj; \
 	cp ../../src/preprocessor/*.java .; \
 	cd ../compiler; \
-	java -classpath "$(JAVACC)/bin/lib/javacc.jar" javacc ../../src/compiler/small_c.jj; \
+	java -classpath $(JAVACC)/bin/lib/javacc.jar javacc ../../src/compiler/small_c.jj; \
 	cd ..;
 
 jjtree:
 	#cd temp; \
-	#java -classpath "$(JAVACC)/bin/lib/javacc.jar" jjtree ../src/compiler/small_c.jjt; \
+	#java -classpath $(JAVACC)/bin/lib/javacc.jar jjtree ../src/compiler/small_c.jjt; \
 	#cd ..;
 
 compile: javacc
