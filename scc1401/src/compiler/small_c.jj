@@ -1,0 +1,545 @@
+/*
+	small_c.jj
+
+    Assignment #6 - CS153 - SJSU
+	November-8-2014
+
+	By Sean Papay, Matt Pleva, Luca Severini
+*/
+
+options 
+{
+	// DEBUG_PARSER=true;
+}
+
+PARSER_BEGIN(SmallCC)
+
+package compiler;
+
+import preprocessor.*;
+import java.io.*;
+
+public class SmallCC 
+{
+        public static void main(String args[]) throws Exception
+		{
+			compile(args[0]);
+		}
+
+        public static void compile(String fileName) throws Exception
+        {
+						File file = new File(fileName);
+						/*
+							line continuations and newline encoding are hard to keep
+							track of at tokenization time, so we'll handle them
+							directly in the reader
+						*/
+            Reader sr = new FileReader(file) {
+							private int[] lookahead = {-1, -1};
+							public int read() throws IOException {
+								if (lookahead[0] >= 0) {
+									int ch = lookahead[0];
+									lookahead[0] = lookahead[1];
+									lookahead[1] = -1;
+									return ch;
+								}
+								int ch = super.read();
+								//possible line continuation
+								if (ch == '\\') {
+									lookahead[0] = super.read();
+
+									if (lookahead[0] == '\r') {
+										//the user is using windows, what a loser :P
+										lookahead[1] = super.read();
+										if (lookahead[1] != '\n') {
+											//carriage return with no line feed, what's going on?
+                                            // maybe we are printing a bold character or an underline
+											return ch;
+										} else {
+											lookahead[0] = '\n';
+										}
+									}
+									if (lookahead[0] == '\n') {
+										lookahead[0] = lookahead[1] = -1;
+										do {
+											ch = super.read();
+											if (ch < 0) return ch;
+										} while(Character.isWhitespace((char) ch));
+										return ch;
+									}
+								} else if (ch == '\r') {
+									lookahead[0] = super.read();
+									if (lookahead[0] == '\n') {
+										lookahead[0] = lookahead[1] = -1;
+										return '\n';
+									}
+								}
+								return ch;
+							}
+
+							public int read(char[] cbuf, int offset, int length) throws IOException{
+								int read = 0;
+								while (read < length && offset + read < cbuf.length) {
+									int ch = read();
+									if (ch < 0) break;
+									cbuf[offset + (read++)] = (char) ch;
+								}
+								if (read == 0 && read < length) return -1;
+								return read;
+							}
+            };
+            SmallCC parser = new SmallCC(sr);
+
+            try {
+                parser.Tokens();
+            }
+                catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+PARSER_END(SmallCC)
+
+SKIP : {
+    " "
+  | "\t"
+  | "\n"
+  | "\r\n"
+}
+
+TOKEN : {
+    <BREAK : "break">
+  | <CASE: "case">
+  | <CHAR: "char">
+  | <CONTINUE: "continue">
+  | <_DEFAULT: "default">
+  | <DO: "do">
+  | <ELSE: "else">
+  | <FOR: "for">
+  | <GOTO: "goto">
+  | <IF: "if">
+  | <INT: "int">
+  | <LONG: "long">
+  | <RETURN: "return">
+  | <SHORT: "short">
+  | <SIZEOF: "sizeof">
+  | <STATIC: "static">
+  | <SWITCH: "switch">
+  | <TYPEDEF: "typedef">
+  | <UNSIGNED: "unsigned">
+  | <WHILE: "while">
+  | <SEMI_COLON: ";">
+  | <PLUS_PLUS: "++">
+  | <MINUS_MINUS: "--">
+  | <PLUS: "+">
+  | <MINUS: "-">
+  | <STAR: "*">
+  | <DIVIDE: "/">
+  | <MOD: "%">
+  | <BIT_AND: "&">
+  | <BIT_OR: "|">
+  | <BIT_XOR: "^">
+  | <BIT_NOT: "~">
+  | <BOOLEAN_NOT: "!">
+  | <BOOLEAN_AND: "&&">
+  | <BOOLEAN_OR: "||">
+  | <GREATER_THAN: ">">
+  | <LESS_THAN: "<">
+  | <LEFT_SHIFT: "<<">
+  | <RIGHT_SHIFT: ">>">
+  | <EQUALS: "=">
+  | <EQUALS_EQUALS: "==">
+  | <NOT_EQUALS: "!=">
+  | <L_PAREN: "(">
+  | <R_PAREN: ")">
+
+  | <IDENTIFIER : (<IDENTIFIER_CHAR>)(<IDENTIFIER_CHAR> | ["0"-"9","_"])*>
+  | <NUMBER : (<DIGIT>)+>
+  | <STRING_LIT : "\"" (~["\"", "\n", "\\"] | ("\\" ~[]))* "\"">
+  | <CHARACTER_CONST  : "\'" (~["\'", "\n", "\\"] | ("\\" ~[]))* "\'">
+  | <COMMENT: <LINE_COMMENT> | <MULTI_LINE_COMMENT>>
+  | <LINE_COMMENT : "//" (~["\n"])* <NEWLINE> >
+  | <MULTI_LINE_COMMENT: "/*" (~["*"] | ("*")* ~["/"])* "*/">
+  | <NEWLINE : "\r\n" | "\n" >
+  | <#NOT_NEWLINE : ~["\n","\r"]>
+  | <#IDENTIFIER_CHAR : ["A"-"Z","a"-"z","_"]>
+  | <#DIGIT : ["0"-"9"]>
+ }
+
+/** Main production. */
+
+void BareType(): {}
+{
+    "char" | "int"
+}
+
+void Type(): {}
+{
+    BareType() (Star())*
+}
+
+void VariableDeclaration() : {}
+{
+    // question is **********x a valid type
+    (BareType())? (Star())* Identifier() ("[" (Number())? "]")? (Equals() Expression())?
+        ("," (Star())* Identifier() ("[" (Number())? "]")? (Equals() Expression())?)* ";"
+}
+
+void FunctionDeclaration() : {}
+{
+    Type() Identifier() "(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")" ";"
+}
+
+void FunctionDeclarationParameter(): {}
+{
+    (Type() (Identifier())? | Identifier()) ("[" (Expression())? "]")?
+}
+
+void FunctionDefinition() : {}
+{
+    (Type())? Identifier() "(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")"
+        "{" (VariableDeclaration() | Statement() )* "}"
+}
+
+void FunctionDefinitionParameter(): {}
+{
+    (Type())? Identifier() ("[" (Expression())? "]")?
+}
+
+void Statement(): {}
+{
+    LOOKAHEAD(2)(Expression())? ";" { System.out.println(" found statement"); }
+    | ("{" (LOOKAHEAD(2) VariableDeclaration() | Statement())* "}")
+    | ("if" | "while") "(" Expression() ")" Statement() {System.out.println(" found if statement");}
+    | "for" "(" (Expression())? ";" (Expression())? ";" (Expression())? ")" Statement() { System.out.println(" found for statement"); }
+    | "do" Statement() "while" "(" Expression() ")" ";" {System.out.println(" found do while statement");}
+    | "switch" "(" Expression() ")" "{" (VariableDeclaration())* (("case" Expression() ":" | "default" ":")? Statement())* "}" {
+            System.out.println(" found switch statement");
+        }
+    | "break" ";" {System.out.println(" found break statement");}
+    | "continue" ";" {System.out.println(" found continue statement");}
+    | "return" (Expression())? ";" {System.out.println(" found return statement");}
+    | Identifier() ":" Statement() {System.out.println(" found label statement");}
+    | "goto" Identifier() ";" { System.out.println(" found goto statement"); }
+}
+
+/** Left-to-right*/
+void Expression() : {}
+{
+    AssignmentExpression() ("," AssignmentExpression())*
+    {
+        System.out.println(" found expression");
+    }
+}
+/** Right-to-left */
+void AssignmentExpression() : {}
+{
+    TernaryExpression() ((Plus() | Minus() | Star() | Divide() | Mod() | Right_Shift() | Left_Shift() | Bit_And() | Bit_Xor() | Bit_Or())? Equals() TernaryExpression())*
+}
+
+void TernaryExpression(): {}
+{
+    OrExpression() ("?" Expression() ":" TernaryExpression())?
+}
+
+/** left-to-right*/
+
+void OrExpression(): {}
+{
+    AndExpression() (Boolean_Or() AndExpression())*
+}
+
+void AndExpression(): {}
+{
+    BitOrExpression() (Boolean_Or() BitOrExpression())*
+}
+
+void BitOrExpression(): {}
+{
+    BitXorExpression() (Bit_Or() BitXorExpression())*
+}
+
+void BitXorExpression(): {}
+{
+    BitAndExpression() (Bit_Xor() BitAndExpression())*
+
+}
+
+void BitAndExpression(): {}
+{
+    EqualityExpression() (Bit_And() EqualityExpression())*
+}
+
+void EqualityExpression(): {}
+{
+    GreaterThanExpression() ((Equals_Equals() | Not_Equals()) GreaterThanExpression())*
+}
+
+void GreaterThanExpression(): {}
+{
+    LessThanExpression() (Greater_Than() (Equals())? LessThanExpression())*
+}
+
+void LessThanExpression(): {}
+{
+    BitshiftExpression() (Less_Than() (Equals())? BitshiftExpression())*
+}
+
+void BitshiftExpression(): {}
+{
+    AdditiveExpression() ((Right_Shift() | Left_Shift()) AdditiveExpression())*
+}
+
+void AdditiveExpression(): {}
+{
+    MultiplicativeExpression() ((Plus() | Minus()) MultiplicativeExpression())*
+}
+
+void MultiplicativeExpression(): {}
+{
+    PrefixExpression() ((Star() | Divide() | Mod()) PrefixExpression())*
+}
+
+void PrefixExpression(): {}
+{
+    // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
+    // TODO add casting back "(" Type() ")"
+    ( Plus_Plus() | Minus_Minus() | Plus() | Minus() | Boolean_Not() | Bit_Not() | Star() | Bit_And() | "sizeof")* SuffixExpression()
+}
+
+void SuffixExpression(): {}
+{
+    AtomicExpression() (Plus_Plus() | Minus_Minus() | "(" Expression() ")" | "[" Expression() "]")?
+}
+
+void AtomicExpression(): {}
+{
+    Identifier()
+    | Number()
+    | StringLiteral()
+    | CharacterConstant()
+    | "(" Expression() ")"
+}
+
+void Identifier() : {}
+{
+    <IDENTIFIER>
+    {
+        System.out.print(token.image + " ");
+        if (token.image.equals("main")) System.out.print("found main\n");
+    }
+}
+
+void CharacterConstant() : {}
+{
+    <CHARACTER_CONST>
+    {
+        System.out.print(token.image);
+    }
+}
+
+void Number() : {}
+{
+    <NUMBER>
+    {
+        System.out.print(token.image);
+    }
+}
+
+void StringLiteral() : {}
+{
+    <STRING_LIT>
+    {
+        System.out.print(token.image);
+    }
+}
+
+void Boolean_Not() : {}
+{
+    <BOOLEAN_NOT>
+    {
+        System.out.print("! ");
+    }
+}
+
+void Boolean_And() : {}
+{
+    <BOOLEAN_AND>
+    {
+        System.out.print("&& ");
+    }
+}
+
+void Boolean_Or() : {}
+{
+    <BOOLEAN_OR>
+    {
+        System.out.print("|| ");
+    }
+}
+
+void Bit_Not() : {}
+{
+    <BIT_NOT>
+    {
+        System.out.print("~ ");
+    }
+}
+
+void Bit_And() : {}
+{
+    <BIT_AND>
+    {
+        System.out.print("& ");
+    }
+}
+
+void Bit_Or() : {}
+{
+    <BIT_OR>
+    {
+        System.out.print("| ");
+    }
+}
+
+void Bit_Xor() : {}
+{
+    <BIT_XOR>
+    {
+        System.out.print("^ ");
+    }
+}
+
+void Left_Shift() : {}
+{
+    <LEFT_SHIFT>
+    {
+        System.out.print("<< ");
+    }
+}
+
+void Right_Shift() : {}
+{
+    <RIGHT_SHIFT>
+    {
+        System.out.print(">> ");
+    }
+}
+
+void R_Paren() : {}
+{
+    <R_PAREN>
+    {
+        System.out.print(") ");
+    }
+}
+
+void L_Paren() : {}
+{
+    <L_PAREN>
+    {
+        System.out.print("( ");
+    }
+}
+
+void Plus() : {}
+{
+    <PLUS>
+    {
+        System.out.print("+ ");
+    }
+}
+
+void Plus_Plus() : {}
+{
+    <PLUS_PLUS>
+    {
+        System.out.print("++ ");
+    }
+}
+
+void Minus() : {}
+{
+    <MINUS>
+    {
+        System.out.print("- ");
+    }
+}
+
+void Minus_Minus() : {}
+{
+    <MINUS_MINUS>
+    {
+        System.out.print("-- ");
+    }
+}
+
+void Star() : {}
+{
+    <STAR>
+    {
+        System.out.print("* ");
+    }
+}
+
+void Mod() : {}
+{
+    <MOD>
+    {
+        System.out.print("% ");
+    }
+}
+
+void Divide() : {}
+{
+    <DIVIDE>
+    {
+        System.out.print("/ ");
+    }
+}
+
+void Equals() : {}
+{
+    <EQUALS>
+    {
+        System.out.print("= ");
+    }
+}
+
+void Less_Than() : {}
+{
+    <LESS_THAN>
+    {
+        System.out.print("< ");
+    }
+}
+
+void Greater_Than() : {}
+{
+    <GREATER_THAN>
+    {
+        System.out.print("> ");
+    }
+}
+
+void Equals_Equals() : {}
+{
+    <EQUALS_EQUALS>
+    {
+        System.out.print("== ");
+    }
+}
+
+void Not_Equals() : {}
+{
+    <NOT_EQUALS>
+    {
+        System.out.print("!= ");
+    }
+}
+
+void Tokens() : {}
+{
+    (FunctionDefinition() | Statement() | <COMMENT>)* <EOF>
+}
