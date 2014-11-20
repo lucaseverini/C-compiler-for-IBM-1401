@@ -189,7 +189,7 @@ SimpleNode program()  : {}
   {return jjtThis;}
 }
 
-void BareType() # bareType: {}
+void BareType(): {}
 {
   "char" | "int"
 }
@@ -199,7 +199,7 @@ void Type(): {}
   BareType() (Star())*
 }
 
-void VariableDeclaration() #variableDeclaration : {}
+void VariableDeclaration() : {}
 {
   // question is **********x a valid type on its own?
   // answer: it is in global scope, but not in local scope.  C is scary, isn't it?
@@ -209,20 +209,20 @@ void VariableDeclaration() #variableDeclaration : {}
   (
     (
       (
-        (((((((Star())* Identifier()) #prefixedVariable) ("[" (Expression())? "]")?)) #suffixedVariable) (("=" AssignmentExpression() #value)?)) #initialization
+        (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression() #Value)?)) #Initialization
       )
       (
         ("," 
-          (((((((Star())* Identifier()) #prefixedVariable) ("[" (Expression())? "]")?)) #suffixedVariable) (("=" AssignmentExpression()) #value)?) #initialization
+          (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression()) #Value)?) #Initialization
         )*
       )
-    ) #vars
+    ) #Variables
   ) ";"
 }
 
 void FunctionDeclaration() : {}
 {
-    Type() Identifier() "(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")" ";"
+    Type() Identifier() ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")") #ParameterList ";"
 }
 
 void FunctionDeclarationParameter(): {}
@@ -232,8 +232,8 @@ void FunctionDeclarationParameter(): {}
 
 void FunctionDefinition() : {}
 {
-    (Type())? Identifier() "(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")"
-        "{" (VariableDeclaration() | Statement() )* "}"
+    (Type())? Identifier() (("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
+        ("{" (VariableDeclaration()* | Statement() )* "}") #FunctionBody
 }
 
 void FunctionDefinitionParameter(): {}
@@ -244,7 +244,7 @@ void FunctionDefinitionParameter(): {}
 void Statement(): {}
 {
     (Expression())? ";" { System.out.println(" found statement"); }
-    | ("{" (VariableDeclaration() | Statement())* "}")
+    | ("{" (VariableDeclaration()* | Statement())* "}")
     | ("if" | "while") "(" Expression() ")" Statement() {System.out.println(" found if statement");}
     | "for" "(" (Expression())? ";" (Expression())? ";" (Expression())? ")" Statement() { System.out.println(" found for statement"); }
     | "do" Statement() "while" "(" Expression() ")" ";" {System.out.println(" found do while statement");}
@@ -356,7 +356,7 @@ void AtomicExpression(): {}
     | "(" Expression() ")"
 }
 
-void Identifier() #identifier : {}
+void Identifier() #Identifier : {}
 {
     <IDENTIFIER>
     {
@@ -509,7 +509,7 @@ void Minus_Minus() : {}
     }
 }
 
-void Star() #star : {}
+void Star(): {}
 {
     <STAR>
     {

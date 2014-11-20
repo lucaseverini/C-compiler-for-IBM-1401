@@ -11,72 +11,76 @@ public interface SmallCCTreeConstants
   public int JJTSUFFIXEDVARIABLE = 5;
   public int JJTVALUE = 6;
   public int JJTINITIALIZATION = 7;
-  public int JJTVARS = 8;
+  public int JJTVARIABLES = 8;
   public int JJTFUNCTIONDECLARATION = 9;
-  public int JJTFUNCTIONDECLARATIONPARAMETER = 10;
-  public int JJTFUNCTIONDEFINITION = 11;
-  public int JJTFUNCTIONDEFINITIONPARAMETER = 12;
-  public int JJTSTATEMENT = 13;
-  public int JJTEXPRESSION = 14;
-  public int JJTASSIGNMENTEXPRESSION = 15;
-  public int JJTTERNARYEXPRESSION = 16;
-  public int JJTOREXPRESSION = 17;
-  public int JJTANDEXPRESSION = 18;
-  public int JJTBITOREXPRESSION = 19;
-  public int JJTBITXOREXPRESSION = 20;
-  public int JJTBITANDEXPRESSION = 21;
-  public int JJTEQUALITYEXPRESSION = 22;
-  public int JJTGREATERTHANEXPRESSION = 23;
-  public int JJTLESSTHANEXPRESSION = 24;
-  public int JJTBITSHIFTEXPRESSION = 25;
-  public int JJTADDITIVEEXPRESSION = 26;
-  public int JJTMULTIPLICATIVEEXPRESSION = 27;
-  public int JJTPREFIXEXPRESSION = 28;
-  public int JJTSUFFIXEXPRESSION = 29;
-  public int JJTATOMICEXPRESSION = 30;
-  public int JJTIDENTIFIER = 31;
-  public int JJTCHARACTERCONSTANT = 32;
-  public int JJTNUMBER = 33;
-  public int JJTSTRINGLITERAL = 34;
-  public int JJTBOOLEAN_NOT = 35;
-  public int JJTBOOLEAN_AND = 36;
-  public int JJTBOOLEAN_OR = 37;
-  public int JJTBIT_NOT = 38;
-  public int JJTBIT_AND = 39;
-  public int JJTBIT_OR = 40;
-  public int JJTBIT_XOR = 41;
-  public int JJTLEFT_SHIFT = 42;
-  public int JJTRIGHT_SHIFT = 43;
-  public int JJTR_PAREN = 44;
-  public int JJTL_PAREN = 45;
-  public int JJTPLUS = 46;
-  public int JJTPLUS_PLUS = 47;
-  public int JJTMINUS = 48;
-  public int JJTMINUS_MINUS = 49;
-  public int JJTSTAR = 50;
-  public int JJTMOD = 51;
-  public int JJTDIVIDE = 52;
-  public int JJTEQUALS = 53;
-  public int JJTLESS_THAN = 54;
-  public int JJTGREATER_THAN = 55;
-  public int JJTEQUALS_EQUALS = 56;
-  public int JJTNOT_EQUALS = 57;
-  public int JJTTOKENS = 58;
+  public int JJTPARAMETERLIST = 10;
+  public int JJTFUNCTIONDECLARATIONPARAMETER = 11;
+  public int JJTFUNCTIONDEFINITION = 12;
+  public int JJTFUNCTIONBODY = 13;
+  public int JJTFUNCTIONDEFINITIONPARAMETER = 14;
+  public int JJTSTATEMENT = 15;
+  public int JJTEXPRESSION = 16;
+  public int JJTASSIGNMENTEXPRESSION = 17;
+  public int JJTTERNARYEXPRESSION = 18;
+  public int JJTOREXPRESSION = 19;
+  public int JJTANDEXPRESSION = 20;
+  public int JJTBITOREXPRESSION = 21;
+  public int JJTBITXOREXPRESSION = 22;
+  public int JJTBITANDEXPRESSION = 23;
+  public int JJTEQUALITYEXPRESSION = 24;
+  public int JJTGREATERTHANEXPRESSION = 25;
+  public int JJTLESSTHANEXPRESSION = 26;
+  public int JJTBITSHIFTEXPRESSION = 27;
+  public int JJTADDITIVEEXPRESSION = 28;
+  public int JJTMULTIPLICATIVEEXPRESSION = 29;
+  public int JJTPREFIXEXPRESSION = 30;
+  public int JJTSUFFIXEXPRESSION = 31;
+  public int JJTATOMICEXPRESSION = 32;
+  public int JJTIDENTIFIER = 33;
+  public int JJTCHARACTERCONSTANT = 34;
+  public int JJTNUMBER = 35;
+  public int JJTSTRINGLITERAL = 36;
+  public int JJTBOOLEAN_NOT = 37;
+  public int JJTBOOLEAN_AND = 38;
+  public int JJTBOOLEAN_OR = 39;
+  public int JJTBIT_NOT = 40;
+  public int JJTBIT_AND = 41;
+  public int JJTBIT_OR = 42;
+  public int JJTBIT_XOR = 43;
+  public int JJTLEFT_SHIFT = 44;
+  public int JJTRIGHT_SHIFT = 45;
+  public int JJTR_PAREN = 46;
+  public int JJTL_PAREN = 47;
+  public int JJTPLUS = 48;
+  public int JJTPLUS_PLUS = 49;
+  public int JJTMINUS = 50;
+  public int JJTMINUS_MINUS = 51;
+  public int JJTSTAR = 52;
+  public int JJTMOD = 53;
+  public int JJTDIVIDE = 54;
+  public int JJTEQUALS = 55;
+  public int JJTLESS_THAN = 56;
+  public int JJTGREATER_THAN = 57;
+  public int JJTEQUALS_EQUALS = 58;
+  public int JJTNOT_EQUALS = 59;
+  public int JJTTOKENS = 60;
 
 
   public String[] jjtNodeName = {
     "program",
-    "bareType",
+    "BareType",
     "Type",
-    "variableDeclaration",
-    "prefixedVariable",
-    "suffixedVariable",
-    "value",
-    "initialization",
-    "vars",
+    "VariableDeclaration",
+    "PrefixedVariable",
+    "SuffixedVariable",
+    "Value",
+    "Initialization",
+    "Variables",
     "FunctionDeclaration",
+    "ParameterList",
     "FunctionDeclarationParameter",
     "FunctionDefinition",
+    "FunctionBody",
     "FunctionDefinitionParameter",
     "Statement",
     "Expression",
@@ -96,7 +100,7 @@ public interface SmallCCTreeConstants
     "PrefixExpression",
     "SuffixExpression",
     "AtomicExpression",
-    "identifier",
+    "Identifier",
     "CharacterConstant",
     "Number",
     "StringLiteral",
@@ -115,7 +119,7 @@ public interface SmallCCTreeConstants
     "Plus_Plus",
     "Minus",
     "Minus_Minus",
-    "star",
+    "Star",
     "Mod",
     "Divide",
     "Equals",
@@ -126,4 +130,4 @@ public interface SmallCCTreeConstants
     "Tokens",
   };
 }
-/* JavaCC - OriginalChecksum=b457ba5ca4d0d5cab0c6646ab8381cf3 (do not edit this line) */
+/* JavaCC - OriginalChecksum=808fc1d91a39f9e5d6198ef9e0793710 (do not edit this line) */

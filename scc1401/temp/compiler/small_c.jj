@@ -224,12 +224,12 @@ SimpleNode program()  : {/*@bgen(jjtree) program */
 /*@egen*/
 }
 
-void BareType()           : {/*@bgen(jjtree) bareType */
+void BareType(): {/*@bgen(jjtree) BareType */
   SimpleNode jjtn000 = new SimpleNode(JJTBARETYPE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
 /*@egen*/}
-{/*@bgen(jjtree) bareType */
+{/*@bgen(jjtree) BareType */
   try {
 /*@egen*/
   "char" | "int"/*@bgen(jjtree)*/
@@ -272,12 +272,12 @@ void Type(): {/*@bgen(jjtree) Type */
 /*@egen*/
 }
 
-void VariableDeclaration()                      : {/*@bgen(jjtree) variableDeclaration */
+void VariableDeclaration() : {/*@bgen(jjtree) VariableDeclaration */
   SimpleNode jjtn000 = new SimpleNode(JJTVARIABLEDECLARATION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
 /*@egen*/}
-{/*@bgen(jjtree) variableDeclaration */
+{/*@bgen(jjtree) VariableDeclaration */
         try {
 /*@egen*/
   // question is **********x a valid type on its own?
@@ -285,16 +285,16 @@ void VariableDeclaration()                      : {/*@bgen(jjtree) variableDecla
   
   //we decided that if we couldn't write our parser for lisp, we would write it in lisp.
 	((BareType())?)
-  (/*@bgen(jjtree) vars */
+  (/*@bgen(jjtree) Variables */
     {
-      SimpleNode jjtn009 = new SimpleNode(JJTVARS);
+      SimpleNode jjtn009 = new SimpleNode(JJTVARIABLES);
       boolean jjtc009 = true;
       jjtree.openNodeScope(jjtn009);
     }
     try {
 /*@egen*/
     (
-      (/*@bgen(jjtree) initialization */
+      (/*@bgen(jjtree) Initialization */
         {
           SimpleNode jjtn004 = new SimpleNode(JJTINITIALIZATION);
           boolean jjtc004 = true;
@@ -302,14 +302,14 @@ void VariableDeclaration()                      : {/*@bgen(jjtree) variableDecla
         }
         try {
 /*@egen*/
-        ((/*@bgen(jjtree) suffixedVariable */
+        ((/*@bgen(jjtree) SuffixedVariable */
           {
             SimpleNode jjtn002 = new SimpleNode(JJTSUFFIXEDVARIABLE);
             boolean jjtc002 = true;
             jjtree.openNodeScope(jjtn002);
           }
           try {
-/*@egen*/(((/*@bgen(jjtree) prefixedVariable */
+/*@egen*/(((/*@bgen(jjtree) PrefixedVariable */
              {
                SimpleNode jjtn001 = new SimpleNode(JJTPREFIXEDVARIABLE);
                boolean jjtc001 = true;
@@ -356,7 +356,7 @@ void VariableDeclaration()                      : {/*@bgen(jjtree) variableDecla
               jjtree.closeNodeScope(jjtn002, true);
             }
           }
-/*@egen*/                  ) (("="/*@bgen(jjtree) value */
+/*@egen*/                  ) (("="/*@bgen(jjtree) Value */
                                                                                                                {
                                                                                                                  SimpleNode jjtn003 = new SimpleNode(JJTVALUE);
                                                                                                                  boolean jjtc003 = true;
@@ -406,7 +406,7 @@ void VariableDeclaration()                      : {/*@bgen(jjtree) variableDecla
 /*@egen*/                
       )
       (
-        (","/*@bgen(jjtree) initialization */
+        (","/*@bgen(jjtree) Initialization */
           {
             SimpleNode jjtn008 = new SimpleNode(JJTINITIALIZATION);
             boolean jjtc008 = true;
@@ -414,14 +414,14 @@ void VariableDeclaration()                      : {/*@bgen(jjtree) variableDecla
           }
           try {
 /*@egen*/ 
-          ((/*@bgen(jjtree) suffixedVariable */
+          ((/*@bgen(jjtree) SuffixedVariable */
             {
               SimpleNode jjtn006 = new SimpleNode(JJTSUFFIXEDVARIABLE);
               boolean jjtc006 = true;
               jjtree.openNodeScope(jjtn006);
             }
             try {
-/*@egen*/(((/*@bgen(jjtree) prefixedVariable */
+/*@egen*/(((/*@bgen(jjtree) PrefixedVariable */
                {
                  SimpleNode jjtn005 = new SimpleNode(JJTPREFIXEDVARIABLE);
                  boolean jjtc005 = true;
@@ -468,7 +468,7 @@ void VariableDeclaration()                      : {/*@bgen(jjtree) variableDecla
                 jjtree.closeNodeScope(jjtn006, true);
               }
             }
-/*@egen*/                  ) (/*@bgen(jjtree) value */
+/*@egen*/                  ) (/*@bgen(jjtree) Value */
                                                                                                             {
                                                                                                               SimpleNode jjtn007 = new SimpleNode(JJTVALUE);
                                                                                                               boolean jjtc007 = true;
@@ -538,7 +538,7 @@ void VariableDeclaration()                      : {/*@bgen(jjtree) variableDecla
         jjtree.closeNodeScope(jjtn009, true);
       }
     }
-/*@egen*/      
+/*@egen*/           
   ) ";"/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -570,7 +570,34 @@ void FunctionDeclaration() : {/*@bgen(jjtree) FunctionDeclaration */
 {/*@bgen(jjtree) FunctionDeclaration */
     try {
 /*@egen*/
-    Type() Identifier() "(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")" ";"/*@bgen(jjtree)*/
+    Type() Identifier()/*@bgen(jjtree) ParameterList */
+                        {
+                          SimpleNode jjtn001 = new SimpleNode(JJTPARAMETERLIST);
+                          boolean jjtc001 = true;
+                          jjtree.openNodeScope(jjtn001);
+                        }
+                        try {
+/*@egen*/ ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")")/*@bgen(jjtree)*/
+                        } catch (Throwable jjte001) {
+                          if (jjtc001) {
+                            jjtree.clearNodeScope(jjtn001);
+                            jjtc001 = false;
+                          } else {
+                            jjtree.popNode();
+                          }
+                          if (jjte001 instanceof RuntimeException) {
+                            throw (RuntimeException)jjte001;
+                          }
+                          if (jjte001 instanceof ParseException) {
+                            throw (ParseException)jjte001;
+                          }
+                          throw (Error)jjte001;
+                        } finally {
+                          if (jjtc001) {
+                            jjtree.closeNodeScope(jjtn001, true);
+                          }
+                        }
+/*@egen*/                ";"/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -632,8 +659,62 @@ void FunctionDefinition() : {/*@bgen(jjtree) FunctionDefinition */
 {/*@bgen(jjtree) FunctionDefinition */
     try {
 /*@egen*/
-    (Type())? Identifier() "(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")"
-        "{" (VariableDeclaration() | Statement() )* "}"/*@bgen(jjtree)*/
+    (Type())? Identifier() (/*@bgen(jjtree) ParameterList */
+                            {
+                              SimpleNode jjtn001 = new SimpleNode(JJTPARAMETERLIST);
+                              boolean jjtc001 = true;
+                              jjtree.openNodeScope(jjtn001);
+                            }
+                            try {
+/*@egen*/("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" )/*@bgen(jjtree)*/
+                            } catch (Throwable jjte001) {
+                              if (jjtc001) {
+                                jjtree.clearNodeScope(jjtn001);
+                                jjtc001 = false;
+                              } else {
+                                jjtree.popNode();
+                              }
+                              if (jjte001 instanceof RuntimeException) {
+                                throw (RuntimeException)jjte001;
+                              }
+                              if (jjte001 instanceof ParseException) {
+                                throw (ParseException)jjte001;
+                              }
+                              throw (Error)jjte001;
+                            } finally {
+                              if (jjtc001) {
+                                jjtree.closeNodeScope(jjtn001, true);
+                              }
+                            }
+/*@egen*/               )/*@bgen(jjtree) FunctionBody */
+        {
+          SimpleNode jjtn002 = new SimpleNode(JJTFUNCTIONBODY);
+          boolean jjtc002 = true;
+          jjtree.openNodeScope(jjtn002);
+        }
+        try {
+/*@egen*/
+        ("{" (VariableDeclaration() | Statement() )* "}")/*@bgen(jjtree)*/
+        } catch (Throwable jjte002) {
+          if (jjtc002) {
+            jjtree.clearNodeScope(jjtn002);
+            jjtc002 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte002 instanceof RuntimeException) {
+            throw (RuntimeException)jjte002;
+          }
+          if (jjte002 instanceof ParseException) {
+            throw (ParseException)jjte002;
+          }
+          throw (Error)jjte002;
+        } finally {
+          if (jjtc002) {
+            jjtree.closeNodeScope(jjtn002, true);
+          }
+        }
+/*@egen*/              /*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1325,12 +1406,12 @@ void AtomicExpression(): {/*@bgen(jjtree) AtomicExpression */
 /*@egen*/
 }
 
-void Identifier()             : {/*@bgen(jjtree) identifier */
+void Identifier()             : {/*@bgen(jjtree) Identifier */
   SimpleNode jjtn000 = new SimpleNode(JJTIDENTIFIER);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
 /*@egen*/}
-{/*@bgen(jjtree) identifier */
+{/*@bgen(jjtree) Identifier */
     try {
 /*@egen*/
     <IDENTIFIER>/*@bgen(jjtree)*/
@@ -1801,12 +1882,12 @@ void Minus_Minus() : {/*@bgen(jjtree) Minus_Minus */
 /*@egen*/
 }
 
-void Star()       : {/*@bgen(jjtree) star */
+void Star(): {/*@bgen(jjtree) Star */
   SimpleNode jjtn000 = new SimpleNode(JJTSTAR);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
 /*@egen*/}
-{/*@bgen(jjtree) star */
+{/*@bgen(jjtree) Star */
     try {
 /*@egen*/
     <STAR>/*@bgen(jjtree)*/
