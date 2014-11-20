@@ -7,9 +7,10 @@
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
-options 
+options
 {
-	// DEBUG_PARSER=true;
+	DEBUG_PARSER=true;
+	LOOKAHEAD = 2;
 }
 
 PARSER_BEGIN(SmallCC)
@@ -19,7 +20,7 @@ package compiler;
 import preprocessor.*;
 import java.io.*;
 
-public class SmallCC 
+public class SmallCC
 {
         public static void main(String args[]) throws Exception
 		{
@@ -98,7 +99,7 @@ public class SmallCC
             }
         }
     }
-    
+
 PARSER_END(SmallCC)
 
 SKIP : {
@@ -181,8 +182,8 @@ void Type(): {}
 
 void VariableDeclaration() : {}
 {
-    // question is **********x a valid type
-    (BareType())? (Star())* Identifier() ("[" (Number())? "]")? (Equals() Expression())?
+    // question is **********x a valid type on its own?
+	(BareType())? (Star())* Identifier(){System.out.println("var ident found");} ("[" (Number())? "]")? (Equals() Expression())?
         ("," (Star())* Identifier() ("[" (Number())? "]")? (Equals() Expression())?)* ";"
 }
 
@@ -209,8 +210,8 @@ void FunctionDefinitionParameter(): {}
 
 void Statement(): {}
 {
-    LOOKAHEAD(2)(Expression())? ";" { System.out.println(" found statement"); }
-    | ("{" (LOOKAHEAD(2) VariableDeclaration() | Statement())* "}")
+    (Expression())? ";" { System.out.println(" found statement"); }
+    | ("{" (VariableDeclaration() | Statement())* "}")
     | ("if" | "while") "(" Expression() ")" Statement() {System.out.println(" found if statement");}
     | "for" "(" (Expression())? ";" (Expression())? ";" (Expression())? ")" Statement() { System.out.println(" found for statement"); }
     | "do" Statement() "while" "(" Expression() ")" ";" {System.out.println(" found do while statement");}
@@ -304,8 +305,8 @@ void MultiplicativeExpression(): {}
 void PrefixExpression(): {}
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
-    // TODO add casting back "(" Type() ")"
-    ( Plus_Plus() | Minus_Minus() | Plus() | Minus() | Boolean_Not() | Bit_Not() | Star() | Bit_And() | "sizeof")* SuffixExpression()
+    // TODO add casting back: "(" Type() ")"
+    ( Plus_Plus() | Minus_Minus() | Plus() | Minus() | Boolean_Not() | Bit_Not() | Star() | Bit_And() | "sizeof" | "(" Type() ")")* SuffixExpression()
 }
 
 void SuffixExpression(): {}
