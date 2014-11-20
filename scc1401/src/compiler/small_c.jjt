@@ -233,7 +233,7 @@ void FunctionDeclarationParameter(): {}
 void FunctionDefinition() : {}
 {
     (Type())? Identifier() (("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
-        ("{" (VariableDeclaration()* | Statement() )* "}") #FunctionBody
+        ("{" ((VariableDeclaration())* | Statement() )* "}") #FunctionBody
 }
 
 void FunctionDefinitionParameter(): {}
@@ -244,7 +244,7 @@ void FunctionDefinitionParameter(): {}
 void Statement(): {}
 {
     (Expression())? ";" { System.out.println(" found statement"); }
-    | ("{" (VariableDeclaration()* | Statement())* "}")
+    | ("{" ((VariableDeclaration())* | Statement())* "}")
     | ("if" | "while") "(" Expression() ")" Statement() {System.out.println(" found if statement");}
     | "for" "(" (Expression())? ";" (Expression())? ";" (Expression())? ")" Statement() { System.out.println(" found for statement"); }
     | "do" Statement() "while" "(" Expression() ")" ";" {System.out.println(" found do while statement");}
