@@ -185,7 +185,7 @@ TOKEN : {
 
 SimpleNode program()  : {}
 {
-  (VariableDeclaration() | FunctionDeclaration() | FunctionDefinition())*
+  (GlobalVariableDeclaration() | FunctionDeclaration() | FunctionDefinition())*
   {return jjtThis;}
 }
 
@@ -199,7 +199,7 @@ void Type(): {}
   BareType() (Star())*
 }
 
-void VariableDeclaration() : {}
+void GlobalVariableDeclaration() : {}
 {
   // question is **********x a valid type on its own?
   // answer: it is in global scope, but not in local scope.  C is scary, isn't it?
@@ -220,6 +220,26 @@ void VariableDeclaration() : {}
   ) ";"
 }
 
+void LocalVariableDeclaration() : {}
+{
+  
+  //like globals, but a type specifier is required.
+	((BareType()))
+  (
+    (
+      (
+        (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression() #Value)?)) #Initialization
+      )
+      (
+        ("," 
+          (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression()) #Value)?) #Initialization
+        )*
+      )
+    ) #Variables
+  ) ";"
+}
+
+
 void FunctionDeclaration() : {}
 {
     Type() Identifier() ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")") #ParameterList ";"
@@ -233,7 +253,7 @@ void FunctionDeclarationParameter(): {}
 void FunctionDefinition() : {}
 {
     (Type())? Identifier() (("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
-        ("{" ((VariableDeclaration())* | Statement() )* "}") #FunctionBody
+        ("{" (LocalVariableDeclaration())* (Statement())* "}") #FunctionBody
 }
 
 void FunctionDefinitionParameter(): {}
@@ -244,11 +264,11 @@ void FunctionDefinitionParameter(): {}
 void Statement(): {}
 {
     (Expression())? ";" { System.out.println(" found statement"); }
-    | ("{" ((VariableDeclaration())* | Statement())* "}")
+    | ("{" (LocalVariableDeclaration())* (Statement())* "}")
     | ("if" | "while") "(" Expression() ")" Statement() {System.out.println(" found if statement");}
     | "for" "(" (Expression())? ";" (Expression())? ";" (Expression())? ")" Statement() { System.out.println(" found for statement"); }
     | "do" Statement() "while" "(" Expression() ")" ";" {System.out.println(" found do while statement");}
-    | "switch" "(" Expression() ")" "{" (VariableDeclaration())* (("case" Expression() ":" | "default" ":")? Statement())* "}" {
+    | "switch" "(" Expression() ")" "{" (LocalVariableDeclaration())* (("case" Expression() ":" | "default" ":")? Statement())* "}" {
             System.out.println(" found switch statement");
         }
     | "break" ";" {System.out.println(" found break statement");}
@@ -259,17 +279,27 @@ void Statement(): {}
 }
 
 /** Left-to-right*/
-void Expression() : {}
+void Expression() #void: {}
 {
-    AssignmentExpression() ("," AssignmentExpression())*
+    AssignmentExpression() ("," AssignmentExpression() #Comma(2))*
     {
         System.out.println(" found expression");
     }
 }
 /** Right-to-left */
-void AssignmentExpression() : {}
+void AssignmentExpression() #void: {}
 {
-    TernaryExpression() ((Plus() | Minus() | Star() | Divide() | Mod() | Right_Shift() | Left_Shift() | Bit_And() | Bit_Xor() | Bit_Or())? Equals() TernaryExpression())*
+    TernaryExpression() ( "+=" AssignmentExpression() #AddAssign(2) 
+                        | "-=" AssignmentExpression() #SubtractAssign(2)
+                        | "*=" AssignmentExpression() #MultiplyAsign(2)
+                        | "/=" AssignmentExpression() #DivideAssign(2)
+                        | "%=" AssignmentExpression() #ModuloAssign(2)
+                        | ">>=" AssignmentExpression() #RightShiftAssign(2)
+                        | "<<=" AssignmentExpression() #LeftShiftAssign(2)
+												| "&=" AssignmentExpression() #BitAndAssign(2)
+												| "^=" AssignmentExpression() #BitXorAssign(2)
+												| "|=" AssignmentExpression() #BitXorAssign(2)
+												| "=" AssignmentExpression() #Assign(2))?
 }
 
 void TernaryExpression(): {}
@@ -281,70 +311,70 @@ void TernaryExpression(): {}
 
 void OrExpression(): {}
 {
-    AndExpression() (Boolean_Or() AndExpression())*
+    AndExpression() ("||" AndExpression())*
 }
 
 void AndExpression(): {}
 {
-    BitOrExpression() (Boolean_Or() BitOrExpression())*
+    BitOrExpression() ("&&" BitOrExpression())*
 }
 
 void BitOrExpression(): {}
 {
-    BitXorExpression() (Bit_Or() BitXorExpression())*
+    BitXorExpression() ("|" BitXorExpression())*
 }
 
 void BitXorExpression(): {}
 {
-    BitAndExpression() (Bit_Xor() BitAndExpression())*
+    BitAndExpression() ("^" BitAndExpression())*
 
 }
 
 void BitAndExpression(): {}
 {
-    EqualityExpression() (Bit_And() EqualityExpression())*
+    EqualityExpression() ("&" EqualityExpression())*
 }
 
 void EqualityExpression(): {}
 {
-    GreaterThanExpression() ((Equals_Equals() | Not_Equals()) GreaterThanExpression())*
+    GreaterThanExpression() (("==" | "!=") GreaterThanExpression())*
 }
 
 void GreaterThanExpression(): {}
 {
-    LessThanExpression() (Greater_Than() (Equals())? LessThanExpression())*
+    LessThanExpression() ((">" | ">=") LessThanExpression())*
 }
 
 void LessThanExpression(): {}
 {
-    BitshiftExpression() (Less_Than() (Equals())? BitshiftExpression())*
+    BitshiftExpression() (("<" | "<=") BitshiftExpression())*
 }
 
 void BitshiftExpression(): {}
 {
-    AdditiveExpression() ((Right_Shift() | Left_Shift()) AdditiveExpression())*
+    AdditiveExpression() (("<<" | ">>") AdditiveExpression())*
 }
 
 void AdditiveExpression(): {}
 {
-    MultiplicativeExpression() ((Plus() | Minus()) MultiplicativeExpression())*
+    MultiplicativeExpression() (("+" | "-") MultiplicativeExpression())*
 }
 
 void MultiplicativeExpression(): {}
 {
-    PrefixExpression() ((Star() | Divide() | Mod()) PrefixExpression())*
+    PrefixExpression() (("*" | "/" | "%") PrefixExpression())*
 }
 
 void PrefixExpression(): {}
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
-    ( Plus_Plus() | Minus_Minus() | Plus() | Minus() | Boolean_Not() | Bit_Not() | Star() | Bit_And() | "sizeof" | "(" Type() ")")* SuffixExpression()
+    ( "++" | "--" | "+" | "-" | "!" | "~" | "*" | "&" | "sizeof" | "(" Type() ")")* SuffixExpression()
 }
 
 void SuffixExpression(): {}
 {
-    AtomicExpression() (Plus_Plus() | Minus_Minus() | "(" Expression() ")" | "[" Expression() "]")?
+    AtomicExpression() ("++" | "--" | "(" Expression() ")" | "[" Expression() "]")?
 }
 
 void AtomicExpression(): {}
@@ -557,7 +587,7 @@ void Greater_Than() : {}
     }
 }
 
-void Equals_Equals() : {}
+void Equals_Equals() #void : {}
 {
     <EQUALS_EQUALS>
     {
