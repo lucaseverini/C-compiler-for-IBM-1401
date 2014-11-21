@@ -282,9 +282,6 @@ void Statement(): {}
 void Expression() #void: {}
 {
     AssignmentExpression() ("," AssignmentExpression() #Comma(2))*
-    {
-        System.out.println(" found expression");
-    }
 }
 /** Right-to-left */
 void AssignmentExpression() #void: {}
@@ -334,7 +331,6 @@ void BitAndExpression() #void() : {}
 {
     EqualityExpression() ("&" EqualityExpression() #BitAnd(2))*
 }
-//^this works
 
 void EqualityExpression() #void() : {}
 {
@@ -356,11 +352,9 @@ void LessThanExpression() #void() : {}
 
 void BitshiftExpression() #void() : {}
 {
-    AdditiveExpression() ( "<<" AdditiveExpression() #Left(2)
-		                     | ">>" AdditiveExpression() #ShiftRight(2))*
+    AdditiveExpression() ( "<<" AdditiveExpression() #LeftShift(2)
+		                     | ">>" AdditiveExpression() #RightShift(2))*
 }
-
-//v this doesn't
 
 void AdditiveExpression() #void() : {}
 {
@@ -379,7 +373,8 @@ void PrefixExpression() #void() : {}
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
-      "++" PrefixExpression() #PreIncrement(1)
+    SuffixExpression()
+    | "++" PrefixExpression() #PreIncrement(1)
     | "--" PrefixExpression() #PreDecrement(1)
     | "+" PrefixExpression() #Positive(1)
     | "-" PrefixExpression() #Negative(1)
@@ -412,34 +407,21 @@ void AtomicExpression() #void() : {}
 void Identifier() #Identifier : {}
 {
     <IDENTIFIER>
-    {
-        System.out.print(token.image + " ");
-        if (token.image.equals("main")) System.out.print("found main\n");
-    }
 }
 
 void CharacterConstant() : {}
 {
     <CHARACTER_CONST>
-    {
-        System.out.print(token.image);
-    }
 }
 
 void Number() : {}
 {
     <NUMBER>
-    {
-        System.out.print(token.image);
-    }
 }
 
 void StringLiteral() : {}
 {
     <STRING_LIT>
-    {
-        System.out.print(token.image);
-    }
 }
 
 void Boolean_Not() : {}
