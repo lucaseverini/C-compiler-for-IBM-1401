@@ -196,47 +196,40 @@ void BareType(): {}
 
 void Type(): {}
 {
-  BareType() (Star())*
+  BareType() ("*")*
 }
 
 void GlobalVariableDeclaration() : {}
 {
-  // question is **********x a valid type on its own?
-  // answer: it is in global scope, but not in local scope.  C is scary, isn't it?
-
-  //we decided that if we couldn't write our parser for lisp, we would write it in lisp.
-	((BareType())?)
-  (
-    (
-      (
-        (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression() #Value)?)) #Initialization
-      )
-      (
-        (","
-          (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression()) #Value)?) #Initialization
-        )*
-      )
-    ) #Variables
-  ) ";"
+	(BareType())? VariableDeclarationList() ";"
 }
 
 void LocalVariableDeclaration() : {}
 {
-  
-  //like globals, but a type specifier is required.
-	((BareType()))
-  (
-    (
-      (
-        (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression() #Value)?)) #Initialization
-      )
-      (
-        ("," 
-          (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression()) #Value)?) #Initialization
-        )*
-      )
-    ) #Variables
-  ) ";"
+	BareType() VariableDeclarationList() ";"
+}
+
+void VariableDeclarationList() : {}
+{
+	VariableInitializer() ("," VariableInitializer())*
+}
+
+void VariableInitializer() #void :{}
+{
+	SuffixedVariable() ("=" AssignmentExpression() #Initializer(2))?
+}
+
+void SuffixedVariable() #void : {}
+{
+	PrefixedVariable() "[" (Expression()) "]" #ArrayDeclaration(2)
+	| PrefixedVariable() "[" "]" #ArrayDeclaration(1)
+	| PrefixedVariable()
+}
+
+void PrefixedVariable() #void :{}
+{
+	Identifier()
+	| "*" PrefixedVariable() #PointerDeclaration(1)
 }
 
 
@@ -261,21 +254,23 @@ void FunctionDefinitionParameter(): {}
     (Type())? Identifier() ("[" (Expression())? "]")?
 }
 
-void Statement(): {}
+void Statement() #void() : {}
 {
-    (Expression())? ";" { System.out.println(" found statement"); }
-    | ("{" (LocalVariableDeclaration())* (Statement())* "}")
-    | ("if" | "while") "(" Expression() ")" Statement() {System.out.println(" found if statement");}
-    | "for" "(" (Expression())? ";" (Expression())? ";" (Expression())? ")" Statement() { System.out.println(" found for statement"); }
-    | "do" Statement() "while" "(" Expression() ")" ";" {System.out.println(" found do while statement");}
-    | "switch" "(" Expression() ")" "{" (LocalVariableDeclaration())* (("case" Expression() ":" | "default" ":")? Statement())* "}" {
-            System.out.println(" found switch statement");
-        }
-    | "break" ";" {System.out.println(" found break statement");}
-    | "continue" ";" {System.out.println(" found continue statement");}
-    | "return" (Expression())? ";" {System.out.println(" found return statement");}
-    | Identifier() ":" Statement() {System.out.println(" found label statement");}
-    | "goto" Identifier() ";" { System.out.println(" found goto statement"); }
+		";" #NullStatement(0)
+    | Expression() ";" #ExpressionStatement(1)
+    | ("{" (LocalVariableDeclaration())* (Statement())* "}") #BlockStatement()
+    | "if" "(" Expression() ")" Statement() #IfStatement(2)
+    | "while" "(" Expression() ")" Statement() #WhileStatement(2)
+    | "for" "(" (Expression()";"| ";" #EmptyExpression(0)) (Expression() ";" | ";" #EmptyExpression(0)) (Expression() ")" | ")" #EmptyExpression(0)) Statement() #ForStatement(4)
+    | "do" Statement() "while" "(" Expression() ")" ";" #DoWhileExpression()
+    /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
+     * make another production rule for a switch statement body that looks like a block statement with cases. */
+    | "switch" "(" Expression() ")" ("{" (LocalVariableDeclaration())* (("case" Expression() ":" | "default" ":")? Statement())* "}" #BlockStatenent ) #SwitchStatement
+    | "break" ";" #BreakStatement(0)
+    | "continue" ";" #ContinueStatement(0)
+    | "return" (Expression())? ";" #ReturnStatement
+    | Identifier() ":" Statement() #LabeledStatement(2)
+    | "goto" Identifier() ";" #GotoStatement(1)
 }
 
 /** Left-to-right*/
