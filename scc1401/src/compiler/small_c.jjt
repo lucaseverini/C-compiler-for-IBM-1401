@@ -302,82 +302,105 @@ void AssignmentExpression() #void: {}
 												| "=" AssignmentExpression() #Assign(2))?
 }
 
-void TernaryExpression(): {}
+void TernaryExpression() #void: {}
 {
-    OrExpression() ("?" Expression() ":" TernaryExpression())?
+    OrExpression() ("?" Expression() ":" TernaryExpression() #ConditionalOperator(3))?
 }
 
 /** left-to-right*/
 
-void OrExpression(): {}
+void OrExpression() #void() : {}
 {
-    AndExpression() ("||" AndExpression())*
+    AndExpression() ("||" AndExpression() #Or(2))*
 }
 
-void AndExpression(): {}
+void AndExpression() #void() : {}
 {
-    BitOrExpression() ("&&" BitOrExpression())*
+    BitOrExpression() ("&&" BitOrExpression() #And(2))*
 }
 
-void BitOrExpression(): {}
+void BitOrExpression() #void() : {}
 {
-    BitXorExpression() ("|" BitXorExpression())*
+    BitXorExpression() ("|" BitXorExpression() #BitOr(2))*
 }
 
-void BitXorExpression(): {}
+void BitXorExpression() #void() : {}
 {
-    BitAndExpression() ("^" BitAndExpression())*
+    BitAndExpression() ("^" BitAndExpression() #BitXor(2))*
 
 }
 
-void BitAndExpression(): {}
+void BitAndExpression() #void() : {}
 {
-    EqualityExpression() ("&" EqualityExpression())*
+    EqualityExpression() ("&" EqualityExpression() #BitAnd(2))*
+}
+//^this works
+
+void EqualityExpression() #void() : {}
+{
+    GreaterThanExpression() ( "==" GreaterThanExpression() #Equal(2)
+                            | "!=" GreaterThanExpression() #NotEqual(2))*
 }
 
-void EqualityExpression(): {}
+void GreaterThanExpression() #void() : {}
 {
-    GreaterThanExpression() (("==" | "!=") GreaterThanExpression())*
+    LessThanExpression() ( ">" LessThanExpression() #GreaterThan(2)
+                         | ">=" LessThanExpression() #GreaterThanOrEqual(2))*
 }
 
-void GreaterThanExpression(): {}
+void LessThanExpression() #void() : {}
 {
-    LessThanExpression() ((">" | ">=") LessThanExpression())*
+    BitshiftExpression() ( "<" BitshiftExpression() #LessThan(2)
+		                     | "<=" BitshiftExpression() #LessThanOrEqual(2) )*
 }
 
-void LessThanExpression(): {}
+void BitshiftExpression() #void() : {}
 {
-    BitshiftExpression() (("<" | "<=") BitshiftExpression())*
+    AdditiveExpression() ( "<<" AdditiveExpression() #Left(2)
+		                     | ">>" AdditiveExpression() #ShiftRight(2))*
 }
 
-void BitshiftExpression(): {}
+//v this doesn't
+
+void AdditiveExpression() #void() : {}
 {
-    AdditiveExpression() (("<<" | ">>") AdditiveExpression())*
+    MultiplicativeExpression() ( "+" MultiplicativeExpression() #Add(2)
+                               | "-" MultiplicativeExpression() #Subtract(2))*
 }
 
-void AdditiveExpression(): {}
+void MultiplicativeExpression() #void() : {}
 {
-    MultiplicativeExpression() (("+" | "-") MultiplicativeExpression())*
+    PrefixExpression() ( "*" PrefixExpression() #Multiply(2)
+                       | "/" PrefixExpression() #Divide(2)
+                       | "%" PrefixExpression() #Modulo(2))*
 }
 
-void MultiplicativeExpression(): {}
-{
-    PrefixExpression() (("*" | "/" | "%") PrefixExpression())*
-}
-
-void PrefixExpression(): {}
+void PrefixExpression() #void() : {}
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
-    ( "++" | "--" | "+" | "-" | "!" | "~" | "*" | "&" | "sizeof" | "(" Type() ")")* SuffixExpression()
+      "++" PrefixExpression() #PreIncrement(1)
+    | "--" PrefixExpression() #PreDecrement(1)
+    | "+" PrefixExpression() #Positive(1)
+    | "-" PrefixExpression() #Negative(1)
+    | "!" PrefixExpression() #Not(1)
+    | "~" PrefixExpression() #BitNot(1)
+    | "*" PrefixExpression() #Dereference(1)
+    | "&" PrefixExpression() #AddressOf(1)
+    | "sizeof" PrefixExpression() #Sizeof(1)
+    | "(" Type() ")" PrefixExpression() #Cast(2)
 }
 
-void SuffixExpression(): {}
+void SuffixExpression() #void() : {}
 {
-    AtomicExpression() ("++" | "--" | "(" Expression() ")" | "[" Expression() "]")?
+    AtomicExpression() 
+			( "++" #PostIncrement(1)
+			| "--" #PostDecrement(1)
+			| "(" Expression() ")" #FunctionCall(2)
+			| "[" Expression() "]" #ArrayAccess(2))*
 }
 
-void AtomicExpression(): {}
+void AtomicExpression() #void() : {}
 {
     Identifier()
     | Number()
