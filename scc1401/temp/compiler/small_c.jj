@@ -10,7 +10,7 @@
 
 options
 {
-	DEBUG_PARSER=true;
+	DEBUG_PARSER=false;// true;
 	LOOKAHEAD = 99999;
 }
 
@@ -100,11 +100,11 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
     SimpleNode program = parser.program();
     printTree(program);
   }
-  
+
   public static void printTree(SimpleNode node) {
     printTree(node, 0);
   }
-  
+
   public static void printTree(SimpleNode node, int level) {
     for (int i = 0; i < level; ++i) System.out.print("  ");
     System.out.println(node);
@@ -113,7 +113,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
       printTree((SimpleNode)node.jjtGetChild(i), level + 1);
     }
   }
-  
+
 }
 
 
@@ -282,7 +282,7 @@ void VariableDeclaration() : {/*@bgen(jjtree) VariableDeclaration */
 /*@egen*/
   // question is **********x a valid type on its own?
   // answer: it is in global scope, but not in local scope.  C is scary, isn't it?
-  
+
   //we decided that if we couldn't write our parser for lisp, we would write it in lisp.
 	((BareType())?)
   (/*@bgen(jjtree) Variables */
@@ -413,7 +413,7 @@ void VariableDeclaration() : {/*@bgen(jjtree) VariableDeclaration */
             jjtree.openNodeScope(jjtn008);
           }
           try {
-/*@egen*/ 
+/*@egen*/
           ((/*@bgen(jjtree) SuffixedVariable */
             {
               SimpleNode jjtn006 = new SimpleNode(JJTSUFFIXEDVARIABLE);
@@ -694,7 +694,7 @@ void FunctionDefinition() : {/*@bgen(jjtree) FunctionDefinition */
         }
         try {
 /*@egen*/
-        ("{" (VariableDeclaration() | Statement() )* "}")/*@bgen(jjtree)*/
+        ("{" ((VariableDeclaration())* Statement() )* "}")/*@bgen(jjtree)*/
         } catch (Throwable jjte002) {
           if (jjtc002) {
             jjtree.clearNodeScope(jjtn002);
@@ -782,7 +782,7 @@ void Statement(): {/*@bgen(jjtree) Statement */
                           jjtc000 = false;
                         }
 /*@egen*/ { System.out.println(" found statement"); }
-    | ("{" (VariableDeclaration() | Statement())* "}")
+    | ("{" ((VariableDeclaration())* Statement())* "}")
     | ("if" | "while") "(" Expression() ")" Statement()/*@bgen(jjtree)*/
                                                         {
                                                           jjtree.closeNodeScope(jjtn000, true);

@@ -9,7 +9,7 @@
 
 options
 {
-	DEBUG_PARSER=true;
+	DEBUG_PARSER=false;// true;
 	LOOKAHEAD = 99999;
 }
 
@@ -96,11 +96,11 @@ public class SmallCC
     SimpleNode program = parser.program();
     printTree(program);
   }
-  
+
   public static void printTree(SimpleNode node) {
     printTree(node, 0);
   }
-  
+
   public static void printTree(SimpleNode node, int level) {
     for (int i = 0; i < level; ++i) System.out.print("  ");
     System.out.println(node);
@@ -109,7 +109,7 @@ public class SmallCC
       printTree((SimpleNode)node.jjtGetChild(i), level + 1);
     }
   }
-  
+
 }
 
 
@@ -203,7 +203,7 @@ void GlobalVariableDeclaration() : {}
 {
   // question is **********x a valid type on its own?
   // answer: it is in global scope, but not in local scope.  C is scary, isn't it?
-  
+
   //we decided that if we couldn't write our parser for lisp, we would write it in lisp.
 	((BareType())?)
   (
@@ -212,7 +212,7 @@ void GlobalVariableDeclaration() : {}
         (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression() #Value)?)) #Initialization
       )
       (
-        ("," 
+        (","
           (((((((Star())* Identifier()) #PrefixedVariable) ("[" (Expression())? "]")?)) #SuffixedVariable) (("=" AssignmentExpression()) #Value)?) #Initialization
         )*
       )
