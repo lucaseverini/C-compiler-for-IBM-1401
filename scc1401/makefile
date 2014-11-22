@@ -1,3 +1,14 @@
+#!/bin/sh
+#
+#	makefile
+#	
+#	Small-C compiler
+#   CS153 Final project - SJSU
+#	November-8-2014
+#
+#	By Sean Papay, Matt Pleva, Luca Severini
+#
+
 JAVACC=$(HOME)/bin/javacc-6.0
 
 all: 
@@ -5,7 +16,7 @@ all:
 	mkdir -p temp/preprocessor; \
 	make compile; \
 	#rm -r temp;
-
+	
 javacc: jjtree
 	cd temp/preprocessor; \
 	java -classpath $(JAVACC)/bin/lib/javacc.jar javacc ../../src/preprocessor/small_c_preprocessor.jj; \
