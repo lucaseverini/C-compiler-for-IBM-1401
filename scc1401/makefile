@@ -3,8 +3,11 @@ JAVACC=$(HOME)/bin/javacc-6.0
 all: 
 	mkdir -p temp/compiler; \
 	mkdir -p temp/preprocessor; \
+	mkdir -p temp/wci/intermediate; \
+	mkdir -p temp/wci/util; \
+	cp -r src/wci temp; \
 	make compile; \
-	#rm -r temp;
+	rm -r temp;
 
 javacc: jjtree
 	cd temp/preprocessor; \
@@ -20,5 +23,7 @@ jjtree:
 	cd ../..;
 
 compile: javacc
-	javac  -classpath temp temp/preprocessor/SmallCPP.java -d build; \
-	javac  -classpath temp temp/compiler/SmallCC.java -d build;
+	javac -classpath temp temp/preprocessor/SmallCPP.java -d build; \
+	javac -classpath temp temp/wci/intermediate/*.java -d build; \
+	javac -classpath temp temp/wci/util/*.java -d build; \
+	javac -classpath temp temp/compiler/SmallCC.java -d build;

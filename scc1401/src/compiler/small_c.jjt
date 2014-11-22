@@ -16,14 +16,28 @@ options
 PARSER_BEGIN(SmallCC)
 
 package compiler;
-
+import java.util.ArrayList;
 import preprocessor.*;
+import wci.intermediate.*;
+import wci.intermediate.symtabimpl.*;
+import wci.util.*;
 import java.io.*;
 
 public class SmallCC
 {
+	// used during tree build
+  public static SymTabStack st = SymTabFactory.createSymTabStack();
+	private static SymTabEntry programId = st.enterLocal("main");
+	private static ArrayList<SymTabEntry> list = new ArrayList<SymTabEntry>();
+	// this is a very crude hack to get the global symbols into the global
+	// symbol table
+	private static boolean global = false;
+	// this is another ugly hack for variable types
+	private static String type = "int";
+
   public static void main(String args[]) throws Exception
   {
+	programId.setAttribute(SymTabKeyImpl.ROUTINE_ROUTINES, new ArrayList<SymTabEntry>());
     compile(args[0]);
   }
 
@@ -92,9 +106,14 @@ public class SmallCC
       }
     };
     */
+	programId.setDefinition(DefinitionImpl.PROGRAM);
+	programId.setAttribute(SymTabKeyImpl.ROUTINE_SYMTAB, st.push());
+	st.setProgramId(programId);
     SmallCC parser = new SmallCC(sr);
     SimpleNode program = parser.program();
     printTree(program);
+	CrossReferencer crossReferencer = new CrossReferencer();
+	crossReferencer.print(st);
   }
 
   public static void printTree(SimpleNode node) {
@@ -185,8 +204,13 @@ TOKEN : {
 
 SimpleNode program()  : {}
 {
+	try {
   (GlobalVariableDeclaration() | FunctionDeclaration() | FunctionDefinition())*
   {return jjtThis;}
+	} catch (ParseException ex) {
+		handleError(ex);
+		return null;
+	}
 }
 
 void BareType(): {}
@@ -201,12 +225,13 @@ void Type(): {}
 
 void GlobalVariableDeclaration() : {}
 {
-	(BareType())? VariableDeclarationList() ";"
+	{global = true;}
+	(BareType(){type = token.image;})? VariableDeclarationList() ";"
 }
 
 void LocalVariableDeclaration() : {}
 {
-	BareType() VariableDeclarationList() ";"
+	BareType(){type=token.image;} VariableDeclarationList() ";"
 }
 
 void VariableDeclarationList() : {}
@@ -229,6 +254,25 @@ void SuffixedVariable() #void : {}
 void PrefixedVariable() #void :{}
 {
 	Identifier()
+	{
+		SymTabEntry variableId;
+		if (!global) {
+			variableId = st.enterLocal(token.image);
+		} else {
+			SymTab s = st.getGlobalSymTab();
+			variableId = s.enter(token.image);
+		}
+		global = false;
+		variableId.setDefinition(DefinitionImpl.VARIABLE);
+		variableId.setTypeSpec(Predefined.undefinedType);
+		if (type.equals("int"))
+		{
+			variableId.setTypeSpec(Predefined.integerType);
+		} else if (type.equals("char")) {
+			variableId.setTypeSpec(Predefined.charType);
+			type = "int";
+		}
+	}
 	| "*" PrefixedVariable() #PointerDeclaration(1)
 }
 
@@ -245,20 +289,41 @@ void FunctionDeclarationParameter(): {}
 
 void FunctionDefinition() : {}
 {
-    (Type())? Identifier() (("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
-        ("{" (LocalVariableDeclaration())* (Statement())* "}") #FunctionBody
+    (Type())? Identifier()
+	{
+
+			st.push();
+			SymTab s = st.push();
+
+			SymTabEntry e = SymTabFactory.createSymTabEntry(token.image, s);
+			e.setAttribute(SymTabKeyImpl.ROUTINE_SYMTAB, s);
+			e.setDefinition(DefinitionImpl.FUNCTION);
+			((ArrayList<SymTabEntry>)programId.getAttribute(SymTabKeyImpl.ROUTINE_ROUTINES)).add(e);
+
+	}
+		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
+        ("{" (LocalVariableDeclaration())* (Statement())* "}"
+		{
+			st.pop();
+		}
+		) #FunctionBody
 }
 
 void FunctionDefinitionParameter(): {}
 {
-    (Type())? Identifier() ("[" (Expression())? "]")?
+    (Type())? Identifier()
+	{
+		SymTabEntry variableId = st.enterLocal(token.image);
+		variableId.setDefinition(DefinitionImpl.VARIABLE);
+	}
+	("[" (Expression())? "]")?
 }
 
 void Statement() #void() : {}
 {
 		";" #NullStatement(0)
     | Expression() ";" #ExpressionStatement(1)
-    | ("{" (LocalVariableDeclaration())* (Statement())* "}") #BlockStatement()
+    | ("{" {st.push();} (LocalVariableDeclaration())* (Statement())* "}" {st.pop();}) #BlockStatement()
     | "if" "(" Expression() ")" Statement() #IfStatement(2)
     | "while" "(" Expression() ")" Statement() #WhileStatement(2)
     | "for" "(" (Expression()";"| ";" #EmptyExpression(0)) (Expression() ";" | ";" #EmptyExpression(0)) (Expression() ")" | ")" #EmptyExpression(0)) Statement() #ForStatement(4)
@@ -281,7 +346,7 @@ void Expression() #void: {}
 /** Right-to-left */
 void AssignmentExpression() #void: {}
 {
-    TernaryExpression() ( "+=" AssignmentExpression() #AddAssign(2) 
+    TernaryExpression() ( "+=" AssignmentExpression() #AddAssign(2)
                         | "-=" AssignmentExpression() #SubtractAssign(2)
                         | "*=" AssignmentExpression() #MultiplyAsign(2)
                         | "/=" AssignmentExpression() #DivideAssign(2)
@@ -383,7 +448,7 @@ void PrefixExpression() #void() : {}
 
 void SuffixExpression() #void() : {}
 {
-    AtomicExpression() 
+    AtomicExpression()
 			( "++" #PostIncrement(1)
 			| "--" #PostDecrement(1)
 			| "(" Expression() ")" #FunctionCall(2)
@@ -606,4 +671,18 @@ void Not_Equals() : {}
 void Tokens() : {}
 {
     (FunctionDefinition() | Statement() | <COMMENT>)* <EOF>
+}
+
+JAVACODE
+String handleError(ParseException ex) #void
+{
+	Token token = ex.currentToken;
+	System.out.println(ex.getMessage());
+
+	do {
+		token = getNextToken();
+	} while (token.kind != SEMI_COLON);
+
+	jjtree.popNode();
+	return token.image;
 }
