@@ -1,0 +1,278 @@
+---------- error -----------
+program
+FunctionDefinition
+	Type
+	BareType
+	Identifier
+	ParameterList
+	FunctionDefinitionParameter
+		Type
+		BareType
+		Identifier
+	FunctionBody
+	ConditionalOperator
+		Equal
+		Identifier
+		Number
+		Number
+		Multiply
+		Identifier
+		FunctionCall
+			Identifier
+			Subtract
+			Identifier
+			Number
+	ReturnStatement
+GlobalVariableDeclaration
+	BareType
+	VariableDeclarationList
+	Identifier
+FunctionDefinition
+	Type
+	BareType
+	Identifier
+	ParameterList
+	FunctionDefinitionParameter
+		Type
+		BareType
+		Identifier
+	FunctionBody
+	LocalVariableDeclaration
+		BareType
+		VariableDeclarationList
+		Identifier
+	Assign
+		Identifier
+		Number
+	ForStatement
+		LessThanOrEqual
+		Multiply
+			Identifier
+			Identifier
+		Identifier
+		PreIncrement
+		Identifier
+		Modulo
+		Not
+			Identifier
+		Identifier
+		IfStatement
+		Number
+		ReturnStatement
+	Number
+	ReturnStatement
+
+===== CROSS-REFERENCE TABLE =====
+
+*** PROGRAM main ***
+
+Identifier       Line numbers    Type specification
+----------       ------------    ------------------
+foo
+								Defined as: variable
+								Scope nesting level: 1
+
+*** FUNCTION fact ***
+
+Identifier       Line numbers    Type specification
+----------       ------------    ------------------
+n
+								Defined as: variable
+								Scope nesting level: 3
+
+*** FUNCTION is_prime ***
+
+Identifier       Line numbers    Type specification
+----------       ------------    ------------------
+i
+								Defined as: variable
+								Scope nesting level: 4
+n
+								Defined as: variable
+								Scope nesting level: 4
+
+
+-------------- no error ------------
+program
+FunctionDefinition
+	Type
+	BareType
+	Identifier
+	ParameterList
+	FunctionDefinitionParameter
+		Type
+		BareType
+		Identifier
+	FunctionBody
+	ConditionalOperator
+		Equal
+		Identifier
+		Number
+		Number
+		Multiply
+		Identifier
+		FunctionCall
+			Identifier
+			Subtract
+			Identifier
+			Number
+	ReturnStatement
+GlobalVariableDeclaration
+	BareType
+	VariableDeclarationList
+	Identifier
+FunctionDefinition
+	Type
+	BareType
+	Identifier
+	ParameterList
+	FunctionDefinitionParameter
+		Type
+		BareType
+		Identifier
+	FunctionBody
+	LocalVariableDeclaration
+		BareType
+		VariableDeclarationList
+		Identifier
+	Assign
+		Identifier
+		Number
+	ForStatement
+		LessThanOrEqual
+		Multiply
+			Identifier
+			Identifier
+		Identifier
+		PreIncrement
+		Identifier
+		Modulo
+		Not
+			Identifier
+		Identifier
+		IfStatement
+		Number
+		ReturnStatement
+	Number
+	ReturnStatement
+FunctionDefinition
+	Type
+	BareType
+	Identifier
+	ParameterList
+	FunctionDefinitionParameter
+		Type
+		BareType
+		Identifier
+	FunctionDefinitionParameter
+		Type
+		BareType
+		Identifier
+	FunctionBody
+	LocalVariableDeclaration
+		BareType
+		VariableDeclarationList
+		Initializer
+			ArrayDeclaration
+			Identifier
+			StringLiteral
+	LocalVariableDeclaration
+		BareType
+		VariableDeclarationList
+		Initializer
+			Identifier
+			Number
+	ExpressionStatement
+		FunctionCall
+		Identifier
+		Comma
+			StringLiteral
+			Identifier
+	BlockStatement
+		Modulo
+		Identifier
+		Number
+		SwitchStatement
+		Number
+		ExpressionStatement
+			FunctionCall
+			Identifier
+			Comma
+				StringLiteral
+				FunctionCall
+				Identifier
+				Identifier
+		BreakStatement
+		Number
+		ExpressionStatement
+			FunctionCall
+			Identifier
+			Comma
+				StringLiteral
+				FunctionCall
+				Identifier
+				Identifier
+		ExpressionStatement
+			FunctionCall
+			Identifier
+			Comma
+				Comma
+				StringLiteral
+				FunctionCall
+					Identifier
+					Identifier
+				FunctionCall
+				Identifier
+				Identifier
+		BlockStatenent
+	LessThan
+		PostIncrement
+		Identifier
+		Number
+	DoWhileExpression
+
+===== CROSS-REFERENCE TABLE =====
+
+*** PROGRAM main ***
+
+Identifier       Line numbers    Type specification
+----------       ------------    ------------------
+foo
+								Defined as: variable
+								Scope nesting level: 1
+
+*** FUNCTION fact ***
+
+Identifier       Line numbers    Type specification
+----------       ------------    ------------------
+n
+								Defined as: variable
+								Scope nesting level: 3
+
+*** FUNCTION is_prime ***
+
+Identifier       Line numbers    Type specification
+----------       ------------    ------------------
+i
+								Defined as: variable
+								Scope nesting level: 4
+n
+								Defined as: variable
+								Scope nesting level: 4
+
+*** FUNCTION main ***
+
+Identifier       Line numbers    Type specification
+----------       ------------    ------------------
+argc
+								Defined as: variable
+								Scope nesting level: 5
+argv
+								Defined as: variable
+								Scope nesting level: 5
+n
+								Defined as: variable
+								Scope nesting level: 5
+str
+								Defined as: variable
+								Scope nesting level: 5

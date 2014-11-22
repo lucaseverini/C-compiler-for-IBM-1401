@@ -11,6 +11,7 @@ options
 {
 	DEBUG_PARSER=false;// true;
 	LOOKAHEAD = 99999;
+    NODE_CLASS="MyNode";
 }
 
 PARSER_BEGIN(SmallCC)
@@ -31,98 +32,75 @@ public class SmallCC
   {
     File file = new File(fileName);
     Reader sr = new FileReader(file);
-    /*
-      line continuations and newline encoding are hard to keep
-      track of at tokenization time, so we'll handle them
-      directly in the reader
-    */
-    /*
-    Reader sr = new FileReader(file) {
-      private int[] lookahead = {-1, -1};
-      public int read() throws IOException {
-        if (lookahead[0] >= 0) {
-          int ch = lookahead[0];
-          lookahead[0] = lookahead[1];
-          lookahead[1] = -1;
-          return ch;
-        }
-        int ch = super.read();
-        //possible line continuation
-        if (ch == '\\') {
-          lookahead[0] = super.read();
 
-          if (lookahead[0] == '\r') {
-            //the user is using windows, what a loser :P
-            lookahead[1] = super.read();
-            if (lookahead[1] != '\n') {
-              //carriage return with no line feed, what's going on?
-                                    // maybe we are printing a bold character or an underline
-              return ch;
-            } else {
-              lookahead[0] = '\n';
-            }
-          }
-          if (lookahead[0] == '\n') {
-            lookahead[0] = lookahead[1] = -1;
-            do {
-              ch = super.read();
-              if (ch < 0) return ch;
-            } while(Character.isWhitespace((char) ch));
-            return ch;
-          }
-        } else if (ch == '\r') {
-          lookahead[0] = super.read();
-          if (lookahead[0] == '\n') {
-            lookahead[0] = lookahead[1] = -1;
-            return '\n';
-          }
-        }
-        return ch;
-      }
-
-      public int read(char[] cbuf, int offset, int length) throws IOException{
-        int read = 0;
-        while (read < length && offset + read < cbuf.length) {
-          int ch = read();
-          if (ch < 0) break;
-          cbuf[offset + (read++)] = (char) ch;
-        }
-        if (read == 0 && read < length) return -1;
-        return read;
-      }
-    };
-    */
     SmallCC parser = new SmallCC(sr);
     SimpleNode program = parser.program();
-    printTree(program);
+   	printTree(program);
+   	
+   	// System.out.println("==============================");
+    // program.dump("");
   }
 
-  public static void printTree(SimpleNode node) {
+  public static void printTree(SimpleNode node) 
+  {
     printTree(node, 0);
   }
 
-  public static void printTree(SimpleNode node, int level) {
-    for (int i = 0; i < level; ++i) System.out.print("  ");
-    System.out.println(node);
-    int numChildren = node.jjtGetNumChildren();
-    for(int i = 0; i <  numChildren; ++i) {
+  public static void printTree(SimpleNode node, int level) 
+  {
+    for (int i = 0; i < level; ++i) 
+    {
+    	System.out.print("    ");
+    }
+    	
+	MyNode n = (MyNode)node;
+	int kind = n.getKind();
+	String name = n.getName();
+	
+	String begin = String.format("<%s>", node.toString());
+    System.out.println(begin);
+    
+    // System.out.println(kind);
+ 	
+	if(kind == 49 || kind == 50 || kind == 51 || kind == 52 || kind == 15)
+	{
+		for (int i = 0; i < level; ++i) 
+		{
+			System.out.print("    ");
+		}
+
+   		System.out.println("    " + name);
+	}
+	
+    int numChildren = node.jjtGetNumChildren();    
+    for(int i = 0; i <  numChildren; ++i) 
+    {
       printTree((SimpleNode)node.jjtGetChild(i), level + 1);
     }
+    
+    for (int i = 0; i < level; ++i) 
+    {
+    	System.out.print("    ");
+    }
+
+	String end = String.format("</%s>", node.toString());
+    System.out.println(end);
   }
-
 }
-
 
 PARSER_END(SmallCC)
 
-SKIP : {
+
+SKIP : 
+{
     " "
   | "\t"
   | "\n"
   | "\r\n"
 }
 
-TOKEN : {
+TOKEN : 
+{
     <BREAK : "break">
   | <CASE: "case">
   | <CHAR: "char">
@@ -185,33 +163,76 @@ TOKEN : {
 
 SimpleNode program()  : {}
 {
-  (GlobalVariableDeclaration() | FunctionDeclaration() | FunctionDefinition())*
-  {return jjtThis;}
+  	(GlobalVariableDeclaration() | FunctionDeclaration() | FunctionDefinition())*
+
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
+	
+	{return jjtThis;}
 }
 
 void BareType(): {}
 {
   "char" | "int"
+
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void Type(): {}
 {
-  BareType() ("*")*
+  	BareType() ("*")*
+
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void GlobalVariableDeclaration() : {}
 {
-	(BareType())? VariableDeclarationList() ";"
+	(BareType())? VariableDeclarationList() ";"	
+
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void LocalVariableDeclaration() : {}
 {
 	BareType() VariableDeclarationList() ";"
+
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void VariableDeclarationList() : {}
-{
+{	
 	VariableInitializer() ("," VariableInitializer())*
+
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(9999);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void VariableInitializer() #void :{}
@@ -236,22 +257,50 @@ void PrefixedVariable() #void :{}
 void FunctionDeclaration() : {}
 {
     Type() Identifier() ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")") #ParameterList ";"
+
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void FunctionDeclarationParameter(): {}
 {
     (Type() (Identifier())? | Identifier()) ("[" (Expression())? "]")?
+    
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void FunctionDefinition() : {}
 {
     (Type())? Identifier() (("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
         ("{" (LocalVariableDeclaration())* (Statement())* "}") #FunctionBody
+        
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void FunctionDefinitionParameter(): {}
 {
     (Type())? Identifier() ("[" (Expression())? "]")?
+    
+	{
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+	}
 }
 
 void Statement() #void() : {}
@@ -278,6 +327,7 @@ void Expression() #void: {}
 {
     AssignmentExpression() ("," AssignmentExpression() #Comma(2))*
 }
+
 /** Right-to-left */
 void AssignmentExpression() #void: {}
 {
@@ -288,10 +338,10 @@ void AssignmentExpression() #void: {}
                         | "%=" AssignmentExpression() #ModuloAssign(2)
                         | ">>=" AssignmentExpression() #RightShiftAssign(2)
                         | "<<=" AssignmentExpression() #LeftShiftAssign(2)
-												| "&=" AssignmentExpression() #BitAndAssign(2)
-												| "^=" AssignmentExpression() #BitXorAssign(2)
-												| "|=" AssignmentExpression() #BitXorAssign(2)
-												| "=" AssignmentExpression() #Assign(2))?
+						| "&=" AssignmentExpression() #BitAndAssign(2)
+						| "^=" AssignmentExpression() #BitXorAssign(2)
+						| "|=" AssignmentExpression() #BitXorAssign(2)
+						| "=" AssignmentExpression() #Assign(2))?
 }
 
 void TernaryExpression() #void: {}
@@ -365,7 +415,7 @@ void MultiplicativeExpression() #void() : {}
 }
 
 void PrefixExpression() #void() : {}
-{
+{	
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
     SuffixExpression()
@@ -392,7 +442,7 @@ void SuffixExpression() #void() : {}
 
 void AtomicExpression() #void() : {}
 {
-    Identifier()
+   Identifier()
     | Number()
     | StringLiteral()
     | CharacterConstant()
@@ -402,28 +452,55 @@ void AtomicExpression() #void() : {}
 void Identifier() #Identifier : {}
 {
     <IDENTIFIER>
+    {
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+    }
 }
 
 void CharacterConstant() : {}
 {
     <CHARACTER_CONST>
+    {
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+    }
 }
 
 void Number() : {}
 {
     <NUMBER>
+    {
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+    }
 }
 
 void StringLiteral() : {}
 {
     <STRING_LIT>
+    {
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+    }
 }
 
 void Boolean_Not() : {}
 {
     <BOOLEAN_NOT>
     {
-        System.out.print("! ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -431,7 +508,10 @@ void Boolean_And() : {}
 {
     <BOOLEAN_AND>
     {
-        System.out.print("&& ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -439,7 +519,10 @@ void Boolean_Or() : {}
 {
     <BOOLEAN_OR>
     {
-        System.out.print("|| ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -447,7 +530,10 @@ void Bit_Not() : {}
 {
     <BIT_NOT>
     {
-        System.out.print("~ ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -455,7 +541,10 @@ void Bit_And() : {}
 {
     <BIT_AND>
     {
-        System.out.print("& ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -463,7 +552,10 @@ void Bit_Or() : {}
 {
     <BIT_OR>
     {
-        System.out.print("| ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -471,7 +563,10 @@ void Bit_Xor() : {}
 {
     <BIT_XOR>
     {
-        System.out.print("^ ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -480,6 +575,11 @@ void Left_Shift() : {}
     <LEFT_SHIFT>
     {
         System.out.print("<< ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -488,6 +588,11 @@ void Right_Shift() : {}
     <RIGHT_SHIFT>
     {
         System.out.print(">> ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -496,6 +601,11 @@ void R_Paren() : {}
     <R_PAREN>
     {
         System.out.print(") ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -504,6 +614,11 @@ void L_Paren() : {}
     <L_PAREN>
     {
         System.out.print("( ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -512,6 +627,11 @@ void Plus() : {}
     <PLUS>
     {
         System.out.print("+ ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -520,6 +640,11 @@ void Plus_Plus() : {}
     <PLUS_PLUS>
     {
         System.out.print("++ ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -528,6 +653,11 @@ void Minus() : {}
     <MINUS>
     {
         System.out.print("- ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -535,7 +665,10 @@ void Minus_Minus() : {}
 {
     <MINUS_MINUS>
     {
-        System.out.print("-- ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -543,7 +676,10 @@ void Star(): {}
 {
     <STAR>
     {
-        System.out.print("* ");
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -552,6 +688,11 @@ void Mod() : {}
     <MOD>
     {
         System.out.print("% ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -560,7 +701,12 @@ void Divide() : {}
     <DIVIDE>
     {
         System.out.print("/ ");
-    }
+ 
+     	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+   }
 }
 
 void Equals() : {}
@@ -568,6 +714,11 @@ void Equals() : {}
     <EQUALS>
     {
         System.out.print("= ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -576,6 +727,11 @@ void Less_Than() : {}
     <LESS_THAN>
     {
         System.out.print("< ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -584,6 +740,11 @@ void Greater_Than() : {}
     <GREATER_THAN>
     {
         System.out.print("> ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
@@ -591,7 +752,6 @@ void Equals_Equals() #void : {}
 {
     <EQUALS_EQUALS>
     {
-        System.out.print("== ");
     }
 }
 
@@ -600,10 +760,21 @@ void Not_Equals() : {}
     <NOT_EQUALS>
     {
         System.out.print("!= ");
+
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
     }
 }
 
 void Tokens() : {}
 {
     (FunctionDefinition() | Statement() | <COMMENT>)* <EOF>
+	{	
+    	jjtThis.setName(token.image);
+    	jjtThis.setKind(token.kind);
+    	jjtThis.setCol(token.beginLine);
+    	jjtThis.setRow(token.beginColumn);
+    }
 }
