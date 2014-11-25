@@ -382,12 +382,22 @@ void Statement() #void() : {}
     | "do" Statement() "while" "(" Expression() ")" ";" #DoWhileExpression()
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
      * make another production rule for a switch statement body that looks like a block statement with cases. */
-    | "switch" "(" Expression() ")" ("{" (LocalVariableDeclaration())* (("case" Expression() ":" | "default" ":")? Statement())* "}" #BlockStatenent ) #SwitchStatement
+    | "switch" "(" Expression() ")" CaseBlock() #SwitchStatement(2)
     | "break" ";" #BreakStatement(0)
     | "continue" ";" #ContinueStatement(0)
     | "return" (Expression())? ";" #ReturnStatement
     | Identifier() ":" Statement() #LabeledStatement(2)
     | "goto" Identifier() ";" #GotoStatement(1)
+}
+
+void CaseStatement() : {}
+{
+	(("case" Expression() | "default") ":" (CaseStatement() | Statement()))
+}
+
+void CaseBlock() : {}
+{
+	"{" (LocalVariableDeclaration())* (Statement() | CaseStatement()) * "}"
 }
 
 /** Left-to-right*/
