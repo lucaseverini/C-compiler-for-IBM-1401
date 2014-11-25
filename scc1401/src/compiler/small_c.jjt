@@ -46,59 +46,59 @@ public class SmallCC
   {
     File file = new File(fileName);
     Reader sr = new FileReader(file);
-    
+
 	programId.setDefinition(DefinitionImpl.PROGRAM);
 	programId.setAttribute(SymTabKeyImpl.ROUTINE_SYMTAB, st.push());
 	st.setProgramId(programId);
-   
+
     SmallCC parser = new SmallCC(sr);
     SimpleNode program = parser.program();
    	printTree(program);
-	
+
 	CrossReferencer crossReferencer = new CrossReferencer();
 	crossReferencer.print(st);
   }
 
-  public static void printTree(SimpleNode node) 
+  public static void printTree(SimpleNode node)
   {
   	System.out.println("===== AST (parse tree) =====");
-  
+
     printTree(node, 0);
   }
 
-  public static void printTree(SimpleNode node, int level) 
+  public static void printTree(SimpleNode node, int level)
   {
-    for (int i = 0; i < level; ++i) 
+    for (int i = 0; i < level; ++i)
     {
     	System.out.print("    ");
     }
-    	
+
 	MyNode n = (MyNode)node;
 	int kind = n.getKind();
 	String name = n.getName();
-	
+
 	String begin = String.format("<%s>", node.toString());
     System.out.println(begin);
-    
+
     // System.out.println(kind);
- 	
+
 	if(kind == 49 || kind == 50 || kind == 51 || kind == 52 || kind == 15)
 	{
-		for (int i = 0; i < level; ++i) 
+		for (int i = 0; i < level; ++i)
 		{
 			System.out.print("    ");
 		}
 
    		System.out.println("    " + name);
 	}
-	
-    int numChildren = node.jjtGetNumChildren();    
-    for(int i = 0; i <  numChildren; ++i) 
+
+    int numChildren = node.jjtGetNumChildren();
+    for(int i = 0; i <  numChildren; ++i)
     {
       printTree((SimpleNode)node.jjtGetChild(i), level + 1);
     }
-    
-    for (int i = 0; i < level; ++i) 
+
+    for (int i = 0; i < level; ++i)
     {
     	System.out.print("    ");
     }
@@ -111,7 +111,7 @@ public class SmallCC
 PARSER_END(SmallCC)
 
 
-SKIP : 
+SKIP :
 {
     " "
   | "\t"
@@ -119,7 +119,7 @@ SKIP :
   | "\r\n"
 }
 
-TOKEN : 
+TOKEN :
 {
     <BREAK : "break">
   | <CASE: "case">
@@ -183,12 +183,12 @@ TOKEN :
 
 SimpleNode program()  : {}
 {
-	try 
+	try
 	{
   		(GlobalVariableDeclaration() | FunctionDeclaration() | FunctionDefinition())*
   		{return jjtThis;}
-	} 
-	catch (ParseException ex) 
+	}
+	catch (ParseException ex)
 	{
 		handleError(ex);
 		return null;
@@ -230,7 +230,7 @@ void GlobalVariableDeclaration() : {}
 {
 	{global = true;}
 	(BareType(){type = token.image;})? VariableDeclarationList() ";"
-	
+
 	{
     	jjtThis.setName(token.image);
     	jjtThis.setKind(token.kind);
@@ -252,7 +252,7 @@ void LocalVariableDeclaration() : {}
 }
 
 void VariableDeclarationList() : {}
-{	
+{
 	VariableInitializer() ("," VariableInitializer())*
 
 	{
@@ -316,7 +316,7 @@ void FunctionDeclaration() : {}
 void FunctionDeclarationParameter(): {}
 {
     (Type() (Identifier())? | Identifier()) ("[" (Expression())? "]")?
-    
+
 	{
     	jjtThis.setName(token.image);
     	jjtThis.setKind(token.kind);
@@ -329,8 +329,6 @@ void FunctionDefinition() : {}
 {
     (Type())? Identifier()
 	{
-
-			st.push();
 			SymTab s = st.push();
 
 			SymTabEntry e = SymTabFactory.createSymTabEntry(token.image, s);
@@ -493,7 +491,7 @@ void MultiplicativeExpression() #void() : {}
 }
 
 void PrefixExpression() #void() : {}
-{	
+{
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
     SuffixExpression()
@@ -779,7 +777,7 @@ void Divide() : {}
     <DIVIDE>
     {
         System.out.print("/ ");
- 
+
      	jjtThis.setName(token.image);
     	jjtThis.setKind(token.kind);
     	jjtThis.setCol(token.beginLine);
@@ -849,7 +847,7 @@ void Not_Equals() : {}
 void Tokens() : {}
 {
     (FunctionDefinition() | Statement() | <COMMENT>)* <EOF>
-	{	
+	{
     	jjtThis.setName(token.image);
     	jjtThis.setKind(token.kind);
     	jjtThis.setCol(token.beginLine);
