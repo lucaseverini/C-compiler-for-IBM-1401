@@ -53,7 +53,9 @@ public class SmallCC
 
     SmallCC parser = new SmallCC(sr);
     SimpleNode program = parser.program();
-   	printTree(program);
+	printTree(program);
+
+	//Program p = new Program(retree.Rearborator(program));
 
 	CrossReferencer crossReferencer = new CrossReferencer();
 	crossReferencer.print(st);
@@ -217,13 +219,6 @@ void BareType(): {}
 void Type(): {}
 {
   	BareType() ("*")*
-
-	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-	}
 }
 
 void GlobalVariableDeclaration() : {}
@@ -409,7 +404,7 @@ void AssignmentExpression() #void: {}
 {
     TernaryExpression() ( "+=" AssignmentExpression() #AddAssign(2)
                         | "-=" AssignmentExpression() #SubtractAssign(2)
-                        | "*=" AssignmentExpression() #MultiplyAsign(2)
+                        | "*=" AssignmentExpression() #MultiplyAssign(2)
                         | "/=" AssignmentExpression() #DivideAssign(2)
                         | "%=" AssignmentExpression() #ModuloAssign(2)
                         | ">>=" AssignmentExpression() #RightShiftAssign(2)

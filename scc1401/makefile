@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 #	makefile
-#	
+#
 #	Small-C compiler
 #   CS153 Final project - SJSU
 #	November-8-2014
@@ -11,14 +11,16 @@
 
 JAVACC=$(HOME)/bin/javacc-6.0
 
-all: 
+all:
 	mkdir -p temp/compiler; \
 	mkdir -p temp/preprocessor; \
 	mkdir -p temp/wci/intermediate; \
 	mkdir -p temp/wci/util; \
 	cp -r src/wci temp; \
+	cp -r src/retree temp; \
+	cp src/compiler/MyNode.java temp/compiler; \
 	make compile; \
-	#rm -r temp;
+	rm -r temp;
 
 javacc: jjtree
 	cd temp/preprocessor; \
