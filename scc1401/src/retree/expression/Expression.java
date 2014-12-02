@@ -1,3 +1,5 @@
+
+
 public abstract class Expression {
 	private Type type;
 	public Expression(Type type) {
@@ -6,7 +8,7 @@ public abstract class Expression {
 	public Type getType() {
 		return type;
 	}
-	public Expression reduce() {
+	public Expression collapse() {
 		return this;
 	}
 	

@@ -12,6 +12,10 @@ public class ConstantExpression extends Expression{
 		return "";
 	}
 	
+	public int getValue() {
+		return val;
+	}
+	
 	public String generateValue(String location) {
 		return INS("MCW", CONST(val), location); 
 	}
