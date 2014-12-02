@@ -1,5 +1,9 @@
 public class PointerType extends Type{
 	private Type refType;
+	
+	public PointerType(Type refType) {
+		this.refType = refType;
+	}
 
 	public Type getType(){
 		return refType;
@@ -11,7 +15,7 @@ public class PointerType extends Type{
 
 	public boolean equals(Type t) {
 		if (t instanceof PointerType) {
-			if (this.getType().equals( ((PointerType)t).getType() )) {
+			if (this.getType().equals( ((PointerType)t).getType())) {
 				return true;
 			}
 		}

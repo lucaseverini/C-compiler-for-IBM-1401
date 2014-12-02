@@ -1,6 +1,6 @@
 import static RetreeUtils.*;
 
-public class VariableExpression extends LValue{
+public class VariableExpression extends LValue {
 	private int offset; //negative means absolute location / global
 	
 	public VariableExpression(Type type, int offset) {
@@ -19,5 +19,4 @@ public class VariableExpression extends LValue{
 	public String getLocation() {
 		return OFF(offset);
 	}
-
 }
