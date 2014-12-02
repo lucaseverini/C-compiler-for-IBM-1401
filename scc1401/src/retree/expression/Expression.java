@@ -9,8 +9,9 @@ public abstract class Expression {
 	public Expression reduce() {
 		return this;
 	}
+	
 	public abstract String generateCode();
 	
 	//remember this should always call generateCode as well.
-	public abstract String generateValue(int offset);
+	public abstract String generateValue(String location);
 }

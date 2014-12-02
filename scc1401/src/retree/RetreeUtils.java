@@ -1,11 +1,37 @@
 public class RetreeUtils {
-	//generates assembly to calculate a memory offset, and stores it into
-	//a positive offset means an address relative to FP
-	//a negative offset means an absolute addresss
-	//the resulting address is stored in A{register}, where register
-	//is 0, 1, or 2.
-	public static String computeOffset(int offset, int register) {
-	""
+	public static String LBL_INS(String label, String operation, String ... args) {
+		String line = "     ";
+		line += label;
+		while(line.length() < 15) line += " ";
+		line += operation;
+		while (line.length() < 20) line += " ";
+		for (int i = 0; i < args.length; ++i) {
+			if (i > 0) line += ",";
+			line += arg;
+		}
+		return line + "\n";
 	}
-
+	
+	public static String INS(String operation, String ... args) {
+		return LBL_INS("", operation, args);
+	}
+	
+	public static String CONST(int val) { return "$" + COD(val) + "$";}
+	public static String REG(String val) { return "R" + val;}
+	
+	public static String OFF(int offset) {
+		if (offset > 0) {
+			return "SP+" + COD(offset);
+		} else {
+			return COD(-offset);
+		}
+	}
+	
+	public static String COD(int val) {
+		return val + "";
+		//todo
+		
+	}
+	public static String ADDR_REL(int base, int offset); {
+		return COD(base) + "+" + COD(offset);
 }

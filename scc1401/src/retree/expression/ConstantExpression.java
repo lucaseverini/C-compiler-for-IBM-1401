@@ -1,3 +1,5 @@
+import static RetreeUtils.*;
+
 public class ConstantExpression extends Expression{
 	private int val; //everything should fit into an int.
 	
@@ -9,9 +11,9 @@ public class ConstantExpression extends Expression{
 	public String generateCode() {
 		return "";
 	}
-	//remember this should always call generateCode as well.
-	public String generateValue(int offset) {
-		
+	
+	public String generateValue(String location) {
+		return INS("MCW", CONST(val), location); 
 	}
 
 }
