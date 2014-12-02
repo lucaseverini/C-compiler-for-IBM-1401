@@ -125,7 +125,6 @@ TOKEN :
 {
     <BREAK : "break">
   | <CASE: "case">
-  | <CHAR: "char">
   | <CONTINUE: "continue">
   | <_DEFAULT: "default">
   | <DO: "do">
@@ -134,6 +133,7 @@ TOKEN :
   | <GOTO: "goto">
   | <IF: "if">
   | <INT: "int">
+  | <CHAR: "char">
   | <LONG: "long">
   | <RETURN: "return">
   | <SHORT: "short">
@@ -206,7 +206,7 @@ SimpleNode program()  : {}
 
 void BareType(): {}
 {
-  "char" | "int"
+  ("char" | "int")
 
 	{
     	jjtThis.setName(token.image);
@@ -218,7 +218,7 @@ void BareType(): {}
 
 void Type(): {}
 {
-  	BareType() ("*")*
+  	BareType() ("*" #PointerType(1))*
 }
 
 void GlobalVariableDeclaration() : {}
@@ -312,12 +312,6 @@ void FunctionDeclarationParameter(): {}
 {
     (Type() (Identifier())? | Identifier()) ("[" (Expression())? "]")?
 
-	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-	}
 }
 
 void FunctionDefinition() : {}
@@ -355,13 +349,6 @@ void FunctionDefinitionParameter(): {}
 		variableId.setDefinition(DefinitionImpl.VARIABLE);
 	}
 	("[" (Expression())? "]")?
-
-	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-	}
 }
 
 void Statement() #void() : {}
