@@ -16,7 +16,12 @@ public class VariableExpression extends LValue {
 		return INS("MCW", OFF(offset), location);
 	}
 	
-	public String getLocation() {
-		return OFF(offset);
+	public String generateLocation(String location) {
+		if (offset >= 0) {
+			return INS("MCW", "SP", location) +
+				INS("A", CONST(offset), location);
+		} else {
+			return INS("MCW", CONST(-offset), location);
+		} 
 	}
 }

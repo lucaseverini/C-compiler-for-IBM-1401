@@ -3,5 +3,9 @@ public  abstract class LValue extends Expression {
 		super(type);
 	}
 	
-	public abstract String getLocation();
+	@Override
+	public abstract LValue collapse();
+	
+	//remember this needs to generate side effects.	
+	public abstract String generateLocation(String location);
 }

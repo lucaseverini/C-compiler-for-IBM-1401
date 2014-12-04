@@ -13,12 +13,11 @@ public class AddressOfExpression extends Expression {
 	}
 	
 	public Expression collapse() {
-		return new AddressOfExpression(child.collapse);
+		return new AddressOfExpression(child.collapse());
 	}
 	
-	public abstract String generateValue(String location) {
-		return generateCode() + 
-			INS("MCW", child.getLocation(), location);
+	public String generateValue(String location) {
+		return child.generateLocation(location);
 	}
 	
 
