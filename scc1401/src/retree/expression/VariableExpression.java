@@ -14,12 +14,12 @@ public class VariableExpression extends LValue {
 	}
 	//remember this should always call generateCode as well.
 	public String generateValue(String location) {
-		return INS("MCW", OFF(offset), location);
+		return INS("MCW", RELADDR(IDX(3), offset), location);
 	}
 	
 	public String generateLocation(String location) {
 		if (offset >= 0) {
-			return INS("MCW", "SP", location) +
+			return INS("MCW", IDX(3), location) +
 				INS("A", CONST(offset), location);
 		} else {
 			return INS("MCW", CONST(-offset), location);

@@ -8,16 +8,16 @@ public class ConstantExpression extends Expression{
 		this.val = val;
 	}
 
-	public String generateCode() {
-		return "";
+	public String generateCode(boolean valueNeeded) {
+		if (valueNeeded) {
+			PUSH(CONST(val));
+		} else {
+			return "";
+		}
 	}
 	
 	public int getValue() {
 		return val;
-	}
-	
-	public String generateValue(String location) {
-		return INS("MCW", CONST(val), location); 
 	}
 
 }

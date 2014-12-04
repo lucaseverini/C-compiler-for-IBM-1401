@@ -28,9 +28,12 @@ public class DereferenceExpression extends LValue {
 	}
 	
 	public String generateValue(String location) {
-		
 		return child.generateValue(IDX(1)) + 
 			INS("MCW", RELADDR(1, "0"), location);
+	}
+	
+	public String generateLocation(String location) {
+		return child.generateValue(location);
 	}
 	
 

@@ -13,8 +13,5 @@ public abstract class Expression {
 		return this;
 	}
 	
-	public abstract String generateCode();
-	
-	//remember this should always call generateCode as well.
-	public abstract String generateValue(String location);
+	public abstract String generateCode(boolean valueNeeded);
 }
