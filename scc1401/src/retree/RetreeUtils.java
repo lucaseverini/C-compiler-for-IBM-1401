@@ -34,6 +34,7 @@ public class RetreeUtils {
 		//todo
 
 	}
-	public static String ADDR_REL(int base, int offset); {
+	public static String ADDR_REL(int base, int offset) {
 		return COD(base) + "+" + COD(offset);
+	}
 }

@@ -1,3 +1,4 @@
+package retree.type;
 public class ArrayType {
 	private int sizeOfArray;
 	private Type arrayBaseType;

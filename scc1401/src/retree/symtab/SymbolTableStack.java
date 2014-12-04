@@ -1,6 +1,15 @@
+package retree.symtab;
+
+import retree.symtab.SymTab;
+import java.util.ArrayList;
+import retree.expression.*;
+
 public class SymbolTableStack {
 
-	private ArrayList<SymTab> stack = new ArrayList<Stack>();
+	int globaloffset = 1000;
+	int localoffset = 0;
+
+	private ArrayList<SymTab> stack = new ArrayList<SymTab>();
 
 	public SymbolTableStack() {stack.add(new SymTab());}
 
@@ -17,7 +26,11 @@ public class SymbolTableStack {
 		return stack.get(stack.size()-1);
 	}
 
-	public VariableNode searchStack(String identifier) {
+	public SymTab getGlobalSymTab() {
+		return stack.get(0);
+	}
+
+	public VariableExpression searchStack(String identifier) {
 		for(int i = stack.size()-1; i > -1; i --) {
 			if (stack.get(i).get(identifier) != null) return stack.get(i).get(identifier);
 		}

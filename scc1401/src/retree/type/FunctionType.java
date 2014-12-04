@@ -1,3 +1,4 @@
+package retree.type;
 public class FunctionType {
 
 	private List<Type> paramList;
