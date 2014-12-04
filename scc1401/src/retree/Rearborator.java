@@ -1,22 +1,28 @@
 package retree;
 
 import compiler.MyNode;
-import static compiler.SmallCCTreeConstants;
-
+import static compiler.SmallCCTreeConstants.*;
+import retree.symtab.SymbolTableStack;
+import java.util.HashMap;
+import retree.type.PointerType;
+import retree.type.Type;
+import retree.symtab.FunctionDeclaration;
+import retree.program.Program;
+import retree.expression.Expression;
 public class Rearborator {
-	private SymbolTableStack symTabStack;
+	private retree.symtab.SymbolTableStack symTabStack;
 	private HashMap<String, FunctionDeclaration> funcTab;
 	private Program program;
 	private int labelNum;
-	
-	public Reaborate(MyNode root) {
+
+	public Program Reaborate(MyNode root) {
 		symTabStack = new SymbolTableStack();
 		funcTab = new HashMap<String, FunctionDeclaration>();
 		program = new Program();
 		labelNum = 0;
-		
+
 		for (int i = 0; i < root.jjtGetNumChildren(); ++i) {
-			MyNode programComponent = root.jjtGetChild(i);
+			MyNode programComponent = (MyNode)root.jjtGetChild(i);
 			switch (programComponent.id) {
 				case JJTFUNCTIONDEFINITION:
 					program.addFunction(genFunctionDefinition(programComponent));
@@ -31,10 +37,11 @@ public class Rearborator {
 					}
 					break;
 			}
-			
+
 		}
+		return program;
 	}
-	
+
 	private void parseFunctionDeclaration(MyNode dec) {
 		MyNode returnType = null;
 		String name;
@@ -50,7 +57,7 @@ public class Rearborator {
 			paramList = dec.jjtGetChild(1);
 			rType = Type.intType;
 		}
-		
+
 		List<Type> paramTypes = new ArrayList<Type>();
 		for (int i = 0; i < paramList.jjtGetNumChildren; ++i) {
 			MyNode paramNode = paramList.jjtGetChild(i);
@@ -59,7 +66,7 @@ public class Rearborator {
 		FunctionDeclaration declaration = new FunctionDeclaration(nextLabel, new FunctionType(rType, paramTypes));
 		funcTab.insert(name, declaration);
 	}
-	
+
 	private Type genType(MyNode typeNode) {
 		//sometimes our types are children of a type node
 		if (typeNode.getId() == JJTTYPE) {
@@ -72,9 +79,9 @@ public class Rearborator {
 			case JJTPOINTERTYPE:
 				return new PointerType(genType(typeNode.getChild(0)));
 		}
-		
+
 	}
-	
+
 	private String nextLabel() {
 		int num = labelNum++;
 		String label = "F";
@@ -89,10 +96,10 @@ public class Rearborator {
 	private static Expression ExpressionBuilder(MyNode n){
 		if (n.jjtGetNumChildren() == 0)
 		{
-			return ExpressionTypeBuilder(n)
+			return ExpressionTypeBuilder(n);
 		}
 		for (int i = 0; i < n.jjtGetNumChildren(); i++) {
-			return ExpressionBuilder(n.jjtGetChild(i));
+			return ExpressionBuilder((MyNode)n.jjtGetChild(i));
 		}
 	}
 

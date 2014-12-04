@@ -7,7 +7,6 @@ import retree.expression.*;
 public class SymbolTableStack {
 
 	int globaloffset = 1000;
-	int localoffset = 0;
 
 	private ArrayList<SymTab> stack = new ArrayList<SymTab>();
 

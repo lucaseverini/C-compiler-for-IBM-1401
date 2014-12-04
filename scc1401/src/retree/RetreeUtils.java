@@ -10,7 +10,7 @@ public class RetreeUtils {
 		while (line.length() < 20) line += " ";
 		for (int i = 0; i < args.length; ++i) {
 			if (i > 0) line += ",";
-			line += arg;
+			line += args[i];
 		}
 		return line + "\n";
 	}

@@ -8,6 +8,8 @@
 #
 #	By Sean Papay, Matt Pleva, Luca Severini
 #
+#	TODO add these back into the compile tag
+#
 
 JAVACC=$(HOME)/bin/javacc-6.0
 
@@ -16,9 +18,7 @@ all:
 	mkdir -p temp/preprocessor; \
 	mkdir -p temp/wci/intermediate; \
 	mkdir -p temp/wci/util; \
-	cp -r src/wci temp; \
-	cp -r src/retree temp; \
-	cp src/compiler/MyNode.java temp/compiler; \
+	cp -r src/* temp; \
 	make compile; \
 	rm -r temp;
 
@@ -37,6 +37,11 @@ jjtree:
 
 compile: javacc
 	javac -classpath temp temp/preprocessor/SmallCPP.java -d build; \
-	javac -classpath temp temp/wci/intermediate/*.java -d build; \
-	javac -classpath temp temp/wci/util/*.java -d build; \
-	javac -classpath temp temp/compiler/SmallCC.java -d build;
+	javac -classpath temp temp/retree/exceptions/*.java -d build; \
+	javac -classpath temp temp/retree/expression/*.java -d build; \
+	javac -classpath temp temp/retree/symtab/*.java -d build; \
+	javac -classpath temp temp/retree/type/*.java -d build; \
+	javac -classpath temp temp/retree/*.java -d build; \
+	javac -classpath temp temp/retree/program/*.java -d build; \
+	javac -classpath temp temp/retree/statement/*.java -d build; \
+	javac -classpath temp temp/compiler/*.java -d build;
