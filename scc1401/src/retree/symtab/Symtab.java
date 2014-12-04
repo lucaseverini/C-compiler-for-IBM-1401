@@ -1,6 +1,10 @@
 package retree.symtab;
+import java.util.HashMap;
+import retree.expression.VariableExpression;
+import retree.type.Type;
 public class SymTab {
-	private Hashmap<String,VariableExpression> table = new Hashmap<String,VariableExpression>();
+	private HashMap<String,VariableExpression> table = new HashMap<String,VariableExpression>();
+	private int localoffset = 0;
 
 	public SymTab() {;}
 
@@ -8,11 +12,13 @@ public class SymTab {
 		return table.get(identifier) == null ? null : table.get(identifier);
 	}
 
-	public void put(String identifier, VariableExpression varExp){
+	public void put(String identifier, Type t){
+		VariableExpression varExp = new VariableExpression(t, localoffset);
+		localoffset += 2;
 		table.put(identifier,varExp);
 	}
 
-	public boolean search(String identifier){
+	public VariableExpression search(String identifier){
 		return table.get(identifier) == null ? null : table.get(identifier);
 	}
 }

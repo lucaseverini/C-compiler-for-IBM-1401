@@ -1,4 +1,6 @@
 package retree.type;
+import java.util.List;
+
 public class FunctionType {
 
 	private List<Type> paramList;

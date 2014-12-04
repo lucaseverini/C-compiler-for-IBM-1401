@@ -9,7 +9,7 @@ public class RetreeUtils {
 		while (line.length() < 20) line += " ";
 		for (int i = 0; i < args.length; ++i) {
 			if (i > 0) line += ",";
-			line += arg;
+			line += args[i];
 		}
 		return line + "\n";
 	}
@@ -38,7 +38,7 @@ public class RetreeUtils {
 	public static String IDX(int i) {
 		return "X" + i;
 	}
-	
+
 	public static String RELADDR(int i, String offset) {
 		return offset + "+" + IDX(i);
 	}

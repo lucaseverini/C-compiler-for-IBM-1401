@@ -1,4 +1,5 @@
-import static RetreeUtils.*;
+package retree.program;
+import static rewtree.RetreeUtils.*;
 
 public class Initializer {
 	private VariableExpression variable;
@@ -12,9 +13,9 @@ public class Initializer {
 			throw new NonConstantExpressionException(val);
 		}
 	}
-	
+
 	public String generateCode() {
 		return INS("MCW", COD(value), variable.getLocation());
 	}
-	
+
 }

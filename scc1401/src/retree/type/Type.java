@@ -6,7 +6,7 @@ public class Type {
 
 	private int width = 0;
 
-	public type(int width){
+	public Type(int width){
 		this.width = width;
 	}
 

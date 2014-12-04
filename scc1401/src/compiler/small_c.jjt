@@ -19,16 +19,14 @@ PARSER_BEGIN(SmallCC)
 package compiler;
 import java.util.ArrayList;
 import preprocessor.*;
-import wci.intermediate.*;
-import retree.symtab.*;
-import retree.type.*;
-import wci.util.*;
+import retree.*;
+import static retree.symtab.SymbolTableStack.*;
 import java.io.*;
 
 public class SmallCC
 {
 	// used during tree build
-  public static SymbolTableStack st = new SymbolTableStack();
+  public static retree.symtab.SymbolTableStack st = new retree.symtab.SymbolTableStack();
 	// this is a very crude hack to get the global symbols into the global
 	// symbol table
 	private static boolean global = false;
@@ -38,7 +36,6 @@ public class SmallCC
 
   public static void main(String args[]) throws Exception
   {
-	programId.setAttribute(SymTabKeyImpl.ROUTINE_ROUTINES, new ArrayList<SymTabEntry>());
     compile(args[0]);
   }
 
@@ -53,8 +50,8 @@ public class SmallCC
 
 	//Program p = new Program(retree.Rearborator(program));
 
-	CrossReferencer crossReferencer = new CrossReferencer();
-	crossReferencer.print(st);
+	//CrossReferencer crossReferencer = new CrossReferencer();
+	//crossReferencer.print(st);
   }
 
   public static void printTree(SimpleNode node)
@@ -270,18 +267,18 @@ void PrefixedVariable() #void :{}
 {
 	Identifier()
 	{
-		Type t;
+		retree.type.Type t;
 		if (pointer) {
-			t = new PointerType(type.equals("int") ? Type.intType: Type.charType);
+			t = new retree.type.PointerType(type.equals("int") ? retree.type.Type.intType: retree.type.Type.charType);
 		}
 		else {
-			t = type.equals("int") ? Type.intType: Type.charType;
+			t = type.equals("int") ? retree.type.Type.intType: retree.type.Type.charType;
 		}
 		if (!global) {
-			st.peek().put(token.image,new VariableExpression(t));
+			st.peek().put(token.image,t);
 		} else {
-			SymTab s = st.getGlobalSymTab();
-			s.put(token.image,new VariableExpression(t));
+			retree.symtab.SymTab s = st.getGlobalSymTab();
+			s.put(token.image,t);
 		}
 		global = false;
 		type = "int";
