@@ -1,5 +1,6 @@
+package retree.type;
 public class Type {
-	
+
 	public static final Type intType = new Type(2);
 	public static final Type charType = new Type(1);
 

@@ -1,6 +1,9 @@
+package retree.type;
+
+
 public class PointerType extends Type{
 	private Type refType;
-	
+
 	public PointerType(Type refType) {
 		this.refType = refType;
 	}

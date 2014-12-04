@@ -34,7 +34,7 @@ public class RetreeUtils {
 		//todo
 
 	}
-	
+
 	public static String IDX(int i) {
 		return "X" + i;
 	}
@@ -42,6 +42,4 @@ public class RetreeUtils {
 	public static String RELADDR(int i, String offset) {
 		return offset + "+" + IDX(i);
 	}
-	
-	
 }

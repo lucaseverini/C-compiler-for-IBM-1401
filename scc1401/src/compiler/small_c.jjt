@@ -20,19 +20,19 @@ package compiler;
 import java.util.ArrayList;
 import preprocessor.*;
 import wci.intermediate.*;
-import wci.intermediate.symtabimpl.*;
+import retree.symtab.*;
+import retree.type.*;
 import wci.util.*;
 import java.io.*;
 
 public class SmallCC
 {
 	// used during tree build
-  public static SymTabStack st = SymTabFactory.createSymTabStack();
-	private static SymTabEntry programId = st.enterLocal("main");
-	private static ArrayList<SymTabEntry> list = new ArrayList<SymTabEntry>();
+  public static SymbolTableStack st = new SymbolTableStack();
 	// this is a very crude hack to get the global symbols into the global
 	// symbol table
 	private static boolean global = false;
+	private static boolean pointer = false;
 	// this is another ugly hack for variable types
 	private static String type = "int";
 
@@ -46,10 +46,6 @@ public class SmallCC
   {
     File file = new File(fileName);
     Reader sr = new FileReader(file);
-
-	programId.setDefinition(DefinitionImpl.PROGRAM);
-	programId.setAttribute(SymTabKeyImpl.ROUTINE_SYMTAB, st.push());
-	st.setProgramId(programId);
 
     SmallCC parser = new SmallCC(sr);
     SimpleNode program = parser.program();
@@ -274,25 +270,24 @@ void PrefixedVariable() #void :{}
 {
 	Identifier()
 	{
-		SymTabEntry variableId;
+		Type t;
+		if (pointer) {
+			t = new PointerType(type.equals("int") ? Type.intType: Type.charType);
+		}
+		else {
+			t = type.equals("int") ? Type.intType: Type.charType;
+		}
 		if (!global) {
-			variableId = st.enterLocal(token.image);
+			st.peek().put(token.image,new VariableExpression(t));
 		} else {
 			SymTab s = st.getGlobalSymTab();
-			variableId = s.enter(token.image);
+			s.put(token.image,new VariableExpression(t));
 		}
 		global = false;
-		variableId.setDefinition(DefinitionImpl.VARIABLE);
-		variableId.setTypeSpec(Predefined.undefinedType);
-		if (type.equals("int"))
-		{
-			variableId.setTypeSpec(Predefined.integerType);
-		} else if (type.equals("char")) {
-			variableId.setTypeSpec(Predefined.charType);
-			type = "int";
-		}
+		type = "int";
+		pointer = false;
 	}
-	| "*" PrefixedVariable() #PointerDeclaration(1)
+	| "*" {pointer = true;} PrefixedVariable() #PointerDeclaration(1)
 }
 
 
@@ -318,13 +313,7 @@ void FunctionDefinition() : {}
 {
     (Type())? Identifier()
 	{
-			SymTab s = st.push();
-
-			SymTabEntry e = SymTabFactory.createSymTabEntry(token.image, s);
-			e.setAttribute(SymTabKeyImpl.ROUTINE_SYMTAB, s);
-			e.setDefinition(DefinitionImpl.FUNCTION);
-			((ArrayList<SymTabEntry>)programId.getAttribute(SymTabKeyImpl.ROUTINE_ROUTINES)).add(e);
-
+		st.push();
 	}
 		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
         ("{" (LocalVariableDeclaration())* (Statement())* "}"
@@ -345,8 +334,7 @@ void FunctionDefinitionParameter(): {}
 {
     (Type())? Identifier()
 	{
-		SymTabEntry variableId = st.enterLocal(token.image);
-		variableId.setDefinition(DefinitionImpl.VARIABLE);
+		System.out.println("TODO function carp");
 	}
 	("[" (Expression())? "]")?
 }

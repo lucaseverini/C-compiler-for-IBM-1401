@@ -1,8 +1,9 @@
-import static RetreeUtils.*;
+package retree.expression;
+import static retree.RetreeUtils.*;
 
 public class VariableExpression extends LValue {
 	private int offset; //negative means absolute location / global
-	
+
 	public VariableExpression(Type type, int offset) {
 		super(type);
 		this.offset = offset;
