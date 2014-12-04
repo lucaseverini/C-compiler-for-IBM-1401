@@ -49,20 +49,26 @@ public class RetreeUtils {
 	}
 	
 	public static String PUSH(String a) {
-		return INS("MCW", a, "X2") +
+		return INS("MCW", a, "0+X2") +
 			INS("SBR", "X2", "5+X2");
 	}
 	
 	public static String POP(String location) {
-		/*
-		return INS("MCW", "0+X2", location) + 
-			INS("A", "@15995@", "X2");
-			*/
-	}
-	
-	public static String STACK_REF(int back) {
-		return RELADDR(
+		return INS("SBR", "X2", "15995+X2") + 
+			INS("MCW", "0+X2", location); 
 		
 	}
 	
+	public static String STACK_REF(int back, String location) {
+		return INS("MCW", (16000-5*back) + "+X2", location);
+	}
+	
+	public static String OFF(int offset) {
+		if (offset < 0) {
+			offset = -offset;
+			return ADDR_CONST(offset);
+		} else {
+			return "X3+" + ADDR_CONST(offset);
+		}
+	}
 }

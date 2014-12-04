@@ -10,25 +10,17 @@ public class VariableExpression extends LValue {
 		this.offset = offset;
 	}
 
-	public String generateCode() {
-		return "";
+	public String generateCode(boolean valueNeeded) {
+		if (valueNeeded) {
+			PUSH(OFF(offset));
+		} else return "";
 	}
 
 	public LValue collapse() {
-		return null;
+		return this;
 	}
 
-	//remember this should always call generateCode as well.
-	public String generateValue(String location) {
-		return INS("MCW", RELADDR(IDX(3), offset), location);
-	}
-
-	public String generateLocation(String location) {
-		if (offset >= 0) {
-			return INS("MCW", IDX(3), location) +
-				INS("A", CONST(offset), location);
-		} else {
-			return INS("MCW", CONST(-offset), location);
-		}
+	public String generateLocation() {
+		PUSH("X3"); //to be continued...
 	}
 }

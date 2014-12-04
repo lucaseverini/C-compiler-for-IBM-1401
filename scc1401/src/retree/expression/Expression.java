@@ -14,14 +14,6 @@ public abstract class Expression {
 	public Expression collapse() {
 		return this;
 	}
-<<<<<<< HEAD
 	
 	public abstract String generateCode(boolean valueNeeded);
-=======
-
-	public abstract String generateCode();
-
-	//remember this should always call generateCode as well.
-	public abstract String generateValue(String location);
->>>>>>> 7e197e91f458d23062ce2b98e54af40772fcb605
 }

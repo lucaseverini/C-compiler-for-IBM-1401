@@ -8,6 +8,6 @@ public  abstract class LValue extends Expression {
 	@Override
 	public abstract LValue collapse();
 
-	//remember this needs to generate side effects.
-	public abstract String generateLocation(String location);
+	//like generateCode, but pushed the memory location to the stack instead
+	public abstract String generateLocation();
 }
