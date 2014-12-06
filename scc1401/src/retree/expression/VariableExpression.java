@@ -12,7 +12,7 @@ public class VariableExpression extends LValue {
 
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
-			PUSH(OFF(offset));
+			return PUSH(OFF(offset));
 		} else return "";
 	}
 
@@ -20,7 +20,13 @@ public class VariableExpression extends LValue {
 		return this;
 	}
 
-	public String generateLocation() {
-		PUSH("X3"); //to be continued...
+	public String generateAddress() {
+		if (offset < 0) {
+			offset = -offset;
+			return PUSH(ADDR_CONST(offset));
+		} else {
+			return PUSH(ADDR_CONST(offset)) +
+				INS("MA", "X3", STACK_REF(1));
+		}
 	}
 }

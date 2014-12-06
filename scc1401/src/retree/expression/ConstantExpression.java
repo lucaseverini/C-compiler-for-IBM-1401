@@ -11,7 +11,7 @@ public class ConstantExpression extends Expression{
 
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
-			PUSH(CONST(val));
+			return PUSH(CONST(val));
 		} else {
 			return "";
 		}
