@@ -22,7 +22,7 @@ public class Program {
 	}
 
 	// TODO - call main
-	private String generateCode() {
+	public String generateCode() {
 		String code = "";
 		for (Initializer init : initializers) {
 			code += init.generateCode();

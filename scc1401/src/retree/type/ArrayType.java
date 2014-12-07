@@ -1,17 +1,13 @@
 package retree.type;
-public class ArrayType {
+public class ArrayType extends Type{
 	private int sizeOfArray;
 	private Type arrayBaseType;
 	private int width;
 
 	public ArrayType(int size, Type baseType) {
+		super(size * baseType.getWidth());
 		sizeOfArray = size;
 		arrayBaseType = baseType;
-		width = size * baseType.getWidth();
-	}
-
-	public int getWidth() {
-		return width;
 	}
 
 	public int getSizeOfArray() {

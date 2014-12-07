@@ -6,7 +6,6 @@ import retree.symtab.SymbolTableStack;
 import java.util.HashMap;
 import retree.type.PointerType;
 import retree.type.Type;
-import retree.symtab.FunctionDeclaration;
 import retree.program.*;
 import retree.expression.*;
 import java.util.*;

@@ -10,33 +10,31 @@
 options
 {
 	DEBUG_PARSER=false;// true;
-	LOOKAHEAD = 99999;
-    NODE_CLASS="MyNode";
+	LOOKAHEAD=99999;
+  //NODE_CLASS="MyNode";
 }
 
 PARSER_BEGIN(SmallCC)
 
 package compiler;
-import java.util.ArrayList;
+import java.util.*;
 import preprocessor.*;
 import retree.*;
-import static retree.symtab.SymbolTableStack.*;
+import retree.expression.*;
+import retree.exceptions.*;
+import retree.program.*;
+import retree.type.*;
+import retree.symtab.*;
 import java.io.*;
 
 public class SmallCC
 {
 	// used during tree build
-  public static retree.symtab.SymbolTableStack st = new retree.symtab.SymbolTableStack();
-	// this is a very crude hack to get the global symbols into the global
-	// symbol table
-	private static boolean global = false;
-	private static boolean pointer = false;
-	// this is another ugly hack for variable types
-	private static String type = "int";
-
+  public static SymbolTableStack variableTable = new SymbolTableStack();
+	
   public static void main(String args[]) throws Exception
   {
-    compile(args[0]);
+		compile(args[0]);
   }
 
   public static void compile(String fileName) throws Exception
@@ -45,13 +43,10 @@ public class SmallCC
     Reader sr = new FileReader(file);
 
     SmallCC parser = new SmallCC(sr);
-    SimpleNode program = parser.program();
-	printTree(program);
+    Program program = parser.program();
+    System.out.print(program.generateCode());
+		//printTree(program);
 
-	//Program p = new Program(retree.Rearborator(program));
-
-	//CrossReferencer crossReferencer = new CrossReferencer();
-	//crossReferencer.print(st);
   }
 
   public static void printTree(SimpleNode node)
@@ -176,155 +171,155 @@ TOKEN :
 
 /** Main production. */
 
-SimpleNode program()  : {}
+Program program() throws Exception : {
+	Program program = new Program();
+	List<Initializer> initList;
+	FunctionDefinition func;
+}
 {
-	try
-	{
-  		(GlobalVariableDeclaration() | FunctionDeclaration() | FunctionDefinition())*
-  		{return jjtThis;}
-	}
-	catch (ParseException ex)
-	{
-		handleError(ex);
-		return null;
-	}
-
-	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-	}
+  		(initList = globalVariableDeclaration() {
+				System.out.println(initList.size());
+				for (Initializer init : initList) {
+					program.addInitializer(init);
+				}
+			}
+				| functionDeclaration()
+				| func = functionDefinition() {
+					program.addFunction(func);
+				}
+			)*
+  		{
+				return program;
+			}
 }
 
-void BareType(): {}
+Type bareType(): {}
 {
-  ("char" | "int")
+  ("char" {return Type.charType;} | "int" {return Type.intType;})
 
-	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-	}
 }
 
 void Type(): {}
 {
-  	BareType() ("*" #PointerType(1))*
+  	bareType() ("*" #PointerType(1))*
 }
 
-void GlobalVariableDeclaration() : {}
+List<Initializer> globalVariableDeclaration() : {
+		List<Initializer> inits = new ArrayList<Initializer>();
+		Type baseType = Type.intType;
+}
 {
-	{global = true;}
-	(BareType(){type = token.image;})? VariableDeclarationList() ";"
-
+	(baseType=bareType() )? inits=variableDeclarationList(baseType) ";"
+	
 	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
+    	return inits;
 	}
 }
 
-void LocalVariableDeclaration() : {}
+void localVariableDeclaration() : {
+	Type baseType;
+}
 {
-	BareType(){type=token.image;} VariableDeclarationList() ";"
+	baseType = bareType() variableDeclarationList(baseType) ";"
+}
 
+List<Initializer> variableDeclarationList(Type baseType) : {
+	List<Initializer> inits = new ArrayList<Initializer>();
+	Initializer init;
+}
+{
+	init=variableInitializer(baseType) {
+		if (init != null) inits.add(init);
+	} 
+	("," variableInitializer(baseType) {
+		if (init != null) inits.add(init);
+	})*
 	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
+		return inits;
 	}
 }
 
-void VariableDeclarationList() : {}
+Initializer variableInitializer(Type baseType) : {
+	Initializer init = null;
+	VariableExpression variable;
+	Expression value = null;
+}
 {
-	VariableInitializer() ("," VariableInitializer())*
-
+	variable = suffixedVariable(baseType) ("=" value=expression() {
+		if (value != null) init = new Initializer(variable, value);
+	})?
 	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(9999);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
+		return init;
 	}
 }
 
-void VariableInitializer() #void :{}
-{
-	SuffixedVariable() ("=" AssignmentExpression() #Initializer(2))?
+//here is where we add it to our SymbolTable, since we know
+//the full type
+VariableExpression suffixedVariable(Type baseType) : {
+	Pair<Type,String> pair;
+	Expression arraySize = null;
+	int size = -1;
+	Type type;
+	Expression variable;
 }
-
-void SuffixedVariable() #void : {}
 {
-	PrefixedVariable() "[" (Expression()) "]" #ArrayDeclaration(2)
-	| PrefixedVariable() "[" "]" #ArrayDeclaration(1)
-	| PrefixedVariable()
-}
-
-void PrefixedVariable() #void :{}
-{
-	Identifier()
-	{
-		retree.type.Type t;
-		if (pointer) {
-			t = new retree.type.PointerType(type.equals("int") ? retree.type.Type.intType: retree.type.Type.charType);
+	(pair=PrefixedVariable(baseType) "[" (arraySize = expression()) "]" {
+		arraySize = arraySize.collapse();
+		if (!(arraySize instanceof ConstantExpression)) {
+			throw new NonConstantExpressionException(arraySize);
 		}
-		else {
-			t = type.equals("int") ? retree.type.Type.intType: retree.type.Type.charType;
-		}
-		if (!global) {
-			st.peek().put(token.image,t);
-		} else {
-			retree.symtab.SymTab s = st.getGlobalSymTab();
-			s.put(token.image,t);
-		}
-		global = false;
-		type = "int";
-		pointer = false;
+		size = ((ConstantExpression) arraySize).getValue();
+		type = new ArrayType(size, pair.a);
 	}
-	| "*" {pointer = true;} PrefixedVariable() #PointerDeclaration(1)
+	/* we don't currently support non-sized arrays
+	| PrefixedVariable() "[" "]" */
+	| pair=PrefixedVariable(baseType) {
+		type = pair.a;
+	})
+	{
+		return SmallCC.variableTable.add(pair.b, type);
+	}
+}
+
+Pair<Type,String> PrefixedVariable(Type baseType) : {
+	Pair<Type,String> pair = new Pair<Type,String>();
+	pair.a = baseType;
+}
+{
+	(pair.b=Identifier()
+	| "*" PrefixedVariable(new PointerType(baseType)))
+	{
+		return pair;
+	}
 }
 
 
-void FunctionDeclaration() : {}
+FunctionDeclaration functionDeclaration() : {}
 {
     Type() Identifier() ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")") #ParameterList ";"
 
 	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
+		return new FunctionDeclaration(null, null);
 	}
 }
 
 void FunctionDeclarationParameter(): {}
 {
-    (Type() (Identifier())? | Identifier()) ("[" (Expression())? "]")?
+    (Type() (Identifier())? | Identifier()) ("[" (expression())? "]")?
 
 }
 
-void FunctionDefinition() : {}
+FunctionDefinition functionDefinition() : {}
 {
-    (Type())? Identifier()
-	{
-		st.push();
-	}
-		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
-        ("{" (LocalVariableDeclaration())* (Statement())* "}"
-		{
-			st.pop();
-		}
-		) #FunctionBody
 
-	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-	}
+    (Type())? Identifier()
+    
+		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
+        ("{" (localVariableDeclaration())* (Statement())* "}"
+		) #FunctionBody
+		{
+			return null;
+		}
 }
 
 void FunctionDefinitionParameter(): {}
@@ -333,63 +328,108 @@ void FunctionDefinitionParameter(): {}
 	{
 		System.out.println("TODO function carp");
 	}
-	("[" (Expression())? "]")?
+	("[" (expression())? "]")?
 }
 
 void Statement() #void() : {}
 {
 		";" #NullStatement(0)
-    | Expression() ";" #ExpressionStatement(1)
-    | ("{" {st.push();} (LocalVariableDeclaration())* (Statement())* "}" {st.pop();}) #BlockStatement()
-    | "if" "(" Expression() ")" Statement() #IfStatement(2)
-    | "while" "(" Expression() ")" Statement() #WhileStatement(2)
-    | "for" "(" (Expression()";"| ";" #EmptyExpression(0)) (Expression() ";" | ";" #EmptyExpression(0)) (Expression() ")" | ")" #EmptyExpression(0)) Statement() #ForStatement(4)
-    | "do" Statement() "while" "(" Expression() ")" ";" #DoWhileExpression()
+    | expression() ";" #expressionStatement(1)
+    | ("{"  (localVariableDeclaration())* (Statement())* "}" ) #BlockStatement()
+    | "if" "(" expression() ")" Statement() #IfStatement(2)
+    | "while" "(" expression() ")" Statement() #WhileStatement(2)
+    | "for" "(" (expression()";"| ";" #EmptyExpression(0)) (expression() ";" | ";" #EmptyExpression(0)) (expression() ")" | ")" #EmptyExpression(0)) Statement() #ForStatement(4)
+    | "do" Statement() "while" "(" expression() ")" ";" #DoWhileExpression()
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
      * make another production rule for a switch statement body that looks like a block statement with cases. */
-    | "switch" "(" Expression() ")" CaseBlock() #SwitchStatement(2)
+    | "switch" "(" expression() ")" CaseBlock() #SwitchStatement(2)
     | "break" ";" #BreakStatement(0)
     | "continue" ";" #ContinueStatement(0)
-    | "return" (Expression())? ";" #ReturnStatement
+    | "return" (expression())? ";" #ReturnStatement
     | Identifier() ":" Statement() #LabeledStatement(2)
     | "goto" Identifier() ";" #GotoStatement(1)
 }
 
 void CaseStatement() : {}
 {
-	(("case" Expression() | "default") ":" (CaseStatement() | Statement()))
+	(("case" expression() | "default") ":" (CaseStatement() | Statement()))
 }
 
 void CaseBlock() : {}
 {
-	"{" (LocalVariableDeclaration())* (Statement() | CaseStatement()) * "}"
+	"{" (localVariableDeclaration())* (Statement() | CaseStatement()) * "}"
 }
 
 /** Left-to-right*/
-void Expression() #void: {}
+Expression expression() : {
+	Expression l = null;
+	Expression r = null;
+}
 {
-    AssignmentExpression() ("," AssignmentExpression() #Comma(2))*
+    l = assignmentExpression() ("," r = assignmentExpression() {
+			//l = new CommaExpression(l, r);
+		})*
+    {
+			return l;
+		}
 }
 
 /** Right-to-left */
-void AssignmentExpression() #void: {}
+Expression assignmentExpression() : {
+	Expression l = null, r = null;
+}
 {
-    TernaryExpression() ( "+=" AssignmentExpression() #AddAssign(2)
-                        | "-=" AssignmentExpression() #SubtractAssign(2)
-                        | "*=" AssignmentExpression() #MultiplyAssign(2)
-                        | "/=" AssignmentExpression() #DivideAssign(2)
-                        | "%=" AssignmentExpression() #ModuloAssign(2)
-                        | ">>=" AssignmentExpression() #RightShiftAssign(2)
-                        | "<<=" AssignmentExpression() #LeftShiftAssign(2)
-						| "&=" AssignmentExpression() #BitAndAssign(2)
-						| "^=" AssignmentExpression() #BitXorAssign(2)
-						| "|=" AssignmentExpression() #BitXorAssign(2)
-						| "=" AssignmentExpression() #Assign(2))?
+    (l = TernaryExpression() 
+			( "+=" r = assignmentExpression() {
+				r = new AddExpression(l, r);
+			}
+			| "-=" r = assignmentExpression() {
+				r = new SubtractExpression(l, r);
+			}
+			| "*=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| "/=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| "%=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| ">>=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| "<<=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| "&=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| "^=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| "|=" r = assignmentExpression() {
+				//r = new MultiplyExpression(l, r);
+			}
+			| "=" r = assignmentExpression())?
+		) {
+				if (r != null) {
+					if (l instanceof LValue)
+						return new AssignmentExpression((LValue)l, r);
+					else throw new Exception(l + " is not an LValue"); 
+				} else {
+					return l;
+				}
+			}
 }
 
-void TernaryExpression() #void: {}
+Expression TernaryExpression() : {
+	
+}
 {
-    OrExpression() ("?" Expression() ":" TernaryExpression() #ConditionalOperator(3))?
+    (OrExpression() ("?" expression() ":" TernaryExpression() #ConditionalOperator(3))?)
+    {
+			return null;
+		}
 }
 
 /** left-to-right*/
@@ -479,8 +519,8 @@ void SuffixExpression() #void() : {}
     AtomicExpression()
 			( "++" #PostIncrement(1)
 			| "--" #PostDecrement(1)
-			| "(" Expression() ")" #FunctionCall(2)
-			| "[" Expression() "]" #ArrayAccess(2))*
+			| "(" expression() ")" #FunctionCall(2)
+			| "[" expression() "]" #ArrayAccess(2))*
 }
 
 void AtomicExpression() #void() : {}
@@ -489,337 +529,151 @@ void AtomicExpression() #void() : {}
     | Number()
     | StringLiteral()
     | CharacterConstant()
-    | "(" Expression() ")"
+    | "(" expression() ")"
 }
 
-void Identifier() #Identifier : {}
+String Identifier() : {}
 {
     <IDENTIFIER>
     {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
+			return "foobar";
+		}
 }
 
 void CharacterConstant() : {}
 {
     <CHARACTER_CONST>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Number() : {}
 {
     <NUMBER>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void StringLiteral() : {}
 {
     <STRING_LIT>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Boolean_Not() : {}
 {
     <BOOLEAN_NOT>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Boolean_And() : {}
 {
     <BOOLEAN_AND>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Boolean_Or() : {}
 {
     <BOOLEAN_OR>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Bit_Not() : {}
 {
     <BIT_NOT>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Bit_And() : {}
 {
     <BIT_AND>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Bit_Or() : {}
 {
     <BIT_OR>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Bit_Xor() : {}
 {
     <BIT_XOR>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Left_Shift() : {}
 {
     <LEFT_SHIFT>
-    {
-        System.out.print("<< ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
-
 void Right_Shift() : {}
 {
     <RIGHT_SHIFT>
-    {
-        System.out.print(">> ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
+    
 }
 
 void R_Paren() : {}
 {
     <R_PAREN>
-    {
-        System.out.print(") ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void L_Paren() : {}
 {
     <L_PAREN>
-    {
-        System.out.print("( ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Plus() : {}
 {
     <PLUS>
-    {
-        System.out.print("+ ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Plus_Plus() : {}
 {
     <PLUS_PLUS>
-    {
-        System.out.print("++ ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Minus() : {}
 {
     <MINUS>
-    {
-        System.out.print("- ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Minus_Minus() : {}
 {
     <MINUS_MINUS>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Star(): {}
 {
     <STAR>
-    {
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
+    
 }
 
 void Mod() : {}
 {
     <MOD>
-    {
-        System.out.print("% ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Divide() : {}
 {
     <DIVIDE>
-    {
-        System.out.print("/ ");
-
-     	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-   }
 }
 
 void Equals() : {}
 {
     <EQUALS>
-    {
-        System.out.print("= ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Less_Than() : {}
 {
     <LESS_THAN>
-    {
-        System.out.print("< ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Greater_Than() : {}
 {
     <GREATER_THAN>
-    {
-        System.out.print("> ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Equals_Equals() #void : {}
 {
     <EQUALS_EQUALS>
-    {
-    }
 }
 
 void Not_Equals() : {}
 {
     <NOT_EQUALS>
-    {
-        System.out.print("!= ");
-
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
 }
 
 void Tokens() : {}
 {
-    (FunctionDefinition() | Statement() | <COMMENT>)* <EOF>
-	{
-    	jjtThis.setName(token.image);
-    	jjtThis.setKind(token.kind);
-    	jjtThis.setCol(token.beginLine);
-    	jjtThis.setRow(token.beginColumn);
-    }
+    (functionDefinition() | Statement() | <COMMENT>)* <EOF>
 }
 
 JAVACODE

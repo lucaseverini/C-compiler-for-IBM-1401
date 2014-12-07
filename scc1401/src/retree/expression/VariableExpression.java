@@ -44,4 +44,10 @@ public class VariableExpression extends LValue {
 		}
 	}
 	
+	//assign a new offset -- this should only really be done
+	//at parse time.
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+	
 }
