@@ -14,6 +14,6 @@ public abstract class Expression {
 	public Expression collapse() {
 		return this;
 	}
-	
 	public abstract String generateCode(boolean valueNeeded);
+
 }

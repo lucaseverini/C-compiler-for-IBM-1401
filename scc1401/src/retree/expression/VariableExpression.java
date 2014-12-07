@@ -35,7 +35,7 @@ public class VariableExpression extends LValue {
 				INS("MA", "X3", STACK_REF(1));
 		}
 	}
-	
+
 	public String getAddress() {
 		if (isStatic) {
 			return ADDR_CONST(offset);
@@ -43,11 +43,4 @@ public class VariableExpression extends LValue {
 			return OFF(offset);
 		}
 	}
-	
-	//assign a new offset -- this should only really be done
-	//at parse time.
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-	
 }

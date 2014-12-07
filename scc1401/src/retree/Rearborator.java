@@ -38,12 +38,18 @@ public class Rearborator {
 					if (init != null) {
 						program.addInitializer(init);
 					}
+					symTabStack.getGlobal().put((String)programComponent.value,genType(programComponent));
+					break;
+				case JJTLOCALVARIABLEDECLARATION:
+					symTabStack.peek().put((String)programComponent.value,genType(programComponent));
 					break;
 			}
 
 		}
 		return program;
 	}
+
+	public SymbolTableStack getSymTabStack() {return symTabStack;}
 
 	private void parseFunctionDeclaration(MyNode dec) {
 		MyNode returnType = null;
