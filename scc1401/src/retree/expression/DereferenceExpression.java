@@ -5,10 +5,12 @@ import retree.expression.Expression;
 import retree.expression.LValue;
 import retree.type.PointerType;
 import retree.type.Type;
+import retree.exceptions.*;
+
 public class DereferenceExpression extends LValue {
 	private Expression child;
 
-	public DereferenceExpression(Expression child) throws retree.exceptions.TypeMismatchException {
+	public DereferenceExpression(Expression child) throws TypeMismatchException {
 		super(getReferenceType(child));
 		this.child = child;
 	}
@@ -21,7 +23,12 @@ public class DereferenceExpression extends LValue {
 	}
 
 	public LValue collapse() {
-		return new DereferenceExpression(child.collapse());
+		try {
+			return new DereferenceExpression(child.collapse());
+		} catch (TypeMismatchException e) {
+			//should never happen
+			return null;
+		}
 	}
 
 	public String generateCode(boolean valueNeeded) {

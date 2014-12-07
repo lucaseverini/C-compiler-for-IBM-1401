@@ -13,8 +13,8 @@ public class SymTab {
 	}
 
 	public void put(String identifier, Type t){
-		VariableExpression varExp = new VariableExpression(t, localoffset);
-		localoffset += 2;
+		VariableExpression varExp = new VariableExpression(t, localoffset, false);
+		localoffset += 5;
 		table.put(identifier,varExp);
 	}
 

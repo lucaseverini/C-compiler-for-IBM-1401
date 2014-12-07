@@ -9,6 +9,6 @@ public class ExpressionStatement implements Statement {
 	}
 
 	public String generateCode() {
-		return exp.generateCode();
+		return exp.generateCode(false);
 	}
 }

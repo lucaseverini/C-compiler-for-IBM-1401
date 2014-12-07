@@ -1,21 +1,28 @@
 package retree.program;
-import static rewtree.RetreeUtils.*;
+import static retree.RetreeUtils.*;
+import retree.exceptions.*;
+import retree.expression.*;
+import retree.type.*;
 
 public class Initializer {
 	private VariableExpression variable;
-	private int value;
-	public Initializer(VariableExpression var, Expression val) {
+	private ConstantExpression value;
+	public Initializer(VariableExpression var, Expression value)  throws NonConstantExpressionException {
 		this.variable = variable;
-		val = val.collapse();
-		if (val instanceof ConstantExpression) {
-			this.val = ((ConstantExpression)val).getValue();
+		value = value.collapse();
+		if (value instanceof ConstantExpression) {
+			this.value = (ConstantExpression) value;
 		} else {
-			throw new NonConstantExpressionException(val);
+			throw new NonConstantExpressionException(value);
 		}
 	}
 
 	public String generateCode() {
-		return INS("MCW", COD(value), variable.getLocation());
+		if (value.getType() instanceof PointerType) {
+			return INS("MCW", ADDR_CONST(value.getValue()), variable.getAddress());
+		} else {
+			return INS("MCW", CONST(value.getValue()), variable.getAddress());
+		}
 	}
 
 }

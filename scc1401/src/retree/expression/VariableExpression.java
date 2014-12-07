@@ -3,16 +3,22 @@ import static retree.RetreeUtils.*;
 import retree.type.Type;
 
 public class VariableExpression extends LValue {
-	private int offset; //negative means absolute location / global
+	private int offset;
+	private boolean isStatic;
 
-	public VariableExpression(Type type, int offset) {
+	public VariableExpression(Type type, int offset, boolean isStatic) {
 		super(type);
 		this.offset = offset;
+		this.isStatic = isStatic;
 	}
 
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
-			return PUSH(OFF(offset));
+			if (isStatic) {
+				return PUSH(ADDR_CONST(offset));
+			} else {
+				return PUSH(OFF(offset));
+			}
 		} else return "";
 	}
 
@@ -29,4 +35,13 @@ public class VariableExpression extends LValue {
 				INS("MA", "X3", STACK_REF(1));
 		}
 	}
+	
+	public String getAddress() {
+		if (isStatic) {
+			return ADDR_CONST(offset);
+		} else {
+			return OFF(offset);
+		}
+	}
+	
 }

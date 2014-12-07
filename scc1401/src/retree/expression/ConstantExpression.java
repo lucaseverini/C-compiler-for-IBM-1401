@@ -1,6 +1,6 @@
 package retree.expression;
 import static retree.RetreeUtils.*;
-import retree.type.Type;
+import retree.type.*;
 public class ConstantExpression extends Expression{
 	private int val; //everything should fit into an int.
 

@@ -1,4 +1,4 @@
-package retree.execptions;
+package retree.exceptions;
 import retree.expression.Expression;
 public class NonConstantExpressionException extends Exception {
 	private Expression exp;

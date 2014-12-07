@@ -7,17 +7,21 @@ import java.util.HashMap;
 import retree.type.PointerType;
 import retree.type.Type;
 import retree.symtab.FunctionDeclaration;
-import retree.program.Program;
-import retree.expression.Expression;
+import retree.program.*;
+import retree.expression.*;
+import java.util.*;
+
 public class Rearborator {
-	private retree.symtab.SymbolTableStack symTabStack;
-	private HashMap<String, FunctionDeclaration> funcTab;
+	/*
+	private List<HashMap<String, VariableExpression>> variableTable;
+	private HashMap<String, FunctionDeclaration> functionTable;
 	private Program program;
 	private int labelNum;
 
 	public Program Reaborate(MyNode root) {
-		symTabStack = new SymbolTableStack();
-		funcTab = new HashMap<String, FunctionDeclaration>();
+		variableTable = new ArrayList<HashMap<String, VariableExpression>>();
+		variableTable.add(new HashMap<String, VariableExpression>());
+		functionTable = new HashMap<String, FunctionDeclaration>();
 		program = new Program();
 		labelNum = 0;
 
@@ -60,7 +64,7 @@ public class Rearborator {
 
 		List<Type> paramTypes = new ArrayList<Type>();
 		for (int i = 0; i < paramList.jjtGetNumChildren; ++i) {
-			MyNode paramNode = paramList.jjtGetChild(i);
+			Node paramNode = paramList.jjtGetChild(i);
 			paramTypes.add(genType(paramNode.jjtGetChild(0)));
 		}
 		FunctionDeclaration declaration = new FunctionDeclaration(nextLabel, new FunctionType(rType, paramTypes));
@@ -109,5 +113,11 @@ public class Rearborator {
 			case "":
 		}
 	}
+	
+	private Initializer genGlobalVariableDeclaration(MyNode declaration) {
+		//TODO
+		return null;
+	}
+	*/
 
 }

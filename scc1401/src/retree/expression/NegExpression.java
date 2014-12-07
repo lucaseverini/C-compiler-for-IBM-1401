@@ -16,8 +16,8 @@ public class NegExpression extends Expression {
 	
 	public Expression collapse() {
 		Expression collapsedChild = child.collapse();
-		if (collapsedChild instanceOf ConstantExpression)
-			return new ConstantExpression(collapsedChild.getType(), -collapsedChild.getValue());
+		if (collapsedChild instanceof ConstantExpression)
+			return new ConstantExpression(collapsedChild.getType(), -((ConstantExpression)collapsedChild).getValue());
 		else
 			return new NegExpression(collapsedChild);
 	}
@@ -30,8 +30,8 @@ public class NegExpression extends Expression {
 			} else {
 				code += INS("ZS", STACK_REF(1));
 			}
-			return code;
 		}
+		return code;
 	}
 
 }
