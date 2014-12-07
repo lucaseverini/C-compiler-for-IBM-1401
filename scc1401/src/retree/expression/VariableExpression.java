@@ -3,32 +3,45 @@ import static retree.RetreeUtils.*;
 import retree.type.Type;
 
 public class VariableExpression extends LValue {
-	private int offset; //negative means absolute location / global
+	private int offset;
+	private boolean isStatic;
 
-	public VariableExpression(Type type, int offset) {
+	public VariableExpression(Type type, int offset, boolean isStatic) {
 		super(type);
 		this.offset = offset;
+		this.isStatic = isStatic;
 	}
 
-	public String generateCode() {
-		return "";
+	public String generateCode(boolean valueNeeded) {
+		if (valueNeeded) {
+			if (isStatic) {
+				return PUSH(ADDR_CONST(offset));
+			} else {
+				return PUSH(OFF(offset));
+			}
+		} else return "";
 	}
 
 	public LValue collapse() {
-		return null;
+		return this;
 	}
 
-	//remember this should always call generateCode as well.
-	public String generateValue(String location) {
-		return INS("MCW", RELADDR("X3", offset), location);
-	}
-
-	public String generateLocation(String location) {
-		if (offset >= 0) {
-			return INS("MCW", "X3", location) +
-				INS("A", CONST(offset), location);
+	public String generateAddress() {
+		if (offset < 0) {
+			offset = -offset;
+			return PUSH(ADDR_CONST(offset));
 		} else {
-			return INS("MCW", CONST(-offset), location);
+			return PUSH(ADDR_CONST(offset)) +
+				INS("MA", "X3", STACK_REF(1));
 		}
 	}
+
+	public String getAddress() {
+		if (isStatic) {
+			return ADDR_CONST(offset);
+		} else {
+			return OFF(offset);
+		}
+	}
+
 }

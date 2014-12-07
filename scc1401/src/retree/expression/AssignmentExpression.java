@@ -23,15 +23,16 @@ public class AssignmentExpression extends Expression {
 		}
 	}
 
-	public String generateCode() {
-		return l.generateLocation(IDX(1)) +
-			r.generateValue(RELADDR(1, "0"));
-	}
-
-	public String generateValue(String location) {
-		return "";
-		// return child.generateValue(IDX(1)) +
-		// 	INS("MCW", RELADDR(1, "0"), location);
+	public String generateCode(boolean valueNeeded) {
+		String code = l.generateAddress() +
+			POP("X1") +
+			r.generateCode(true);
+		if (valueNeeded) {
+			code += INS("MCW", STACK_REF(1), "0+X1");
+		} else {
+			code += POP("0+X1");
+		}
+		return code;
 	}
 
 

@@ -11,17 +11,16 @@ public class AddressOfExpression extends Expression {
 		this.child = child;
 	}
 
-	public String generateCode() {
-		return child.generateCode();
+	public String generateCode(boolean valueNeeded) {
+		if (valueNeeded) {
+			return child.generateAddress();
+		} else {
+			return child.generateCode(false);
+		}
 	}
 
 	public Expression collapse() {
 		return new AddressOfExpression(child.collapse());
 	}
-
-	public String generateValue(String location) {
-		return child.generateLocation(location);
-	}
-
 
 }

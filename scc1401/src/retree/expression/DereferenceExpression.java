@@ -5,10 +5,12 @@ import retree.expression.Expression;
 import retree.expression.LValue;
 import retree.type.PointerType;
 import retree.type.Type;
+import retree.exceptions.*;
+
 public class DereferenceExpression extends LValue {
 	private Expression child;
 
-	public DereferenceExpression(Expression child) throws retree.exceptions.TypeMismatchException {
+	public DereferenceExpression(Expression child) throws TypeMismatchException {
 		super(getReferenceType(child));
 		this.child = child;
 	}
@@ -21,21 +23,26 @@ public class DereferenceExpression extends LValue {
 	}
 
 	public LValue collapse() {
-		return null;
-		// return new AddressOfExpression(child.collapse());
+		try {
+			return new DereferenceExpression(child.collapse());
+		} catch (TypeMismatchException e) {
+			//should never happen
+			return null;
+		}
 	}
 
-	public String generateCode() {
-		return child.generateCode();
-	}
-
-	public String generateValue(String location) {
-		return child.generateValue(IDX(1)) + 
-			INS("MCW", RELADDR(1, "0"), location);
+	public String generateCode(boolean valueNeeded) {
+		if (!valueNeeded) {
+			return child.generateCode(false);
+		} else {
+			return child.generateCode(true) + 
+				POP("X1") +
+				PUSH("0+X1");
+		}
 	}
 	
-	public String generateLocation(String location) {
-		return child.generateValue(location);
+	public String generateAddress() {
+		return child.generateCode(true);
 	}
 
 }

@@ -13,7 +13,7 @@ public class Program {
 		functions = new ArrayList<FunctionDefinition>();
 	}
 
-	public void addInitializer(Intializer init) {
+	public void addInitializer(Initializer init) {
 		initializers.add(init);
 	}
 
