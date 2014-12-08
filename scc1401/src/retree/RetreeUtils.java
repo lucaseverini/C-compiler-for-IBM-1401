@@ -1,4 +1,9 @@
 package retree;
+import compiler.*;
+
+import java.util.*;
+import java.util.regex.*;
+import java.io.*;
 
 public class RetreeUtils {
 
@@ -91,4 +96,45 @@ public class RetreeUtils {
 		}
 		return offset + "+X3";
 	}
+	
+	private static HashMap<String, String> snippetLabels = new HashMap<String, String>();
+	
+	//this needs to be tested
+	private static String loadSnippet(String snippetName) {
+		String line;
+		String code = "";
+		String fileName = "snippets/" + snippetName + ".s";
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			while((line = reader.readLine()) != null ) {
+				code += line + "\n";
+			}
+			//the snippet may contain labels of the form $ABC
+			//replace them with real labels.
+			String mainLabel = "";
+			Matcher m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
+			while (m.find()) {
+				String group = m.group();
+				String label = SmallCC.nextLabel();
+				code = code.replaceAll(group, label);
+				if (group.equals("$MAIN ")) mainLabel = label;
+				
+				m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
+			}
+			snippetLabels.put(snippetName, mainLabel);
+		} catch (Exception e) {
+			return "";
+		}
+		return code;
+	}
+	
+	public static String SNIP(String snippetName) {
+		String label;
+		if (!snippetLabels.containsKey(snippetName)) {
+			loadSnippet(snippetName);
+		}
+		label = snippetLabels.get(snippetName);
+		return INS("B", label);
+	}
+	
 }

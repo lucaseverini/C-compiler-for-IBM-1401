@@ -31,6 +31,19 @@ public class SmallCC
 {
 	// used during tree build
   public static SymbolTableStack variableTable = new SymbolTableStack();
+  
+  private static int labelNumber = 0;
+  
+  public static String nextLabel() {
+		//all our generated labels will start with a L
+		String label = "L";
+		int n = labelNumber++;
+		while (label.length() < 6) {
+			label += ('A' + n%26);
+			n /= 26;
+		}
+		return label;
+	}
 	
   public static void main(String args[]) throws Exception
   {
