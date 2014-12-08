@@ -31,9 +31,9 @@ public class SmallCC
 {
 	// used during tree build
   public static SymbolTableStack variableTable = new SymbolTableStack();
-  
+
   private static int labelNumber = 0;
-  
+
   public static String nextLabel() {
 		//all our generated labels will start with a L
 		String label = "L";
@@ -212,9 +212,11 @@ Type bareType(): {}
 
 }
 
-void Type(): {}
+Type Type(): {
+	Type t;
+}
 {
-  	bareType() ("*" #PointerType(1))*
+  	(t = bareType() ("*" {t = new PointerType(t);} )*) {return t;}
 }
 
 List<Initializer> globalVariableDeclaration() : {
@@ -309,7 +311,7 @@ Pair<Type,String> PrefixedVariable(Type baseType) : {
 
 FunctionDeclaration functionDeclaration() : {}
 {
-    Type() Identifier() ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")") #ParameterList ";"
+    Type() Identifier() ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")")  ";"
 
 	{
 		return new FunctionDeclaration(null, null);
@@ -327,9 +329,9 @@ FunctionDefinition functionDefinition() : {}
 
     (Type())? Identifier()
 
-		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
+		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) )
         ("{" (localVariableDeclaration())* (Statement())* "}"
-		) #FunctionBody
+		)
 		{
 			return null;
 		}
@@ -344,23 +346,23 @@ void FunctionDefinitionParameter(): {}
 	("[" (expression())? "]")?
 }
 
-void Statement() #void() : {}
+void Statement()  : {}
 {
-		";" #NullStatement(0)
-    | expression() ";" #expressionStatement(1)
-    | ("{"  (localVariableDeclaration())* (Statement())* "}" ) #BlockStatement()
-    | "if" "(" expression() ")" Statement() #IfStatement(2)
-    | "while" "(" expression() ")" Statement() #WhileStatement(2)
-    | "for" "(" (expression()";"| ";" #EmptyExpression(0)) (expression() ";" | ";" #EmptyExpression(0)) (expression() ")" | ")" #EmptyExpression(0)) Statement() #ForStatement(4)
-    | "do" Statement() "while" "(" expression() ")" ";" #DoWhileExpression()
+		";"
+    | expression() ";"
+    | ("{"  (localVariableDeclaration())* (Statement())* "}" )
+    | "if" "(" expression() ")" Statement()
+    | "while" "(" expression() ")" Statement()
+    | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
+    | "do" Statement() "while" "(" expression() ")" ";"
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
      * make another production rule for a switch statement body that looks like a block statement with cases. */
-    | "switch" "(" expression() ")" CaseBlock() #SwitchStatement(2)
-    | "break" ";" #BreakStatement(0)
-    | "continue" ";" #ContinueStatement(0)
-    | "return" (expression())? ";" #ReturnStatement
-    | Identifier() ":" Statement() #LabeledStatement(2)
-    | "goto" Identifier() ";" #GotoStatement(1)
+    | "switch" "(" expression() ")" CaseBlock()
+    | "break" ";"
+    | "continue" ";"
+    | "return" (expression())? ";"
+    | Identifier() ":" Statement()
+    | "goto" Identifier() ";"
 }
 
 void CaseStatement() : {}
@@ -384,7 +386,7 @@ Expression expression() : {
 		})*
     {
 			return l;
-		}
+	}
 }
 
 /** Right-to-left */
@@ -473,7 +475,7 @@ Expression andExpression() : {
 {
     l = bitOrExpression() ("&&" r = bitOrExpression() {
 		/*
-		l = new AndExpression(l, r);	
+		l = new AndExpression(l, r);
 		*/
 		})*
 	{
@@ -513,7 +515,7 @@ Expression bitAndExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = EqualityExpression() ("&" r = EqualityExpression() {
+    l = equalityExpression() ("&" r = equalityExpression() {
 			/*
 			l = new BitAndExpression(l, r);
 			*/
@@ -523,17 +525,17 @@ Expression bitAndExpression() : {
 	}
 }
 
-Expression EqualityExpression() : {
+Expression equalityExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = GreaterThanExpression() ( "==" r = GreaterThanExpression() {
+    l = greaterThanExpression() ( "==" r = greaterThanExpression() {
 			/*
 			l = new EqualityExpression(l, r);
 			*/
-			
+
 		}
-    | "!=" r = GreaterThanExpression() {
+    | "!=" r = greaterThanExpression() {
 			/*
 			l = new InequalityExpression(l, r);
 			*/
@@ -543,16 +545,16 @@ Expression EqualityExpression() : {
 	}
 }
 
-Expression GreaterThanExpression() : {
+Expression greaterThanExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = LessThanExpression() ( ">" r = LessThanExpression() {
+    l = lessThanExpression() ( ">" r = lessThanExpression() {
 			/*
 			l = new GreaterThanExpression(l, r);
 			*/
 		}
-		| ">=" r = LessThanExpression() {
+		| ">=" r = lessThanExpression() {
 			/*
 			l = new GreaterThanOrEqualExpression(l, r);
 			*/
@@ -562,16 +564,16 @@ Expression GreaterThanExpression() : {
 	}
 }
 
-Expression LessThanExpression() #void() : {
+Expression lessThanExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = LessThanExpression() ( "<" r = LessThanExpression() {
+    l = bitshiftExpression() ( "<" r = bitshiftExpression() {
 			/*
 			l = new LessThanExpression(l, r);
 			*/
 		}
-		| "<=" r = LessThanExpression() {
+		| "<=" r = bitshiftExpression() {
 			/*
 			l = new LessThanOrEqualExpression(l, r);
 			*/
@@ -581,130 +583,197 @@ Expression LessThanExpression() #void() : {
 	}
 }
 
-Expression BitshiftExpression() #void() : {
+Expression bitshiftExpression()  : {
 	Expression l = null, r = null;
 }
 {
-    l = AdditiveExpression() ( "<<" r = AdditiveExpression() #LeftShift(2)
-		                     | ">>" r = AdditiveExpression() #RightShift(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new LessThanExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = additiveExpression() ( "<<" r = additiveExpression(){
+			/*
+			l = new BitshiftExpression(l, r);
 			*/
-		return null;
+		}
+		| ">>" r = additiveExpression(){
+			/*
+			l = new BitshiftExpression(l, r);
+			*/
+		} )*
+	{
+		return l;
 	}
 }
 
-Expression AdditiveExpression() #void() : {
+Expression additiveExpression()  : {
 	Expression l = null, r = null;
 }
 {
-    l = MultiplicativeExpression() ( "+" r = MultiplicativeExpression() #Add(2)
-                               | "-" r = MultiplicativeExpression() #Subtract(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new LessThanExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = multiplicativeExpression() ( "+" r = multiplicativeExpression(){
+			/*
+			l = new AdditiveExpression(l, r);
 			*/
-		return null;
+		}
+        | "-" r = multiplicativeExpression(){
+			/*
+			l = new SubtractExpression(l, r);
+			*/
+		} )*
+	{
+		return l;
 	}
 }
 
-Expression MultiplicativeExpression() #void() : {
+Expression multiplicativeExpression()  : {
 	Expression l = null, r = null;
 }
 {
-    l = PrefixExpression() ( "*" r = PrefixExpression() #Multiply(2)
-                       | "/" r = PrefixExpression() #Divide(2)
-                       | "%" r = PrefixExpression() #Modulo(2))*
-	{
+    (l = prefixExpression() ( "*" r = prefixExpression(){
 		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new LessThanExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
-			*/
-		return null;
+			l = new MultiplicationExpression(l, r);
+		*/
+	}
+    | "/" r = prefixExpression(){
+		/*
+			l = new DivideExpression(l, r);
+		*/
+	}
+    | "%" r = prefixExpression(){
+		/*
+			l = new ModExpression(l, r);
+		*/
+	} )*)
+	{
+		return l;
 	}
 }
 
-Expression PrefixExpression() #void() : {}
+Expression prefixExpression()  : {
+	Expression e;
+	Type t;
+}
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
-    (SuffixExpression()
-    | "++" PrefixExpression() #PreIncrement(1)
-    | "--" PrefixExpression() #PreDecrement(1)
-    | "+" PrefixExpression() #Positive(1)
-    | "-" PrefixExpression() #Negative(1)
-    | "!" PrefixExpression() #Not(1)
-    | "~" PrefixExpression() #BitNot(1)
-    | "*" PrefixExpression() #Dereference(1)
-    | "&" PrefixExpression() #AddressOf(1)
-    | "sizeof" PrefixExpression() #Sizeof(1)
-    | "(" Type() ")" PrefixExpression() #Cast(2))
+    (e = SuffixExpression()
+    | "++" e = prefixExpression()	{
+										// e = new PreIncrementExpression(e);
+									}
+    | "--" e = prefixExpression()	{
+										// e = new PreDecrementExpression(e);
+									}
+    | "+" e = prefixExpression()	{
+										// e = new PositiveExpression(e);
+									}
+    | "-" e = prefixExpression()	{
+										// e = new NegativeExpression(e);
+									}
+    | "!" e = prefixExpression()	{
+										// e = new NotExpression(e);
+									}
+    | "~" e = prefixExpression()	{
+										// e = new BitNotExpression(e);
+									}
+    | "*" e = prefixExpression()	{
+										e = new DereferenceExpression(e);
+									}
+    | "&" e = prefixExpression()	{
+										e = new AddressOfExpression((LValue)e);
+									}
+    | "sizeof" e = prefixExpression()	{
+											// e = new SizeOfExpression(e);
+										}
+    | "(" t = Type() ")" e = prefixExpression()	{
+													// e = new CastExpression(t,e);
+												}
+	)
 	{
-		return null;
+		return e;
 	}
 
 }
 
-void SuffixExpression() #void() : {}
+Expression SuffixExpression()  : {
+	Expression e, inside;
+}
 {
-    AtomicExpression()
-			( "++" #PostIncrement(1)
-			| "--" #PostDecrement(1)
-			| "(" expression() ")" #FunctionCall(2)
-			| "[" expression() "]" #ArrayAccess(2))*
+    (e = AtomicExpression()
+			( "++"	{
+						// e = new PostIncrementExpression(e);
+					}
+			| "--"	{
+						// e = new PostDecrementExpression(e);
+					}
+			| "(" inside = expression() ")" {
+												// e = new FunctionCallExpression(e,inside);
+											}
+			| "[" inside = expression() "]" {
+												// e = new ArrayAccessExpression(e,inside);
+											} )*)
+			{
+				return e;
+			}
 }
 
-void AtomicExpression() #void() : {}
+Expression AtomicExpression()  : {
+	Expression e = null;
+	ConstantExpression ce = null;
+	String str = "";
+}
 {
-   Identifier()
-    | Number()
+   (str = Identifier() {
+		VariableExpression var = variableTable.searchStack(str);
+		if (var == null){
+			return null;
+		} else {
+			return var;
+		}
+	}
+    | Number(){
+		int val = Integer.parseInt(str);
+		ce = new ConstantExpression(Type.intType, val);
+		e = ce;
+	}
     | StringLiteral()
-    | CharacterConstant()
-    | "(" expression() ")"
+    | CharacterConstant(){
+		ce = new ConstantExpression(Type.charType, 65);
+		e = ce;
+	}
+    | "(" expression() ")")
+	{
+
+		return e;
+	}
 }
 
 String Identifier() : {}
 {
     <IDENTIFIER>
     {
-			return token.image;
-		}
+		return token.image;
+	}
 }
 
-void CharacterConstant() : {}
+String CharacterConstant() : {}
 {
     <CHARACTER_CONST>
+	{
+		System.out.println("char: " + token.image);
+		return token.image;
+	}
 }
 
-void Number() : {}
+String Number() : {}
 {
     <NUMBER>
+	{
+		return token.image;
+	}
 }
 
-void StringLiteral() : {}
+String StringLiteral() : {}
 {
     <STRING_LIT>
+	{
+		return token.image;
+	}
 }
 
 void Boolean_Not() : {}
@@ -813,7 +882,7 @@ void Greater_Than() : {}
     <GREATER_THAN>
 }
 
-void Equals_Equals() #void : {}
+void Equals_Equals()  : {}
 {
     <EQUALS_EQUALS>
 }
@@ -824,7 +893,7 @@ void Not_Equals() : {}
 }
 
 JAVACODE
-String handleError(ParseException ex) #void
+String handleError(ParseException ex)
 {
 	Token token = ex.currentToken;
 	System.out.println(ex.getMessage());

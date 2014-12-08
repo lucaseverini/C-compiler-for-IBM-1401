@@ -96,9 +96,9 @@ public class RetreeUtils {
 		}
 		return offset + "+X3";
 	}
-	
+
 	private static HashMap<String, String> snippetLabels = new HashMap<String, String>();
-	
+
 	//this needs to be tested
 	private static String loadSnippet(String snippetName) {
 		String line;
@@ -118,7 +118,7 @@ public class RetreeUtils {
 				String label = SmallCC.nextLabel();
 				code = code.replaceAll(group, label);
 				if (group.equals("$MAIN ")) mainLabel = label;
-				
+
 				m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
 			}
 			snippetLabels.put(snippetName, mainLabel);
@@ -127,7 +127,7 @@ public class RetreeUtils {
 		}
 		return code;
 	}
-	
+
 	public static String SNIP(String snippetName) {
 		String label;
 		if (!snippetLabels.containsKey(snippetName)) {
@@ -136,5 +136,5 @@ public class RetreeUtils {
 		label = snippetLabels.get(snippetName);
 		return INS("B", label);
 	}
-	
+
 }
