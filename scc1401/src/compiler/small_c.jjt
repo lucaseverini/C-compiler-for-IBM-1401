@@ -31,7 +31,7 @@ public class SmallCC
 {
 	// used during tree build
   public static SymbolTableStack variableTable = new SymbolTableStack();
-	
+
   public static void main(String args[]) throws Exception
   {
 		compile(args[0]);
@@ -210,7 +210,7 @@ List<Initializer> globalVariableDeclaration() : {
 }
 {
 	(baseType=bareType() )? inits=variableDeclarationList(baseType) ";"
-	
+
 	{
     	return inits;
 	}
@@ -230,7 +230,7 @@ List<Initializer> variableDeclarationList(Type baseType) : {
 {
 	init=variableInitializer(baseType) {
 		if (init != null) inits.add(init);
-	} 
+	}
 	("," variableInitializer(baseType) {
 		if (init != null) inits.add(init);
 	})*
@@ -313,7 +313,7 @@ FunctionDefinition functionDefinition() : {}
 {
 
     (Type())? Identifier()
-    
+
 		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) #ParameterList)
         ("{" (localVariableDeclaration())* (Statement())* "}"
 		) #FunctionBody
@@ -379,7 +379,7 @@ Expression assignmentExpression() : {
 	Expression l = null, r = null;
 }
 {
-    (l = TernaryExpression() 
+    (l = TernaryExpression()
 			( "+=" r = assignmentExpression() {
 				r = new AddExpression(l, r);
 			}
@@ -390,32 +390,32 @@ Expression assignmentExpression() : {
 				//r = new MultiplyExpression(l, r);
 			}
 			| "/=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				//r = new DivideExpression(l, r);
 			}
 			| "%=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				//r = new ModExpression(l, r);
 			}
 			| ">>=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				//r = new RightShiftExpression(l, r);
 			}
 			| "<<=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				//r = new LeftShiftExpression(l, r);
 			}
 			| "&=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				//r = new AndExpression(l, r);
 			}
 			| "^=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				//r = new XorExpression(l, r);
 			}
 			| "|=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				//r = new OrExpression(l, r);
 			}
 			| "=" r = assignmentExpression())?
 		) {
 				if (r != null) {
 					if (l instanceof LValue)
 						return new AssignmentExpression((LValue)l, r);
-					else throw new Exception(l + " is not an LValue"); 
+					else throw new Exception(l + " is not an LValue");
 				} else {
 					return l;
 				}
@@ -423,85 +423,259 @@ Expression assignmentExpression() : {
 }
 
 Expression TernaryExpression() : {
-	
+	Expression l = null, t = null, f = null;
 }
 {
-    (OrExpression() ("?" expression() ":" TernaryExpression() #ConditionalOperator(3))?)
+    (l = OrExpression() ("?" t = expression() ":" f = TernaryExpression() #ConditionalOperator(3))?)
     {
-			return null;
+		/*
+		if (t != null && f != null)
+		{
+			if (l instanceof LValue)
+				return new TernaryExpression((LValue)l,t,f);
+			else throw new Exception(l + " is not an LValue");
 		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
 /** left-to-right*/
 
-void OrExpression() #void() : {}
+Expression OrExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    AndExpression() ("||" AndExpression() #Or(2))*
+    l = AndExpression() ("||" r = AndExpression() #Or(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new OrExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void AndExpression() #void() : {}
+Expression AndExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    BitOrExpression() ("&&" BitOrExpression() #And(2))*
+    l = BitOrExpression() ("&&" r = BitOrExpression() #And(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new AndExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void BitOrExpression() #void() : {}
+Expression BitOrExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    BitXorExpression() ("|" BitXorExpression() #BitOr(2))*
+    l = BitXorExpression() ("|" r = BitXorExpression() #BitOr(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new BitOrExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void BitXorExpression() #void() : {}
+Expression BitXorExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    BitAndExpression() ("^" BitAndExpression() #BitXor(2))*
-
+    l = BitAndExpression() ("^" r = BitAndExpression() #BitXor(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new BitXorExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void BitAndExpression() #void() : {}
+Expression BitAndExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    EqualityExpression() ("&" EqualityExpression() #BitAnd(2))*
+    l = EqualityExpression() ("&" r = EqualityExpression() #BitAnd(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new BitAndExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void EqualityExpression() #void() : {}
+Expression EqualityExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    GreaterThanExpression() ( "==" GreaterThanExpression() #Equal(2)
-                            | "!=" GreaterThanExpression() #NotEqual(2))*
+    l = GreaterThanExpression() ( "==" r = GreaterThanExpression() #Equal(2)
+                            | "!=" r = GreaterThanExpression() #NotEqual(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new EqualityExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void GreaterThanExpression() #void() : {}
+Expression GreaterThanExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    LessThanExpression() ( ">" LessThanExpression() #GreaterThan(2)
-                         | ">=" LessThanExpression() #GreaterThanOrEqual(2))*
+    l = LessThanExpression() ( ">" r = LessThanExpression() #GreaterThan(2)
+                         | ">=" r = LessThanExpression() #GreaterThanOrEqual(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new GreaterThanExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void LessThanExpression() #void() : {}
+Expression LessThanExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    BitshiftExpression() ( "<" BitshiftExpression() #LessThan(2)
-		                     | "<=" BitshiftExpression() #LessThanOrEqual(2) )*
+    l = BitshiftExpression() ( "<" r = BitshiftExpression() #LessThan(2)
+		                     | "<=" r = BitshiftExpression() #LessThanOrEqual(2) )*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new LessThanExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void BitshiftExpression() #void() : {}
+Expression BitshiftExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    AdditiveExpression() ( "<<" AdditiveExpression() #LeftShift(2)
-		                     | ">>" AdditiveExpression() #RightShift(2))*
+    l = AdditiveExpression() ( "<<" r = AdditiveExpression() #LeftShift(2)
+		                     | ">>" r = AdditiveExpression() #RightShift(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new LessThanExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void AdditiveExpression() #void() : {}
+Expression AdditiveExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    MultiplicativeExpression() ( "+" MultiplicativeExpression() #Add(2)
-                               | "-" MultiplicativeExpression() #Subtract(2))*
+    l = MultiplicativeExpression() ( "+" r = MultiplicativeExpression() #Add(2)
+                               | "-" r = MultiplicativeExpression() #Subtract(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new LessThanExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void MultiplicativeExpression() #void() : {}
+Expression MultiplicativeExpression() #void() : {
+	Expression l = null, r = null;
+}
 {
-    PrefixExpression() ( "*" PrefixExpression() #Multiply(2)
-                       | "/" PrefixExpression() #Divide(2)
-                       | "%" PrefixExpression() #Modulo(2))*
+    l = PrefixExpression() ( "*" r = PrefixExpression() #Multiply(2)
+                       | "/" r = PrefixExpression() #Divide(2)
+                       | "%" r = PrefixExpression() #Modulo(2))*
+	{
+		/*
+		if (r != null)
+		{
+			if (l instanceof LValue)
+				return new LessThanExpression((LValue)l,r);
+			else throw new Exception(l + " is not an LValue");
+		}
+		else
+			return l;
+			*/
+		return null;
+	}
 }
 
-void PrefixExpression() #void() : {}
+Expression PrefixExpression() #void() : {}
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
-    SuffixExpression()
+    (SuffixExpression()
     | "++" PrefixExpression() #PreIncrement(1)
     | "--" PrefixExpression() #PreDecrement(1)
     | "+" PrefixExpression() #Positive(1)
@@ -511,7 +685,11 @@ void PrefixExpression() #void() : {}
     | "*" PrefixExpression() #Dereference(1)
     | "&" PrefixExpression() #AddressOf(1)
     | "sizeof" PrefixExpression() #Sizeof(1)
-    | "(" Type() ")" PrefixExpression() #Cast(2)
+    | "(" Type() ")" PrefixExpression() #Cast(2))
+	{
+		return null;
+	}
+
 }
 
 void SuffixExpression() #void() : {}
@@ -536,7 +714,7 @@ String Identifier() : {}
 {
     <IDENTIFIER>
     {
-			return "foobar";
+			return token.image;
 		}
 }
 
@@ -597,7 +775,7 @@ void Left_Shift() : {}
 void Right_Shift() : {}
 {
     <RIGHT_SHIFT>
-    
+
 }
 
 void R_Paren() : {}
@@ -633,7 +811,7 @@ void Minus_Minus() : {}
 void Star(): {}
 {
     <STAR>
-    
+
 }
 
 void Mod() : {}
@@ -669,11 +847,6 @@ void Equals_Equals() #void : {}
 void Not_Equals() : {}
 {
     <NOT_EQUALS>
-}
-
-void Tokens() : {}
-{
-    (functionDefinition() | Statement() | <COMMENT>)* <EOF>
 }
 
 JAVACODE
