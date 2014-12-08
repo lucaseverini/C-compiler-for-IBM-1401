@@ -191,12 +191,12 @@ Program program() throws Exception : {
 }
 {
   		(initList = globalVariableDeclaration() {
-				System.out.println(initList.size());
+				//System.out.println(initList.size());
 				for (Initializer init : initList) {
 					program.addInitializer(init);
 				}
 			}
-				| functionDeclaration()
+				| functionDeclaration() //not supported just yet...
 				| func = functionDefinition() {
 					program.addFunction(func);
 				}
@@ -392,7 +392,7 @@ Expression assignmentExpression() : {
 	Expression l = null, r = null;
 }
 {
-    (l = TernaryExpression()
+    (l = ternaryExpression()
 			( "+=" r = assignmentExpression() {
 				r = new AddExpression(l, r);
 			}
@@ -435,167 +435,130 @@ Expression assignmentExpression() : {
 			}
 }
 
-Expression TernaryExpression() : {
+Expression ternaryExpression() : {
 	Expression l = null, t = null, f = null;
 }
 {
-    (l = OrExpression() ("?" t = expression() ":" f = TernaryExpression() #ConditionalOperator(3))?)
+    (l = orExpression() ("?" t = expression() ":" f = ternaryExpression() )?)
     {
 		/*
 		if (t != null && f != null)
 		{
-			if (l instanceof LValue)
-				return new TernaryExpression((LValue)l,t,f);
-			else throw new Exception(l + " is not an LValue");
+			return new TernaryExpression(l,t,f);
 		}
-		else
-			return l;
-			*/
-		return null;
+		*/
+		return l;
 	}
 }
 
 /** left-to-right*/
 
-Expression OrExpression() #void() : {
+Expression orExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = AndExpression() ("||" r = AndExpression() #Or(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new OrExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = andExpression() ("||" r = andExpression() {
+			/*
+			l = new OrExpression(l, r);
 			*/
-		return null;
+		})*
+	{
+		return l;
 	}
 }
 
-Expression AndExpression() #void() : {
+Expression andExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = BitOrExpression() ("&&" r = BitOrExpression() #And(2))*
-	{
+    l = bitOrExpression() ("&&" r = bitOrExpression() {
 		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new AndExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
-			*/
-		return null;
+		l = new AndExpression(l, r);	
+		*/
+		})*
+	{
+		return l;
 	}
 }
 
-Expression BitOrExpression() #void() : {
+Expression bitOrExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = BitXorExpression() ("|" r = BitXorExpression() #BitOr(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new BitOrExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = bitXorExpression() ("|" r = bitXorExpression() {
+			/*
+			l = new BitOrExpression(l, r);
 			*/
-		return null;
+		})*
+	{
+		return l;
 	}
 }
 
-Expression BitXorExpression() #void() : {
+Expression bitXorExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = BitAndExpression() ("^" r = BitAndExpression() #BitXor(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new BitXorExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = bitAndExpression() ("^" r = bitAndExpression() {
+			/*
+			l = new BitXorExpression(l, r);
 			*/
-		return null;
+		})*
+	{
+		return l;
 	}
 }
 
-Expression BitAndExpression() #void() : {
+Expression bitAndExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = EqualityExpression() ("&" r = EqualityExpression() #BitAnd(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new BitAndExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = EqualityExpression() ("&" r = EqualityExpression() {
+			/*
+			l = new BitAndExpression(l, r);
 			*/
-		return null;
+		})*
+	{
+		return l;
 	}
 }
 
-Expression EqualityExpression() #void() : {
+Expression EqualityExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = GreaterThanExpression() ( "==" r = GreaterThanExpression() #Equal(2)
-                            | "!=" r = GreaterThanExpression() #NotEqual(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new EqualityExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = GreaterThanExpression() ( "==" r = GreaterThanExpression() {
+			/*
+			l = new EqualityExpression(l, r);
 			*/
-		return null;
+			
+		}
+    | "!=" r = GreaterThanExpression() {
+			/*
+			l = new InequalityExpression(l, r);
+			*/
+		})*
+	{
+		return l;
 	}
 }
 
-Expression GreaterThanExpression() #void() : {
+Expression GreaterThanExpression() : {
 	Expression l = null, r = null;
 }
 {
-    l = LessThanExpression() ( ">" r = LessThanExpression() #GreaterThan(2)
-                         | ">=" r = LessThanExpression() #GreaterThanOrEqual(2))*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new GreaterThanExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = LessThanExpression() ( ">" r = LessThanExpression() {
+			/*
+			l = new GreaterThanExpression(l, r);
 			*/
-		return null;
+		}
+		| ">=" r = LessThanExpression() {
+			/*
+			l = new GreaterThanOrEqualExpression(l, r);
+			*/
+		})*
+	{
+		return l;
 	}
 }
 
@@ -603,20 +566,18 @@ Expression LessThanExpression() #void() : {
 	Expression l = null, r = null;
 }
 {
-    l = BitshiftExpression() ( "<" r = BitshiftExpression() #LessThan(2)
-		                     | "<=" r = BitshiftExpression() #LessThanOrEqual(2) )*
-	{
-		/*
-		if (r != null)
-		{
-			if (l instanceof LValue)
-				return new LessThanExpression((LValue)l,r);
-			else throw new Exception(l + " is not an LValue");
-		}
-		else
-			return l;
+    l = LessThanExpression() ( "<" r = LessThanExpression() {
+			/*
+			l = new LessThanExpression(l, r);
 			*/
-		return null;
+		}
+		| "<=" r = LessThanExpression() {
+			/*
+			l = new LessThanOrEqualExpression(l, r);
+			*/
+		})*
+	{
+		return l;
 	}
 }
 
