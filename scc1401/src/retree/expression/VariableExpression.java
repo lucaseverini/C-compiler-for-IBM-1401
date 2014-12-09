@@ -27,8 +27,7 @@ public class VariableExpression extends LValue {
 	}
 
 	public String generateAddress() {
-		if (offset < 0) {
-			offset = -offset;
+		if (isStatic) {
 			return PUSH(ADDR_CONST(offset));
 		} else {
 			return PUSH(ADDR_CONST(offset)) +
