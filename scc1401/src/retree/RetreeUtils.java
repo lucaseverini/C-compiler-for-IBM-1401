@@ -112,14 +112,14 @@ public class RetreeUtils {
 			//the snippet may contain labels of the form $ABC
 			//replace them with real labels.
 			String mainLabel = "";
-			Matcher m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
+			Matcher m = Pattern.compile("\\#[A-Z ]{5}").matcher(code);
 			while (m.find()) {
 				String group = m.group();
 				String label = SmallCC.nextLabel();
 				code = code.replaceAll(group, label);
-				if (group.equals("$MAIN ")) mainLabel = label;
+				if (group.equals("#MAIN ")) mainLabel = label;
 
-				m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
+				m = Pattern.compile("\\#[A-Z ]{5}").matcher(code);
 			}
 			snippetLabels.put(snippetName, mainLabel);
 		} catch (Exception e) {

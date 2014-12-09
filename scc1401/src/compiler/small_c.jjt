@@ -31,6 +31,7 @@ public class SmallCC
 {
 	// used during tree build
   public static SymbolTableStack variableTable = new SymbolTableStack();
+  public static HashMap<String,FunctionDeclaration> functionTable = new HashMap<String,FunctionDeclaration>();
 
   private static int labelNumber = 0;
 
@@ -73,6 +74,7 @@ public class SmallCC
   {
     for (int i = 0; i < level; ++i)
     {
+
     	System.out.print("    ");
     }
 
@@ -224,7 +226,7 @@ List<Initializer> globalVariableDeclaration() : {
 		Type baseType = Type.intType;
 }
 {
-	(baseType=bareType() )? inits=variableDeclarationList(baseType) ";"
+	(baseType=bareType() )? inits=variableDeclarationList(baseType, true) ";"
 
 	{
     	return inits;
@@ -235,18 +237,18 @@ void localVariableDeclaration() : {
 	Type baseType;
 }
 {
-	baseType = bareType() variableDeclarationList(baseType) ";"
+	baseType = bareType() variableDeclarationList(baseType, false) ";"
 }
 
-List<Initializer> variableDeclarationList(Type baseType) : {
+List<Initializer> variableDeclarationList(Type baseType, boolean isStatic) : {
 	List<Initializer> inits = new ArrayList<Initializer>();
 	Initializer init;
 }
 {
-	init=variableInitializer(baseType) {
+	init=variableInitializer(baseType, isStatic) {
 		if (init != null) inits.add(init);
 	}
-	("," variableInitializer(baseType) {
+	("," variableInitializer(baseType, isStatic) {
 		if (init != null) inits.add(init);
 	})*
 	{
@@ -254,13 +256,14 @@ List<Initializer> variableDeclarationList(Type baseType) : {
 	}
 }
 
-Initializer variableInitializer(Type baseType) : {
+Initializer variableInitializer(Type baseType, boolean isStatic) : {
 	Initializer init = null;
 	VariableExpression variable;
 	Expression value = null;
 }
 {
-	variable = suffixedVariable(baseType) ("=" value=expression() {
+	                                                     //ternaryExpression, since we can't have a comma-separated or assignment expression
+	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression() {
 		if (value != null) init = new Initializer(variable, value);
 	})?
 	{
@@ -270,7 +273,7 @@ Initializer variableInitializer(Type baseType) : {
 
 //here is where we add it to our SymbolTable, since we know
 //the full type
-VariableExpression suffixedVariable(Type baseType) : {
+VariableExpression suffixedVariable(Type baseType, boolean isStatic) : {
 	Pair<Type,String> pair;
 	Expression arraySize = null;
 	int size = -1;
@@ -292,7 +295,11 @@ VariableExpression suffixedVariable(Type baseType) : {
 		type = pair.a;
 	})
 	{
-		return SmallCC.variableTable.add(pair.b, type);
+		if (isStatic) {
+			return SmallCC.variableTable.addStatic(pair.b, type);
+		} else {
+			return SmallCC.variableTable.add(pair.b,type, false);
+		}
 	}
 }
 
@@ -324,26 +331,62 @@ void FunctionDeclarationParameter(): {}
 
 }
 
-FunctionDefinition functionDefinition() : {}
+FunctionDefinition functionDefinition() : {
+	Type retType = Type.intType;
+	List<VariableExpression> parameters = new ArrayList<VariableExpression>();
+	VariableExpression param;
+	FunctionType type;
+	String name;
+	variableTable.push();
+}
 {
 
-    (Type())? Identifier()
+    (retType=Type())? name=Identifier()
 
-		(("(" (FunctionDefinitionParameter() ("," FunctionDefinitionParameter())*)? ")" ) )
-        ("{" (localVariableDeclaration())* (Statement())* "}"
-		)
+		(("(" (param=functionDefinitionParameter(parameters.size()) {
+			parameters.add(param);
+		} ("," param=functionDefinitionParameter(parameters.size()) {
+			parameters.add(param);
+		})*)? ")" ) ) {
+			List<Type> paramTypes = new ArrayList<Type>();
+			for (VariableExpression p : parameters) {
+				paramTypes.add(p.getType());
+			}
+			type = new FunctionType(retType, paramTypes);
+			FunctionDeclaration dec = functionTable.get(name);
+			if (dec != null) {
+				if (! dec.getType().equals(type)) {
+					throw new Error("Type mismatch: function " + name +
+						"was previously declared as type " + dec.getType());
+				}
+			} else {
+				dec = new FunctionDeclaration(SmallCC.nextLabel(), type);
+				functionTable.put(name, dec);
+			}
+		}
+        ("{" (localVariableDeclaration())* (Statement())* "}")
 		{
+			variableTable.pop();
 			return null;
 		}
 }
 
-void FunctionDefinitionParameter(): {}
+VariableExpression functionDefinitionParameter(int paramNum): {
+	Type type = Type.intType;
+	String name;
+}
 {
-    (Type())? Identifier()
-	{
-		System.out.println("TODO function carp");
+	(type=Type())? name=Identifier()
+	("[" (expression())? "]" {
+
+		//in function parameters, array types are literally just pointer types.
+		type = new PointerType(type);
+	})? {
+		if (variableTable.searchTop(name) != null) {
+			throw new Error("Redefinition of variable " + name);
+		}
+		return variableTable.add(name, type, true);
 	}
-	("[" (expression())? "]")?
 }
 
 void Statement()  : {}
@@ -428,9 +471,11 @@ Expression assignmentExpression() : {
 			| "=" r = assignmentExpression())?
 		) {
 				if (r != null) {
+					System.out.println(l);
+					System.out.println(r);
 					if (l instanceof LValue)
 						return new AssignmentExpression((LValue)l, r);
-					else throw new Exception(l + " is not an LValue");
+					else throw new Error(l + " is not an LValue");
 				} else {
 					return l;
 				}
@@ -726,13 +771,13 @@ Expression AtomicExpression()  : {
 			return var;
 		}
 	}
-    | Number(){
+    | str=Number(){
 		int val = Integer.parseInt(str);
 		ce = new ConstantExpression(Type.intType, val);
 		e = ce;
 	}
     | StringLiteral()
-    | CharacterConstant(){
+    | str=CharacterConstant(){ //TODO - fix.
 		ce = new ConstantExpression(Type.charType, 65);
 		e = ce;
 	}

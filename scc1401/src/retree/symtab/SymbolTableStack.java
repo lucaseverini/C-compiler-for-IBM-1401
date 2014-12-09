@@ -37,12 +37,25 @@ public class SymbolTableStack {
 		return null;
 	}
 	
-	public VariableExpression add(String identifier, Type type) throws Exception{
+	public VariableExpression searchTop(String identifier) {
+		return peek().get(identifier);
+	}
+	
+	public VariableExpression add(String identifier, Type type, boolean isParam) throws Exception{
 		SymTab table = peek();
 		if (table.get(identifier) != null) {
 			throw new Exception("Redefinition of variable " + identifier);
 		} else {
-			return table.put(identifier, type);
+			return table.put(identifier, type, isParam);
+		}
+	}
+	
+	public VariableExpression addStatic(String identifier, Type type) throws Exception{
+		SymTab table = getStaticSymTab();
+		if (table.get(identifier) != null) {
+			throw new Exception("Redefinition of variable " + identifier);
+		} else {
+			return table.put(identifier, type, false);
 		}
 	}
 
