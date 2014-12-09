@@ -23,6 +23,11 @@ public class RetreeUtils {
 	public static String INS(String operation, String ... args) {
 		return LBL_INS("", operation, args);
 	}
+	
+	public static String COM(String comment) {
+		return "     * " + comment + "\n";
+		
+	}
 
 	public static String CONST(int val) {
 			return "@" + COD(val) + "@";
@@ -51,28 +56,41 @@ public class RetreeUtils {
 			"'", "/", "S", "T", "U", "V", "W", "X", "Y", "Z",
 			"!", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
 			 "?", "A", "B", "C", "D", "E", "F", "G", "H", "I"};
-		int lastDigitSet = addr / 4000;
-		return digits[addr / 100] + (addr / 10) % 10 + digits[10 * lastDigitSet + addr%10];
+		int lastDigitSet = 10 * (addr / 4000);
+		int firstDigitSet = 10 * ((addr%4000) / 1000);
+		int decPart = addr % 1000;
+		return digits[decPart/100 + firstDigitSet] + digits[(decPart/10)%10] + digits[decPart % 10 + lastDigitSet];
+		
+		//return digits[(addr  4000) / 100] + (addr / 10) % 10 + digits[10 * lastDigitSet + addr%10];
 	}
 
 	public static String PUSH(String a) {
 		//remember we need to set the word mark for the stack
-		return INS("SW","15996+X2") +
+		return COM("Push(" + a + ")") +
+			INS("SW","15996+X2") +
 			INS("MCW", a, "0+X2") +
 			INS("MA", ADDR_CONST(5), "X2");
 	}
 
 	public static String PUSH() {
 		//remember we need to set the word mark for the stack
-		return INS("SW","15996+X2") +
+		return COM("Push") + 
+			INS("SW","15996+X2") +
 			INS("MA", ADDR_CONST(5), "X2");
 	}
 
 	public static String POP(String location) {
 
 		//for now we'll just leave the word mark in place, we might remove it later...
-		return INS("MA", ADDR_CONST(15995), "X2") +
+		return COM("Pop(" + location + ")") +
+			INS("MA", ADDR_CONST(15995), "X2") +
 			INS("MCW", "0+X2", location);
+	}
+	
+	public static String POP() {
+		return COM("Pop") +
+			INS("MA", ADDR_CONST(15995), "X2");
+
 	}
 
 	public static String PUSH_FRAME() {
@@ -80,10 +98,7 @@ public class RetreeUtils {
 			INS("MCW", "X2", "X3");
 	}
 
-	public static String POP() {
-		return INS("MA", ADDR_CONST(15995), "X2");
-
-	}
+	
 
 	public static String STACK_REF(int back) {
 

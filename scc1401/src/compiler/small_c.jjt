@@ -20,6 +20,7 @@ package compiler;
 import java.util.*;
 import preprocessor.*;
 import retree.*;
+import retree.statement.*;
 import retree.expression.*;
 import retree.exceptions.*;
 import retree.program.*;
@@ -40,7 +41,7 @@ public class SmallCC
 		String label = "L";
 		int n = labelNumber++;
 		while (label.length() < 6) {
-			label += ('A' + n%26);
+			label += (char)('A' + n%26);
 			n /= 26;
 		}
 		return label;
@@ -233,11 +234,14 @@ List<Initializer> globalVariableDeclaration() : {
 	}
 }
 
-void localVariableDeclaration() : {
+List<Initializer> localVariableDeclaration() : {
+	List<Initializer> initializers;
 	Type baseType;
 }
 {
-	baseType = bareType() variableDeclarationList(baseType, false) ";"
+	baseType = bareType() initializers = variableDeclarationList(baseType, false) ";" {
+		return initializers;
+	}
 }
 
 List<Initializer> variableDeclarationList(Type baseType, boolean isStatic) : {
@@ -337,6 +341,7 @@ FunctionDefinition functionDefinition() : {
 	VariableExpression param;
 	FunctionType type;
 	String name;
+	BlockStatement block;
 	variableTable.push();
 }
 {
@@ -364,10 +369,10 @@ FunctionDefinition functionDefinition() : {
 				functionTable.put(name, dec);
 			}
 		}
-        ("{" (localVariableDeclaration())* (Statement())* "}")
+        block = blockStatement(false)
 		{
 			variableTable.pop();
-			return null;
+			return new FunctionDefinition(dec, block);
 		}
 }
 
@@ -389,33 +394,64 @@ VariableExpression functionDefinitionParameter(int paramNum): {
 	}
 }
 
-void Statement()  : {}
+BlockStatement blockStatement(boolean needsPush) : {
+	List<Initializer> initializers = new ArrayList<Initializer>();
+	List<Statement> statements = new ArrayList<Statement>();
+	List<Initializer> initList;
+	Statement s;
+}{
+	{
+		if (needsPush) variableTable.push();
+	}
+	"{" (initList=localVariableDeclaration() {
+		for (Initializer init : initList) {
+			initializers.add(init);
+		}
+	})* (s = statement() {
+		statements.add(s);		
+	})* "}"
+	{
+		if (needsPush) variableTable.pop();
+		return new BlockStatement(initializers, statements);
+	}
+}
+
+Statement statement()  : {
+	Statement stat, stat2;
+	Expression exp;
+}
 {
-		";"
-    | expression() ";"
-    | ("{"  (localVariableDeclaration())* (Statement())* "}" )
-    | "if" "(" expression() ")" Statement()
-    | "while" "(" expression() ")" Statement()
-    | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
-    | "do" Statement() "while" "(" expression() ")" ";"
+		(";" {
+			return new EmptyStatement();
+		}) | (exp=expression() ";" {
+			return new ExpressionStatement(exp);
+		}) | (stat = blockStatement(true) {
+			return stat;
+		})
+    //TODO | ("if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())? ) {
+			//return new IfStatement(exp, stat, stat2);
+		//})
+    //TODO | "while" "(" expression() ")" Statement()
+    //TODO | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
+    //TODO | "do" Statement() "while" "(" expression() ")" ";"
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
      * make another production rule for a switch statement body that looks like a block statement with cases. */
-    | "switch" "(" expression() ")" CaseBlock()
-    | "break" ";"
-    | "continue" ";"
-    | "return" (expression())? ";"
-    | Identifier() ":" Statement()
-    | "goto" Identifier() ";"
+    //TODO| "switch" "(" expression() ")" CaseBlock()
+    //TODO| "break" ";"
+    //TODO| "continue" ";"
+    //TODO| "return" (expression())? ";"
+    //TODO| Identifier() ":" Statement()
+    //TODO| "goto" Identifier() ";"
 }
 
 void CaseStatement() : {}
 {
-	(("case" expression() | "default") ":" (CaseStatement() | Statement()))
+	(("case" expression() | "default") ":" (CaseStatement() | statement()))
 }
 
 void CaseBlock() : {}
 {
-	"{" (localVariableDeclaration())* (Statement() | CaseStatement()) * "}"
+	"{" (localVariableDeclaration())* (statement() | CaseStatement()) * "}"
 }
 
 /** Left-to-right*/
@@ -474,7 +510,11 @@ Expression assignmentExpression() : {
 					System.out.println(l);
 					System.out.println(r);
 					if (l instanceof LValue)
-						return new AssignmentExpression((LValue)l, r);
+						try {
+							return new AssignmentExpression((LValue)l, r); 
+						} catch (TypeMismatchException e) {
+							throw new Error("type mismatch");
+						}
 					else throw new Error(l + " is not an LValue");
 				} else {
 					return l;
@@ -778,7 +818,7 @@ Expression AtomicExpression()  : {
 	}
     | StringLiteral()
     | str=CharacterConstant(){ //TODO - fix.
-		ce = new ConstantExpression(Type.charType, 65);
+		ce = new ConstantExpression(Type.charType, 0);
 		e = ce;
 	}
     | "(" expression() ")")
@@ -800,7 +840,7 @@ String CharacterConstant() : {}
 {
     <CHARACTER_CONST>
 	{
-		System.out.println("char: " + token.image);
+		//System.out.println("char: " + token.image);
 		return token.image;
 	}
 }

@@ -4,9 +4,10 @@ import retree.statement.*;
 
 public class FunctionDefinition {
 	private FunctionDeclaration declaration;
-	private BlockStatement blk;
-	public FunctionDefinition(FunctionDeclaration declaration, BlockStatement statement) {
+	private BlockStatement block;
+	public FunctionDefinition(FunctionDeclaration declaration, BlockStatement block) {
 		this.declaration = declaration;
+		this.block = block;
 	}
 	
 	//As per our calling conventions, the caller is responsible for pushing
@@ -15,8 +16,8 @@ public class FunctionDefinition {
 	public String generateCode() {
 		return LBL_INS(declaration.getLabel(), "SBR", "0+X3") +
 			PUSH() +                                               //push the return address
-			PUSH_FRAME() + 
-			blk.generateCode();
+			block.generateCode() +
+			INS("B", "0+X3");
 	}
 
 }

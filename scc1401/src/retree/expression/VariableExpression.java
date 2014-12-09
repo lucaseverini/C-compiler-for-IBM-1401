@@ -38,7 +38,7 @@ public class VariableExpression extends LValue {
 
 	public String getAddress() {
 		if (isStatic) {
-			return ADDR_CONST(offset);
+			return offset + "";
 		} else {
 			return OFF(offset);
 		}
