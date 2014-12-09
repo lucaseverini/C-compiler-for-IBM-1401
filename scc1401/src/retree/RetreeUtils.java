@@ -113,6 +113,7 @@ public class RetreeUtils {
 	}
 
 	private static HashMap<String, String> snippetLabels = new HashMap<String, String>();
+	private static HashMap<String, String> snippetCode = new HashMap<String, String>();
 
 	//this needs to be tested
 	private static String loadSnippet(String snippetName) {
@@ -137,6 +138,7 @@ public class RetreeUtils {
 				m = Pattern.compile("\\#[A-Z ]{5}").matcher(code);
 			}
 			snippetLabels.put(snippetName, mainLabel);
+			snippetCode.put(snippetName, code);
 		} catch (Exception e) {
 			return "";
 		}
@@ -150,6 +152,15 @@ public class RetreeUtils {
 		}
 		label = snippetLabels.get(snippetName);
 		return INS("B", label);
+	}
+	
+	//this must be called AFTER all code generation.
+	public static String HEADER() {
+		String code = "";
+		for (Map.Entry<String,String> entry : snippetCode.entrySet()) {
+			code += entry.getValue();
+		}
+		return loadSnippet("header") + code;
 	}
 
 }

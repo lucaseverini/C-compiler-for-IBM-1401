@@ -17,4 +17,9 @@ public class ArrayType extends Type{
 	public Type getArrayBaseType() {
 		return arrayBaseType;
 	}
+	
+	public String toString() {
+		return arrayBaseType.toString() + 
+			" [" + sizeOfArray + "]";
+	}
 }

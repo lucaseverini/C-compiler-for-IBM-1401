@@ -313,7 +313,7 @@ Pair<Type,String> PrefixedVariable(Type baseType) : {
 }
 {
 	(pair.b=Identifier()
-	| "*" PrefixedVariable(new PointerType(baseType)))
+	| "*" pair=PrefixedVariable(new PointerType(baseType)))
 	{
 		return pair;
 	}

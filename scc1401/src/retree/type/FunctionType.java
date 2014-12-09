@@ -18,4 +18,12 @@ public class FunctionType {
 	public Type getReturnType() {
 		return returnType;
 	}
+	
+	public String toString() {
+		String str = returnType.toString() + " (";
+		for (Type paramType : paramList) {
+			str += paramType.toString() + ", ";
+		}
+		return str + ")";
+	}
 }

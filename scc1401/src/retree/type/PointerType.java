@@ -24,5 +24,9 @@ public class PointerType extends Type{
 		}
 		return false;
 	}
+	
+	public String toString() {
+		return "*" + refType.toString();
+	}
 
 }

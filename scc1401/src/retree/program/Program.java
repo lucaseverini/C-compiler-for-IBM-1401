@@ -1,5 +1,7 @@
 package retree.program;
 
+import static retree.RetreeUtils.*;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -30,6 +32,6 @@ public class Program {
 		for (FunctionDefinition func : functions) {
 			code += func.generateCode();
 		}
-		return code;
+		return HEADER() + code;
 	}
 }
