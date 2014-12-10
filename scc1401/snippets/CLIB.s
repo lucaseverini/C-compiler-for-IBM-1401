@@ -1,5 +1,8 @@
-     CLIB      NOP
-
+     *********************************************************************
+     ** CLIB.MAC - AUTOCODER MACRO CONTAINING VARIOUS FUNCTIONS USED BY **
+     **            C-COMPILER CROSS-COMPILER FOR IBM 1401               **
+     *********************************************************************
+     
      OP1       DCW  00000
      OP2       DCW  00000
      RESULT    DCW  00000
@@ -11,24 +14,89 @@
      SHIFTS    DCW  00
      SIZE      DCW  00
      IDX       DCW  00
-
-     POWTAB    DCW  00001
-               DCW  00002
-               DCW  00004
-               DCW  00008
-               DCW  00016
-               DCW  00032
-               DCW  00064
-               DCW  00128
-               DCW  00256
-               DCW  00512
-               DCW  01024
-               DCW  02048
-               DCW  04096
-               DCW  08192
-               DCW  16384
-               DCW  32768
+     CH        DCW  0                  * 1-digit char
+     CHPOS     DCW  000                * char position 
+     CH1       DCW  0
+     CH3       DCW  000                * 3-digit char
+     TMPC      DCW  000
+     CHTAB     DCW  0                                      * Table for 3-digit char to ASCII char
+               DC   @ ###$%&'()*+,-./0123456789:;<=>?#@    *
+               DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`@     *
+               DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~ @      * Letters on this row should be lowercase
  
+     ****************************************************************
+     ** PUTC - Copy a CHAR (3 digits) to storage area and prints it if full      
+     ****************************************************************
+     
+     PUTC      SBR  PUTC9+3            * Setup return address
+     
+               B    CONVC              * Converts 3-digit char to 1-digit char to be printed
+
+               POP  CH                 * Gets converted 1-digit char from stack
+     
+               PUSH X1                 * Save index reg X1
+     
+               MA   CHPOS, X1          * Put char in the right place...
+               MCW  CH, PRINT+X1
+           
+               POP  X1                 * Restore index reg X1
+     
+               A    @1@, CHPOS         * Increment position for next char
+     
+               C    CHPOS, @132@       * Check if print area is full
+               BU   PUTC9              * If not jump over
+     
+               B    PFLUSH             * Prints everything
+    
+     PUTC9     B    000                * Jump back
+          
+     **************************************************************** 
+     ** CONVC - Convert a 3-digit char to a 1-digit char that can be printed
+     ****************************************************************
+     
+     CONVC     SBR  CONVC9+3           * Setup return address     
+
+               POP  CH3                * Get the chat to convert from stack
+               MCW  CH3, TMPC          * Copy on temp storage
+    
+               S    @32@, TMPC
+               MN   @1@, TMPC
+               BCE  BADC, TMPC, J      * If negative is an umprintable char <32
+     
+               S    @32@, CH3  
+               MZ   CH3-1, CH3    
+               C    CH3, @095@         * If >95 is an unsupported extended ASCII code
+               BL   BADC               *
+     
+               PUSH X1                 * Save X1
+         
+               MCW  CH3, X1            * normalized 0-based char code in X1
+               MCW  CHTAB+X1+1, CH1    * +1 to jump the o used in DCW 0 where CHTAB label is defined
+     
+               POP  X1                 * Restore X1
+     
+               PUSH CH1                * Copy converted char to be printed on stack
+
+               B    CONVC9             * Go to exit
+     
+     BADC      NOP
+               PUSH @#@                * What is the best one to represent unprintable chars
+     
+     CONVC9    B    000                * Jump back
+     
+     **************************************************************** 
+     ** PFLUSH - Prints and resets print area and character position
+     ****************************************************************
+     
+     PFLUSH    SBR  FLUSH9+3           * Setup return address     
+     
+               W                       * Prints
+               CS   332
+               CS   299                * Clear area
+               MCW  @000@, CHPOS       * Reset position for next char
+     
+     FLUSH9    B    000                * Jump back
+     
      ****************************************************************
      ** AND for INTEGER (5 DIGITS)
      ****************************************************************
