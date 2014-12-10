@@ -52,6 +52,7 @@ public class RetreeUtils {
 	}
 
 	public static String ADDR_COD(int addr) {
+		addr = (16000 - (-addr)%16000)%16000; // addr :=  addr mod 16000
 		String[] digits = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 			"'", "/", "S", "T", "U", "V", "W", "X", "Y", "Z",
 			"!", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
@@ -101,14 +102,11 @@ public class RetreeUtils {
 	
 
 	public static String STACK_REF(int back) {
-
 		return (16000-5*back) + "+X2";
 	}
 
 	public static String OFF(int offset) {
-		if (offset < 0) {
-			offset += 16000;
-		}
+		offset = (16000 - (-offset)%16000)%16000; // offset :=  offset mod 16000
 		return offset + "+X3";
 	}
 

@@ -10,7 +10,7 @@ public class SymbolTableStack {
 	private ArrayList<SymTab> stack = new ArrayList<SymTab>();
 
 	public SymbolTableStack() {
-		stack.add(new SymTab(true));
+		stack.add(new SymTab(1000, true));
 	}
 
 	public SymTab peek() {
@@ -22,7 +22,12 @@ public class SymbolTableStack {
 	}
 
 	public SymTab push() {
-		stack.add(new SymTab());
+		stack.add(new SymTab(0, false));
+		return stack.get(stack.size()-1);
+	}
+	
+	public SymTab push(int spaceToReserve) {
+		stack.add(new SymTab(spaceToReserve, false));
 		return stack.get(stack.size()-1);
 	}
 

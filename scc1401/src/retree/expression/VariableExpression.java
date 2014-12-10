@@ -15,7 +15,7 @@ public class VariableExpression extends LValue {
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
 			if (isStatic) {
-				return PUSH(ADDR_CONST(offset));
+				return PUSH(offset + "");
 			} else {
 				return PUSH(OFF(offset));
 			}
