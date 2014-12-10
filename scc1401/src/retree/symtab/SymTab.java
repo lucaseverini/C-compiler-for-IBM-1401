@@ -10,12 +10,12 @@ public class SymTab {
 
 	public SymTab() {
 	}
-	
+
 	public SymTab(boolean isStatic) {
 		if (isStatic) {
 			this.isStatic = true;
 			//beginning of static variables ?
-			localoffset = 0;
+			localoffset = 1000;
 		}
 	}
 
