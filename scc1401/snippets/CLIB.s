@@ -19,24 +19,128 @@
      CH1       DCW  0
      CH3       DCW  000                * 3-digit char
      TMPC      DCW  000
+     LEN       DCW  000                * String length
+     LENA      DCW  000                * String-A length
+     LENB      DCW  000                * String-B length
      CHTAB     DCW  0                                      * Table for 3-digit char to ASCII char
                DC   @ ###$%&'()*+,-./0123456789:;<=>?#@    *
                DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`@     *
                DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~ @      * Letters on this row should be lowercase
  
+    ****************************************************************
+     ** STRCPY - Copy String-A into String-B
      ****************************************************************
-     ** PUTC - Copy a CHAR (3 digits) to storage area and prints it if full      
+
+     STRCPY    SBR  STRCP9+3           * Setup return address
+
+               MCW  X1, TMP1           * Save index registers...
+               MCW  X3, TMP3
+ 
+               POP  X3                 * String-B address in X3
+ 
+               POP  X1                 * String-A address in X1    
+               MCW  2+X1, LENA         * String-A length in LENA
+               A    @1@, LENA          * Copy also the length
+     
+     STRCP1    MZ   LENA-1, LENA       * Remove bit-zone to get a real decimal number
+               C    LENA, @000@        * Check if LEN is 0
+               BE   STRCP8             * If it is then jump over
+               
+               MCW  2+X1, 2+X3         * Copy char of String-A into String-B 
+               A    @3@, X1            * X1 points to next 3-digit char
+               A    @3@, X3            * X3 points to next 3-digit char
+              
+               S    @1@, LENA          * Decrement LEN
+               B    STRCP1             * Do it again...  
+ 
+     STRCP8    MCW  TMP1, X1           * Restore index registers...
+               MCW  TMP3, X3
+   
+     STRCP9    B    000                * Jump back
+
+     ****************************************************************
+     ** STRCAT - Append String-A to String-B
+     ****************************************************************
+     
+     STRCAT    SBR  STRC10+3           * Setup return address
+     
+               MCW  X1, TMP1           * Save index registers...
+               MCW  X3, TMP3
+ 
+               POP  X3                 * String-B address in X3
+               MCW  2+X3, LENB         * String-B length in LENB
+
+               POP  X1                 * String-A address in X1    
+               MCW  2+X1, LENA         * String-A length in LENA
+               A    LENB, 2+X1         * Update length of String-A
+    
+               MUL  LENA, @3@, LENA    * Multiply LENA by 3 to point to the first available char position    
+               A    LENA, X1           * Set index register to point to first available char position 
+     
+     STRC1     MZ   LENB-1, LENB       * Remove bit-zone to get a real decimal number
+               C    LENB, @000@        * Check if LEN is 0
+               BE   STRC9              * If it is then jump over
+               
+               A    @3@, X3            * X3 points to next 3-digit char
+               A    @3@, X1            * X1 points to next 3-digit char
+               MCW  2+X3, 2+X1         * Append char of String-B to String-A 
+               
+               S    @1@, LENB          * Decrement LEN
+               B    STRC1              * Do it again...
+                                          
+     STRC9     MCW  TMP1, X1           * Restore index registers...
+               MCW  TMP3, X3
+   
+     STRC10    B    000                * Jump back
+    
+     ****************************************************************
+     ** STRLEN - Copy the string length on stack
+     ** X1 is not preserved    
+     ****************************************************************
+     
+     STRLEN    SBR  STRL9+3            * Setup return address
+ 
+               POP  X1                 * String address in X1
+               PUSH 2+X1               * String length onto stack
+     
+     STRL9     B    000                * Jump back
+    
+     ****************************************************************
+     ** PUTS - Copy a String made of 3-digit chars to storage area and prints it when full  
+     ** X1 is not preserved    
+     ****************************************************************
+     
+     PUTS      SBR  PUTS9+3            * Setup return address
+         
+               POP  X1                 * String address in X1
+               MCW  2+X1, LEN          * String length in LEN
+     
+     PUTS1     MZ   LEN-1, LEN         * Remove bit-zone to get a real decimal number
+               C    LEN, @000@         * Check if LEN is 0
+               BE   PUTS9              * If it is then jump over
+     
+               A    @3@, X1            * X1 points to next 3-digit char
+               PUSH 2+X1               * Push the char onto stack
+               B    PUTC               * Put char in print area
+               
+               S    @1@, LEN           * Decrement LEN
+               B    PUTS1              * Do it again...
+                                       
+     PUTS9     B    000                * Jump back
+     
+     ****************************************************************
+     ** PUTC - Copy a CHAR (3 digits) to storage area and prints it when full      
      ****************************************************************
      
      PUTC      SBR  PUTC9+3            * Setup return address
      
-               B    CONVC              * Converts 3-digit char to 1-digit char to be printed
+               B    C3TOC1             * Converts 3-digit char to 1-digit char to be printed
 
                POP  CH                 * Gets converted 1-digit char from stack
      
                PUSH X1                 * Save index reg X1
      
-               MA   CHPOS, X1          * Put char in the right place...
+               MCW  CHPOS, X1          * Put char in the right place...
                MCW  CH, PRINT+X1
            
                POP  X1                 * Restore index reg X1
@@ -51,10 +155,10 @@
      PUTC9     B    000                * Jump back
           
      **************************************************************** 
-     ** CONVC - Convert a 3-digit char to a 1-digit char that can be printed
+     ** C3TOC1 - Convert a 3-digit char to a 1-digit char that can be printed
      ****************************************************************
      
-     CONVC     SBR  CONVC9+3           * Setup return address     
+     C3TOC1    SBR  CONVC9+3           * Setup return address     
 
                POP  CH3                * Get the chat to convert from stack
                MCW  CH3, TMPC          * Copy on temp storage
