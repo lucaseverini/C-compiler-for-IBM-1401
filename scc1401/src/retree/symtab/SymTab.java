@@ -13,6 +13,13 @@ public class SymTab {
 		paramOffset = -10;
 		this.isStatic = isStatic;
 	}
+	
+	public SymTab(int offset, int spaceToReserve, boolean isStatic) {
+		topOffset = offset;
+		localOffset = topOffset + spaceToReserve;
+		paramOffset = -10;
+		this.isStatic = isStatic;
+	}
 
 	public VariableExpression get(String identifier) {
 		return table.get(identifier) == null ? null : table.get(identifier);
