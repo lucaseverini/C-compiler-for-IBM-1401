@@ -5,13 +5,13 @@
 
      * TO BE DONE:
      * MEMCPY
-     * STRCMP
 
      ****************************************************************
      
      OP1       DCW  00000
      OP2       DCW  00000
      RESULT    DCW  00000
+     RES3      DCW  000
      LOP       DCW  00000
      ROP       DCW  00000
      TMP1      DCW  00000
@@ -22,6 +22,7 @@
      SHIFTS    DCW  00
      SIZE      DCW  00
      IDX       DCW  00
+     IDX3      DCW  000
      REMAIN    DCW  00000
      QUOT      DCW  00000
      CH        DCW  0                  * 1-digit char
@@ -39,6 +40,77 @@
                DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`@     *
                DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~ @      * Letters on this row should be lowercase
  
+     ****************************************************************
+     ** STRCMP - Compare String-A and String-B
+     **          Returns >0 if A > B , 0 -> if A == B , <0 if A < B         
+     ****************************************************************
+
+     STRCMP    SBR  STRCM9+3           * Setup return address
+
+               MCW  X1, TMP1           * Save index registers...
+               MCW  X3, TMP3
+  
+               POP  X1                 * String-A address in X1    
+               MCW  2+X1, LENA         * String-A length in LENA
+
+               POP  X3                 * String-B address in X3
+               MCW  2+X3, LENB         * String-B length in LENB
+     
+               C    LENA, LENB
+               BH   STRCM0
+               MCW  LENB, LEN
+               B    STRCM1
+     STRCM0    MCW  LENA, LEN
+     
+     STRCM1    MCW  @000@, IDX3, 
+     
+     STRCM2    C    IDX3, LEN
+               BE   STRCM3
+               
+               SBR  X1, 3+X1           * X1 points to next 3-digit char of String-A
+               SBR  X3, 3+X3           * X3 points to next 3-digit char of String-B
+
+               PUSH 2+X1
+               PUSH 2+X3   
+               B    CMPB
+               POP  RES3
+          
+               C    @001@, RES3
+               BE   ABIG
+               C    @002@, RES3
+               BE   BBIG
+                   
+               A    @1@, IDX3          * Increment IDX3
+               B    STRCM2             * Do it again...
+     
+     STRCM3    C    LENA, LENB
+               BL   ABIG2
+               BH   BBIG2
+               MCW  @000@, RES3
+               B    STRCM8
+     
+     ABIG2     SBR  X1, 3+X1
+               MCW  2+X1, RES3
+               B    STRCM8
+ 
+     BBIG2     SBR  X3, 3+X3
+               MCW  2+X3, RES3
+               MZ   @!@, RES3
+               B    STRCM8
+    
+     ABIG      MCW  @001@, RES3
+               B    STRCM8
+
+     BBIG      MCW  -001, RES3
+               B    STRCM8
+ 
+     STRCM8    MCW  TMP1, X1           * Restore index registers...
+               MCW  TMP3, X3
+     
+               PUSH RES3
+   
+     STRCM9    B    000                * Jump back
+
      ****************************************************************
      ** STRCPY - Copy String-A into String-B
      ****************************************************************
@@ -887,7 +959,7 @@
      SHRB11    B    000
      
      ****************************************************************
-     ** PRINT UNSIGNED INTEGER (5 digits) IN OP1
+     ** PRINT UNSIGNED INTEGER (5 digits) ON STACK
      ****************************************************************
      
      PRTI      SBR  PRTI4+3            * Setup return address
@@ -907,7 +979,7 @@
      PRTI4     B    000
 
      ****************************************************************
-     ** PRINT SIGNED INTEGER (5 digits) IN OP1 WITH SIGN IF NEGATIVE
+     ** PRINT SIGNED INTEGER (5 digits) ON STACK WITH SIGN IF NEGATIVE
      ****************************************************************
      
      PRTIS     SBR  PRTIS4+3           * Setup return address
@@ -927,11 +999,13 @@
      PRTIS4    B    000
 
      ****************************************************************
-     ** PRINT CHAR (3 digits) IN OP1 WITH SIGN IF NEGATIVE
+     ** PRINT CHAR (3 digits) ON STACK WITH SIGN IF NEGATIVE
      ****************************************************************
      
      PRTB      SBR  PRTB4+3            * Setup return address
      
+               POP  OP1
+
                SW   OP1-2              * Set WM to 3rd digit
                BWZ  PRTB2, OP1,2       * JUMP IF NO ZONE (OP1 IS POSITIVE, NO CONVERSION)
                BWZ  PRTB1, OP1,B       * JUMP IF B ZONE (OP1 IS POSITIVE, BUT ZONE MUST BE REMOVED)
@@ -954,7 +1028,7 @@
      ** if OP1 == OP2, RESULT = 3
      ****************************************************************
 
-     CMPB      SBR  CMPB5+3            * Setup return address
+     CMPB      SBR  CMPB6+3            * Setup return address
      
                POP  OP2
                POP  OP1
@@ -970,10 +1044,14 @@
      CMPB3     ZA   OP1, TMP3          * Move OP2 to TMP
                S    OP2, TMP3          * SUBTRACT OP2 FROM TMP
                MN   @1@, TMP3          * SET TO 1 SO NEGATIVE IS A j
-               BCE  CMPB4, TMP3, J     * If LSD of TMP is a J, OP1 > OP2
-               B    CMPB5              * Next check
-     CMPB4     MCW  @00002@, RESULT    * set RESULT to 2 if op2 > op1
-     CMPB5     B    000                * Jump back
+               BCE  CMPB4, TMP3, J     * If LSD of TMP is a J, OP1 > OP2 otherwise OP1 == OP2
+               B    CMPB5              * Go out
+     CMPB4     MCW  @00002@, RESULT    * Set RESULT to 2 if op2 > op1
+     
+     CMPB5     NOP
+               PUSH RESULT
+     
+     CMPB6     B    000                * Jump back
   
      ****************************************************************   
      ** CHECK SPECIAL CASE OF NEGATIVE ZEROS AND NORMALIZE THEM  
