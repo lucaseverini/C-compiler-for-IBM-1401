@@ -14,6 +14,8 @@
      SHIFTS    DCW  00
      SIZE      DCW  00
      IDX       DCW  00
+     REMAIN    DCW  00000
+     QUOT      DCW  00000
      CH        DCW  0                  * 1-digit char
      CHPOS     DCW  000                * char position 
      CH1       DCW  0
