@@ -22,13 +22,21 @@ public class SymbolTableStack {
 	}
 
 	public SymTab push() {
-		stack.add(new SymTab(0, false));
-		return stack.get(stack.size()-1);
+		if (peek().isStatic()) {
+			stack.add(new SymTab(0, false));
+		} else {
+			stack.add(new SymTab(peek().getLocalOffset(), false));
+		}
+		return peek();
 	}
 	
 	public SymTab push(int spaceToReserve) {
-		stack.add(new SymTab(spaceToReserve, false));
-		return stack.get(stack.size()-1);
+		if (peek().isStatic()) {
+			stack.add(new SymTab(spaceToReserve, false));
+		} else {
+			stack.add(new SymTab(spaceToReserve + peek().getLocalOffset(), false));
+		}
+		return peek();
 	}
 
 	public SymTab getStaticSymTab() {

@@ -250,10 +250,10 @@ List<Initializer> variableDeclarationList(Type baseType, boolean isStatic) : {
 }
 {
 	init=variableInitializer(baseType, isStatic) {
-		if (init != null) inits.add(init);
+		inits.add(init);
 	}
 	("," variableInitializer(baseType, isStatic) {
-		if (init != null) inits.add(init);
+		inits.add(init);
 	})*
 	{
 		return inits;
@@ -267,11 +267,9 @@ Initializer variableInitializer(Type baseType, boolean isStatic) : {
 }
 {
 	                                                     //ternaryExpression, since we can't have a comma-separated or assignment expression
-	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression() {
-		if (value != null) init = new Initializer(variable, value);
-	})?
+	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression())?
 	{
-		return init;
+		return new Initializer(variable, value);
 	}
 }
 
@@ -412,7 +410,7 @@ BlockStatement blockStatement(boolean needsPush) : {
 	})* "}"
 	{
 		//System.out.println(variableTable.peek().getStackOffset());
-		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalOffset());
+		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalSize());
 		if (needsPush) variableTable.pop();
 		return bs;
 	}
