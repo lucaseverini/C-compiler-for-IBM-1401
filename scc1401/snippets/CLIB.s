@@ -2,6 +2,12 @@
      ** CLIB.MAC - AUTOCODER MACRO CONTAINING VARIOUS FUNCTIONS USED BY **
      **            C-COMPILER CROSS-COMPILER FOR IBM 1401               **
      *********************************************************************
+
+     * TO BE DONE:
+     * MEMCPY
+     * STRCMP
+
+     ****************************************************************
      
      OP1       DCW  00000
      OP2       DCW  00000
@@ -11,6 +17,8 @@
      TMP1      DCW  00000
      TMP2      DCW  00000
      TMP3      DCW  00000
+     TMPSTR    DCW  000
+     COUNT     DCW  000
      SHIFTS    DCW  00
      SIZE      DCW  00
      IDX       DCW  00
@@ -23,13 +31,15 @@
      TMPC      DCW  000
      LEN       DCW  000                * String length
      LENA      DCW  000                * String-A length
-     LENB      DCW  000                * String-B length
+     LENB      DCW  000                * String-B length     
+     TOTRD     DCW  000                * Counter of read chars
+     TABLEN    DCW  095                * Length of CHTAB 
      CHTAB     DCW  0                                      * Table for 3-digit char to ASCII char
                DC   @ ###$%&'()*+,-./0123456789:;<=>?#@    *
                DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`@     *
                DC   @ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~ @      * Letters on this row should be lowercase
  
-    ****************************************************************
+     ****************************************************************
      ** STRCPY - Copy String-A into String-B
      ****************************************************************
 
@@ -49,8 +59,8 @@
                BE   STRCP8             * If it is then jump over
                
                MCW  2+X1, 2+X3         * Copy char of String-A into String-B 
-               A    @3@, X1            * X1 points to next 3-digit char
-               A    @3@, X3            * X3 points to next 3-digit char
+               SBR  X1, 3+X1           * X1 points to next 3-digit char
+               SBR  X3, 3+X3           * X3 points to next 3-digit char
               
                S    @1@, LENA          * Decrement LEN
                B    STRCP1             * Do it again...  
@@ -83,8 +93,8 @@
                C    LENB, @000@        * Check if LEN is 0
                BE   STRC9              * If it is then jump over
                
-               A    @3@, X3            * X3 points to next 3-digit char
-               A    @3@, X1            * X1 points to next 3-digit char
+               SBR  X1, 3+X1           * X1 points to next 3-digit char
+               SBR  X3, 3+X3           * X3 points to next 3-digit char
                MCW  2+X3, 2+X1         * Append char of String-B to String-A 
                
                S    @1@, LENB          * Decrement LEN
@@ -108,6 +118,97 @@
      STRL9     B    000                * Jump back
     
      ****************************************************************
+     ** GETS - Read then copy the data in read area to string whose pointer 
+     **        is on stack until the end of the string or the read area
+     **        Argument passed on stack: String pointer and String Max Length        
+     ****************************************************************
+     
+     GETS      SBR  GETS9+3            * Setup return address
+ 
+               R                       * Read a card
+     
+               MCW  X1, TMP1           * Save index registers...
+               MCW  X3, TMP3
+ 
+               POP  LEN                * Max length in LEN
+               POP  TMPSTR             * String address in X1
+     
+               C    @000@, TMPSTR      * Check for null pointer
+               BE   GETS8              * If null, bail out
+               
+               MZ   LEN-1, LEN         * Remove bit-zone to get a real decimal number
+               C    @000@, LEN         * Check string max length
+               BE   GETS8              * If LEN == 0 then bail out
+     
+               MCW  @000@, TOTRD
+     
+               SBR  X3, READ
+               MCW  X1, TMPSTR
+               SBR  X1, 3+X1
+
+     GETS1     C    TOTRD, LEN         * Check if max num of chars has been read
+               BE   GETS7              * If it is then jump over
+     
+               MCW  0+X3, CH
+     
+               PUSH CH
+               B    C1TOC3             * Converts 1-digit char to 3-digit char
+               POP  CH3
+               MCW  CH3, 2+X1
+     
+               SBR  X3, 1+X3
+               SBR  X1, 3+X1
+               
+               A    @1@, TOTRD         * Increment TOTRD
+               B    GETS1              * Do it again...
+     
+     GETS7     MCW  TMPSTR, X1         * Set String length...
+               MCW  TOTRD, 2+X1
+    
+     GETS8     MCW  TMP1, X1           * Restore index registers...
+               MCW  TMP3, X3
+
+     GETS9     B    000                * Jump back
+    
+     **************************************************************** 
+     ** C1TOC3 - Convert a 1-digit char to a 3-digit char
+     ****************************************************************
+     
+     C1TOC3    SBR  CONVC7+3           * Setup return address     
+
+               POP  CH                 * Get the char to convert from stack
+     
+               PUSH X1                 * Save X1
+     
+               SBR  X1, CHTAB          * X1 points to Conversion Table
+               SBR  X1, 1+X1           * Adjust pointer
+               MCW  @000@, COUNT       * Set count to 0
+ 
+     CONVC3    C    COUNT, TABLEN      * Check if COUNT = to length of cobversion table
+               BE   BADC1              * If it is then jump over
+          
+               MCW  0+x1, CH1
+               C    CH, CH1            * Compare char to char in table
+               BE   FOUNDC             * If found jump away
+               
+               A    @1@, COUNT         * Increment COUNT
+               SBR  X1, 1+X1           * Increment pointer to next char in table
+
+               B    CONVC3             * Do it again...       
+
+     FOUNDC    NOP
+               POP  X1                 * Restore X1
+               A    @32@, COUNT        * Add 32 to char code
+               PUSH COUNT              * Put char code onto stack
+               B    CONVC7             * Jump out
+          
+     BADC1     NOP
+               POP  X1                 * Restore X1
+               PUSH @033@              * What is the best one to represent unprintable chars ?
+      
+     CONVC7    B    000                * Jump back
+     
+     ****************************************************************
      ** PUTS - Copy a String made of 3-digit chars to storage area and prints it when full  
      ** X1 is not preserved    
      ****************************************************************
@@ -121,7 +222,7 @@
                C    LEN, @000@         * Check if LEN is 0
                BE   PUTS9              * If it is then jump over
      
-               A    @3@, X1            * X1 points to next 3-digit char
+               SBR  X1, 3+X1           * X1 points to next 3-digit char
                PUSH 2+X1               * Push the char onto stack
                B    PUTC               * Put char in print area
                
@@ -157,12 +258,12 @@
      PUTC9     B    000                * Jump back
           
      **************************************************************** 
-     ** C3TOC1 - Convert a 3-digit char to a 1-digit char that can be printed
+     ** C3TOC1 - Convert a 3-digit char to a 1-digit char
      ****************************************************************
      
      C3TOC1    SBR  CONVC9+3           * Setup return address     
 
-               POP  CH3                * Get the chat to convert from stack
+               POP  CH3                * Get the char to convert from stack
                MCW  CH3, TMPC          * Copy on temp storage
     
                S    @32@, TMPC
@@ -171,7 +272,7 @@
      
                S    @32@, CH3  
                MZ   CH3-1, CH3    
-               C    CH3, @095@         * If >95 is an unsupported extended ASCII code
+               C    CH3, TABLEN         * If > TABLEN is an unsupported extended ASCII code
                BL   BADC               *
      
                PUSH X1                 * Save X1
@@ -181,12 +282,12 @@
      
                POP  X1                 * Restore X1
      
-               PUSH CH1                * Copy converted char to be printed on stack
+               PUSH CH1                * Copy converted char onto stack
 
                B    CONVC9             * Go to exit
      
      BADC      NOP
-               PUSH @#@                * What is the best one to represent unprintable chars
+               PUSH @#@                * What is the best one to represent unprintable chars ?
      
      CONVC9    B    000                * Jump back
      
