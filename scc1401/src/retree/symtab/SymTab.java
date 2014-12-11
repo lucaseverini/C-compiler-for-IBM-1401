@@ -4,19 +4,14 @@ import retree.expression.VariableExpression;
 import retree.type.Type;
 public class SymTab {
 	private HashMap<String,VariableExpression> table = new HashMap<String,VariableExpression>();
-	private int localoffset = 5;
-	private int paramOffset = -10;
+	private int topOffset, localOffset;
+	private int paramOffset;
 	private boolean isStatic = false;
-
-	public SymTab() {
-	}
 	
-	public SymTab(boolean isStatic) {
-		if (isStatic) {
-			this.isStatic = true;
-			//beginning of static variables ?
-			localoffset = 0;
-		}
+	public SymTab(int offset, boolean isStatic) {
+		topOffset = localOffset = offset;
+		paramOffset = -10;
+		this.isStatic = isStatic;
 	}
 
 	public VariableExpression get(String identifier) {
@@ -30,10 +25,22 @@ public class SymTab {
 			table.put(identifier, varExp);
 			return varExp;
 		} else {
-			VariableExpression varExp = new VariableExpression(t, localoffset, isStatic);
-			localoffset += t.getWidth();
+			VariableExpression varExp = new VariableExpression(t, localOffset, isStatic);
+			localOffset += t.getWidth();
 			table.put(identifier, varExp);
 			return varExp;
 		}
+	}
+	
+	public int getLocalSize() {
+		return localOffset - topOffset;
+	}
+	
+	public int getLocalOffset() {
+		return localOffset;
+	}
+	
+	public boolean isStatic() {
+		return isStatic;
 	}
 }

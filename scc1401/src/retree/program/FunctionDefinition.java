@@ -15,7 +15,6 @@ public class FunctionDefinition {
 	//address.
 	public String generateCode() {
 		return LBL_INS(declaration.getLabel(), "SBR", "0+X3") +
-			PUSH() +                                               //push the return address
 			block.generateCode() +
 			INS("B", "0+X3");
 	}

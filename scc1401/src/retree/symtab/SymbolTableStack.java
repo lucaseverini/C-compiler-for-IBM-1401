@@ -10,7 +10,7 @@ public class SymbolTableStack {
 	private ArrayList<SymTab> stack = new ArrayList<SymTab>();
 
 	public SymbolTableStack() {
-		stack.add(new SymTab(true));
+		stack.add(new SymTab(1000, true));
 	}
 
 	public SymTab peek() {
@@ -22,8 +22,21 @@ public class SymbolTableStack {
 	}
 
 	public SymTab push() {
-		stack.add(new SymTab());
-		return stack.get(stack.size()-1);
+		if (peek().isStatic()) {
+			stack.add(new SymTab(0, false));
+		} else {
+			stack.add(new SymTab(peek().getLocalOffset(), false));
+		}
+		return peek();
+	}
+	
+	public SymTab push(int spaceToReserve) {
+		if (peek().isStatic()) {
+			stack.add(new SymTab(spaceToReserve, false));
+		} else {
+			stack.add(new SymTab(spaceToReserve + peek().getLocalOffset(), false));
+		}
+		return peek();
 	}
 
 	public SymTab getStaticSymTab() {

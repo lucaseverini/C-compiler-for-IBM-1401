@@ -15,7 +15,7 @@ public class VariableExpression extends LValue {
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
 			if (isStatic) {
-				return PUSH(ADDR_CONST(offset));
+				return PUSH(offset + "");
 			} else {
 				return PUSH(OFF(offset));
 			}
@@ -41,5 +41,15 @@ public class VariableExpression extends LValue {
 		} else {
 			return OFF(offset);
 		}
+	}
+	
+	public String getWordMarkAddress() {
+		if (isStatic) {
+			return (offset-4) + "";
+		} else {
+			return OFF(offset - 4);
+		}
+		
+		
 	}
 }
