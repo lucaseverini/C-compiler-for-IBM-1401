@@ -1,6 +1,21 @@
-     * Assign labels for our index registers
-     * This allows us to use them as operands
-     * TODO - do we need to set the word mark on these?
-     X1        EQU  89
-     X2        EQU  94
-     X3        EQU  99
+     ****************************************************************
+
+     READ      EQU  001
+     PUNCH     EQU  101
+     PRINT     EQU  201
+
+               ORG  87
+     X1        DSA  0                  * INDEX REGISTER 1
+               ORG  92
+     X2        DSA  0                  * INDEX REGISTER 2
+               ORG  97
+     X3        DSA  0                  * INDEX REGISTER 3
+
+               ORG  600
+  
+     START     NOP
+     
+     ****************************************************************  
+     
+               SBR  X2, 400            * SET THE STACK
+               MCW  X2, X3

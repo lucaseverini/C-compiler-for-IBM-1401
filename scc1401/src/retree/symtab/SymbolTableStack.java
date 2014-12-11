@@ -32,9 +32,9 @@ public class SymbolTableStack {
 	
 	public SymTab push(int spaceToReserve) {
 		if (peek().isStatic()) {
-			stack.add(new SymTab(spaceToReserve, false));
+			stack.add(new SymTab(0, spaceToReserve, false));
 		} else {
-			stack.add(new SymTab(spaceToReserve + peek().getLocalOffset(), false));
+			stack.add(new SymTab(peek().getLocalOffset(), spaceToReserve, false));
 		}
 		return peek();
 	}
