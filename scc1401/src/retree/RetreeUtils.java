@@ -129,7 +129,7 @@ public class RetreeUtils {
 			Matcher m = Pattern.compile("\\#[A-Z ]{5}").matcher(code);
 			while (m.find()) {
 				String group = m.group();
-				String label = SmallCC.nextLabel();
+				String label = label(SmallCC.nextLabelNumber());
 				code = code.replaceAll(group, label);
 				if (group.equals("#MAIN ")) mainLabel = label;
 
@@ -159,6 +159,16 @@ public class RetreeUtils {
 			code += entry.getValue();
 		}
 		return loadSnippet("header") + code;
+	}
+	
+	public static String label(int labelNumber) {
+		//all our generated labels will start with a L
+		String label = "L";
+		while (label.length() < 6) {
+			label += (char)('A' + labelNumber%26);
+			labelNumber /= 26;
+		}
+		return label;
 	}
 
 }

@@ -20,11 +20,15 @@ public class BlockStatement implements Statement {
 		for (Initializer i : initializers) {
 			code += i.generateCode();
 		}
-		code += INS("MA", ADDR_CONST(stackOffset),"X2");
+		if (stackOffset > 0) {
+			code += INS("MA", ADDR_CONST(stackOffset),"X2");
+		}
 		for (Statement s : statements) {
 			code += s.generateCode();
 		}
-		code += INS("MA", ADDR_CONST(-stackOffset), "X2");
+		if (stackOffset > 0) {
+			code += INS("MA", ADDR_CONST(-stackOffset), "X2");
+		}
 		return code;
 	}
 

@@ -32,19 +32,11 @@ public class SmallCC
 {
 	// used during tree build
   public static SymbolTableStack variableTable = new SymbolTableStack();
-  public static HashMap<String,FunctionDeclaration> functionTable = new HashMap<String,FunctionDeclaration>();
+  public static HashMap<String,ConstantExpression> functionTable = new HashMap<String,ConstantExpression>();
 
   private static int labelNumber = 0;
-
-  public static String nextLabel() {
-		//all our generated labels will start with a L
-		String label = "L";
-		int n = labelNumber++;
-		while (label.length() < 6) {
-			label += (char)('A' + n%26);
-			n /= 26;
-		}
-		return label;
+  public static int nextLabelNumber() {
+		return labelNumber++;
 	}
 
   public static void main(String args[]) throws Exception
@@ -205,6 +197,9 @@ Program program() throws Exception : {
 				}
 			)*
   		{
+				int mainLabelNumber = functionTable.get("main").getValue();
+				program.setMainLabelNumber(mainLabelNumber);
+				
 				return program;
 			}
 }
@@ -318,12 +313,12 @@ Pair<Type,String> PrefixedVariable(Type baseType) : {
 }
 
 
-FunctionDeclaration functionDeclaration() : {}
+void functionDeclaration() : {}
 {
     Type() Identifier() ("(" (FunctionDeclarationParameter() ("," FunctionDeclarationParameter())*)? ")")  ";"
 
 	{
-		return new FunctionDeclaration(null, null);
+		//todo - add this to the symbol table
 	}
 }
 
@@ -356,14 +351,14 @@ FunctionDefinition functionDefinition() : {
 				paramTypes.add(p.getType());
 			}
 			type = new FunctionType(retType, paramTypes);
-			FunctionDeclaration dec = functionTable.get(name);
+			ConstantExpression dec = functionTable.get(name);
 			if (dec != null) {
 				if (! dec.getType().equals(type)) {
 					throw new Error("Type mismatch: function " + name +
 						"was previously declared as type " + dec.getType());
 				}
 			} else {
-				dec = new FunctionDeclaration(SmallCC.nextLabel(), type);
+				dec = new ConstantExpression(type, nextLabelNumber());
 				functionTable.put(name, dec);
 			}
 		}
@@ -507,8 +502,6 @@ Expression assignmentExpression() : {
 			| "=" r = assignmentExpression())?
 		) {
 				if (r != null) {
-					System.out.println(l);
-					System.out.println(r);
 					if (l instanceof LValue)
 						try {
 							return new AssignmentExpression((LValue)l, r); 
@@ -692,14 +685,10 @@ Expression additiveExpression()  : {
 }
 {
     l = multiplicativeExpression() ( "+" r = multiplicativeExpression(){
-			/*
-			l = new AdditiveExpression(l, r);
-			*/
+			l = new AddExpression(l, r);
 		}
-        | "-" r = multiplicativeExpression(){
-			/*
+		| "-" r = multiplicativeExpression(){
 			l = new SubtractExpression(l, r);
-			*/
 		} )*
 	{
 		return l;
@@ -777,6 +766,7 @@ Expression prefixExpression()  : {
 
 Expression SuffixExpression()  : {
 	Expression e, inside;
+	List<Expression> arguments;
 }
 {
     (e = AtomicExpression()
@@ -786,15 +776,33 @@ Expression SuffixExpression()  : {
 			| "--"	{
 						// e = new PostDecrementExpression(e);
 					}
-			| "(" inside = expression() ")" {
-												// e = new FunctionCallExpression(e,inside);
-											}
+			| "(" arguments = expressionList() ")" {
+				e = new FunctionCallExpression(e,arguments);
+			}
 			| "[" inside = expression() "]" {
 												// e = new ArrayAccessExpression(e,inside);
 											} )*)
 			{
 				return e;
 			}
+}
+
+List<Expression> expressionList() : {
+	List<Expression> list = new ArrayList<Expression>();
+	Expression exp;
+} {
+	exp=assignmentExpression() {
+		list.add(exp);	
+	}
+	("," exp=assignmentExpression() {
+		list.add(exp);
+	})*
+	
+	{
+		System.out.println(exp);
+		return list;
+	}
+	
 }
 
 Expression AtomicExpression()  : {
@@ -806,7 +814,12 @@ Expression AtomicExpression()  : {
    (str = Identifier() {
 		VariableExpression var = variableTable.searchStack(str);
 		if (var == null){
-			return null;
+			ConstantExpression fun = functionTable.get(str);
+			if (fun == null) {
+				return null;
+			} else {
+				return fun;
+			} 
 		} else {
 			return var;
 		}

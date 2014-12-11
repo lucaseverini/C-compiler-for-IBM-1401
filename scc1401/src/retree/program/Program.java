@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class Program {
 	private List<Initializer> initializers;
 	private List<FunctionDefinition> functions;
+	private int mainLabelNumber = -1;
 
 
 	public Program() {
@@ -22,13 +23,22 @@ public class Program {
 	public void addFunction(FunctionDefinition func) {
 		functions.add(func);
 	}
+	
+	public void setMainLabelNumber(int mainLabelNumber) {
+		this.mainLabelNumber = mainLabelNumber;
+	}
 
 	// TODO - call main
 	public String generateCode() {
+		if (mainLabelNumber < 0) {
+			//error
+		}
 		String code = "";
 		for (Initializer init : initializers) {
 			code += init.generateCode();
 		}
+		
+		code += INS("B", label(mainLabelNumber));
 		for (FunctionDefinition func : functions) {
 			code += func.generateCode();
 		}
