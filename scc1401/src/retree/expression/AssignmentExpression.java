@@ -25,12 +25,12 @@ public class AssignmentExpression extends Expression {
 
 	public String generateCode(boolean valueNeeded) {
 		String code = l.generateAddress() +
-			POP("X1") +
+			POP(3, "X1") +
 			r.generateCode(true);
 		if (valueNeeded) {
-			code += INS("MCW", STACK_REF(1), "0+X1");
+			code += INS("MCW", STACK_OFF(0), "0+X1");
 		} else {
-			code += POP("0+X1");
+			code += POP(l.getType().sizeof(), "0+X1");
 		}
 		return code;
 	}

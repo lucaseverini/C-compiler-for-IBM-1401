@@ -29,6 +29,9 @@ public class BlockStatement implements Statement {
 		if (stackOffset > 0) {
 			code += INS("MA", ADDR_CONST(-stackOffset), "X2");
 		}
+		for (Initializer i : initializers) {
+			code += i.freeCode();
+		}
 		return code;
 	}
 

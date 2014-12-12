@@ -7,7 +7,7 @@ public class FunctionType extends Type {
 	private Type returnType;
 
 	public FunctionType(Type returnType, List<Type> paramTypes) {
-		super(5); //really has no defined size, lets say 5 for simplicity...
+		super(-1); //has no defined size
 		this.returnType = returnType;
 		this.paramTypes = paramTypes;
 	}

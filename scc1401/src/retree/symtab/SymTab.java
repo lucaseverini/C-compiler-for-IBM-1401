@@ -10,14 +10,14 @@ public class SymTab {
 	
 	public SymTab(int offset, boolean isStatic) {
 		topOffset = localOffset = offset;
-		paramOffset = -10;
+		paramOffset = -3;
 		this.isStatic = isStatic;
 	}
 	
 	public SymTab(int offset, int spaceToReserve, boolean isStatic) {
 		topOffset = offset;
 		localOffset = topOffset + spaceToReserve;
-		paramOffset = -10;
+		paramOffset = -3;
 		this.isStatic = isStatic;
 	}
 
@@ -28,12 +28,12 @@ public class SymTab {
 	public VariableExpression put(String identifier, Type t, boolean isParam){
 		if (isParam) {
 			VariableExpression varExp = new VariableExpression(t, paramOffset, false);
-			paramOffset -= t.getWidth();
+			paramOffset -= t.sizeof();
 			table.put(identifier, varExp);
 			return varExp;
 		} else {
+			localOffset += t.sizeof();
 			VariableExpression varExp = new VariableExpression(t, localOffset, isStatic);
-			localOffset += t.getWidth();
 			table.put(identifier, varExp);
 			return varExp;
 		}

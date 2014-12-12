@@ -28,7 +28,7 @@ public class NegExpression extends Expression {
 			if (child.getType() instanceof PointerType) {
 				//todo
 			} else {
-				code += INS("ZS", STACK_REF(1));
+				code += INS("ZS", STACK_OFF(0));
 			}
 		}
 		return code;

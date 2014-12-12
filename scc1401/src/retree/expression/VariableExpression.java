@@ -15,9 +15,9 @@ public class VariableExpression extends LValue {
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
 			if (isStatic) {
-				return PUSH(offset + "");
+				return PUSH(getType().sizeof(), ADDR_LIT(offset));
 			} else {
-				return PUSH(OFF(offset));
+				return PUSH(getType().sizeof(), OFF(offset));
 			}
 		} else return "";
 	}
@@ -28,10 +28,10 @@ public class VariableExpression extends LValue {
 
 	public String generateAddress() {
 		if (isStatic) {
-			return PUSH(ADDR_CONST(offset));
+			return PUSH(3, ADDR_CONST(offset));
 		} else {
-			return PUSH(ADDR_CONST(offset)) +
-				INS("MA", "X3", STACK_REF(1));
+			return PUSH(3, ADDR_CONST(offset)) +
+				INS("MA", "X3", STACK_OFF(0));
 		}
 	}
 
@@ -45,9 +45,9 @@ public class VariableExpression extends LValue {
 	
 	public String getWordMarkAddress() {
 		if (isStatic) {
-			return (offset-4) + "";
+			return (offset + 1 - getType().sizeof()) + "";
 		} else {
-			return OFF(offset - 4);
+			return OFF(offset + 1 - getType().sizeof());
 		}
 		
 		

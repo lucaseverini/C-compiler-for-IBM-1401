@@ -29,9 +29,21 @@ public class Initializer {
 		}
 		if (value.getType() instanceof PointerType) {
 			return code + INS("MCW", ADDR_CONST(value.getValue()), variable.getAddress());
+		} else if (value.getType().equals(Type.intType)) {
+			return code + INS("MCW", NUM_CONST(value.getValue()), variable.getAddress());
+		} else if (value.getType().equals(Type.charType)) {
+			return code + INS("MCW", CHAR_CONST(value.getValue()), variable.getAddress());
 		} else {
-			return code + INS("MCW", CONST(value.getValue()), variable.getAddress());
+			//oops
+			return null;
 		}
+	}
+	
+	//this generates code that occurs when the initialized
+	//variable goes out of scope
+	//mainly just clears the word marker
+	public String freeCode() {
+		return INS("CW", variable.getWordMarkAddress());
 	}
 
 }

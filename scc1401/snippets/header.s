@@ -11,7 +11,7 @@
                ORG  97
      X3        DSA  0                  * INDEX REGISTER 3
 
-               ORG  600
+               ORG  6000
   
      START     NOP
      

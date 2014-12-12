@@ -33,11 +33,11 @@ public class AddExpression extends Expression {
 		String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
 		if (valueNeeded) {
 			if (l.getType() instanceof PointerType) {
-				code += INS("MA", STACK_REF(1), STACK_REF(2));
+				code += INS("MA", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
 			} else {
-				code += INS("A", STACK_REF(1), STACK_REF(2));
+				code += INS("A", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
 			}
-			code += POP();
+			code += POP(r.getType().sizeof());
 		}
 		return code;
 	}	

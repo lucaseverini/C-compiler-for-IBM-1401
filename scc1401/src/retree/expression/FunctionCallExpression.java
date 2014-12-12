@@ -26,23 +26,32 @@ public class FunctionCallExpression extends Expression {
 	}
 	
 	public String generateCode(boolean valueNeeded) {
+		FunctionType functionType = (FunctionType)function.getType();
 		String code = "";
+		//first, push room for our return address to the stack.
+		code += PUSH(functionType.getReturnType().sizeof());
 		int i = arguments.size();
 		//push all our parameters in reverse order
 		while (i --> 0) {
 			code += arguments.get(i).generateCode(true);
 		}
 		//make a new frame
-		code += PUSH("X3");
+		code += PUSH(3, "X3");
 		code += INS("MCW", "X2", "X3");
 		//branch
 		code += INS("B", label(function.getValue()));
+		//AFTER THE CALL:
 		//restore our frame
-		POP("X3");
-		//pop all the parameters except the first we pushed
-		//the return value should be stored there
-		if (arguments.size() > 1) {
-			code += INS("MA", ADDR_CONST(1 - arguments.size()), "X2");
+		code += POP(3, "X3");
+		//pop off all the arguments
+		List<Type> paramTypes = functionType.getParamTypes();
+		for (Type t : paramTypes) {
+			code += POP(t.sizeof());
+		}
+		//now our return address should be at the top of the stack.
+		//if we don't want a value, pop it
+		if (!valueNeeded) {
+			code += POP(functionType.getReturnType().sizeof());
 		}
 		return code;
 	}

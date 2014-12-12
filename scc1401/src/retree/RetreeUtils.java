@@ -29,12 +29,18 @@ public class RetreeUtils {
 		
 	}
 
-	public static String CONST(int val) {
+	public static String NUM_CONST(int val) {
 			return "@" + COD(val) + "@";
 		}
 
 	public static String ADDR_CONST(int val) {
 			return "@" + ADDR_COD(val) + "@";
+	}
+	
+	public static String CHAR_CONST(int value) {
+		//we take the given char as ascii, and return a 1401 constant
+		//TODO - robustify - check for illegal characters n stuff
+		return "@" + Character.toUpperCase((char)value) + "@";
 	}
 
 
@@ -65,49 +71,50 @@ public class RetreeUtils {
 		//return digits[(addr  4000) / 100] + (addr / 10) % 10 + digits[10 * lastDigitSet + addr%10];
 	}
 
-	public static String PUSH(String a) {
+	public static String PUSH(int size, String a) {
 		//remember we need to set the word mark for the stack
-		return COM("Push(" + a + ")") +
-			INS("SW","15996+X2") +
-			INS("MCW", a, "0+X2") +
-			INS("MA", ADDR_CONST(5), "X2");
+		return COM("Push(" + a + ":" + size + ")") +
+			INS("SW","1+X2") +
+			INS("MA", ADDR_CONST(size), "X2") +
+			INS("MCW", a, "0+X2");
 	}
 
-	public static String PUSH() {
+	public static String PUSH(int size) {
 		//remember we need to set the word mark for the stack
-		return COM("Push") + 
-			INS("SW","15996+X2") +
-			INS("MA", ADDR_CONST(5), "X2");
+		return COM("Push(" + size + ")") + 
+			INS("SW","1+X2") +
+			INS("MA", ADDR_CONST(size), "X2");
 	}
 
-	public static String POP(String location) {
+	public static String POP(int size, String location) {
 
-		//for now we'll just leave the word mark in place, we might remove it later...
-		return COM("Pop(" + location + ")") +
-			INS("MA", ADDR_CONST(15995), "X2") +
-			INS("MCW", "0+X2", location);
+		return COM("Pop(" + location + ":" + size + ")") +
+			INS("MCW", "0+X2", location) +
+			INS("MA", ADDR_CONST(-size), "X2") + 
+			INS("CW", "1+X2");
 	}
 	
-	public static String POP() {
-		return COM("Pop") +
-			INS("MA", ADDR_CONST(15995), "X2");
+	public static String POP(int size) {
+		return COM("Pop(" + size + ")") +
+			INS("MA", ADDR_CONST(-size), "X2") + 
+			INS("CW", "1+X2");
 
 	}
-
-	public static String PUSH_FRAME() {
-		return PUSH("X3") +
-			INS("MCW", "X2", "X3");
-	}
-
 	
-
-	public static String STACK_REF(int back) {
-		return (16000-5*back) + "+X2";
-	}
-
+	//returns an address at the frame pointer + offset
 	public static String OFF(int offset) {
-		offset = (16000 - (-offset)%16000)%16000; // offset :=  offset mod 16000
+		offset = (16000 + offset % 16000) % 16000; // offset :=  offset mod 16000
 		return offset + "+X3";
+	}
+	
+		//returns an address at the stack pointer + offset
+	public static String STACK_OFF(int offset) {
+		offset = (16000 + offset % 16000) % 16000; // offset :=  offset mod 16000
+		return offset + "+X2";
+	}
+	
+	public static String ADDR_LIT(int addr) {
+		return "" + ((16000 + addr % 16000) % 16000);
 	}
 
 	private static HashMap<String, String> snippetLabels = new HashMap<String, String>();

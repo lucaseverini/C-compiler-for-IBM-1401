@@ -247,7 +247,7 @@ List<Initializer> variableDeclarationList(Type baseType, boolean isStatic) : {
 	init=variableInitializer(baseType, isStatic) {
 		inits.add(init);
 	}
-	("," variableInitializer(baseType, isStatic) {
+	("," init=variableInitializer(baseType, isStatic) {
 		inits.add(init);
 	})*
 	{
@@ -335,7 +335,13 @@ FunctionDefinition functionDefinition() : {
 	FunctionType type;
 	String name;
 	BlockStatement block;
-	variableTable.push(5);
+	variableTable.push();
+	//this is the function's return address.
+	//stored under the identifier "return", as that is a reserved word.
+	//the value will be assigned automatically.
+	try {
+		variableTable.add("return", new PointerType(Type.charType), false);
+	} catch(Exception e) {}
 }
 {
 
@@ -362,7 +368,7 @@ FunctionDefinition functionDefinition() : {
 				functionTable.put(name, dec);
 			}
 		}
-        block = blockStatement(false)
+        block = blockStatement(true)
 		{
 			variableTable.pop();
 			return new FunctionDefinition(dec, block);
@@ -387,14 +393,20 @@ VariableExpression functionDefinitionParameter(int paramNum): {
 	}
 }
 
-BlockStatement blockStatement(boolean needsPush) : {
+BlockStatement blockStatement(boolean isFunction) : {
 	List<Initializer> initializers = new ArrayList<Initializer>();
 	List<Statement> statements = new ArrayList<Statement>();
 	List<Initializer> initList;
 	Statement s;
+	if (isFunction) {
+		try {
+			initializers.add(new Initializer(variableTable.searchStack("return"), null));
+		} catch (Exception e) {}
+	}
 }{
 	{
-		if (needsPush) variableTable.push();
+		//functions have already pushed, and will pop after
+		if (!isFunction) variableTable.push();
 	}
 	"{" (initList=localVariableDeclaration() {
 		for (Initializer init : initList) {
@@ -406,7 +418,7 @@ BlockStatement blockStatement(boolean needsPush) : {
 	{
 		//System.out.println(variableTable.peek().getStackOffset());
 		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalSize());
-		if (needsPush) variableTable.pop();
+		if (!isFunction) variableTable.pop();
 		return bs;
 	}
 }
@@ -420,7 +432,7 @@ Statement statement()  : {
 			return new EmptyStatement();
 		}) | (exp=expression() ";" {
 			return new ExpressionStatement(exp);
-		}) | (stat = blockStatement(true) {
+		}) | (stat = blockStatement(false) {
 			return stat;
 		})
     //TODO | ("if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())? ) {
@@ -831,7 +843,7 @@ Expression AtomicExpression()  : {
 	}
     | StringLiteral()
     | str=CharacterConstant(){ //TODO - fix.
-		ce = new ConstantExpression(Type.charType, 0);
+		ce = new ConstantExpression(Type.charType, 65);
 		e = ce;
 	}
     | "(" expression() ")")

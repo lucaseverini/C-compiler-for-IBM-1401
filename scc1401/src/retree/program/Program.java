@@ -39,9 +39,12 @@ public class Program {
 		}
 		
 		code += INS("B", label(mainLabelNumber));
+		
+		code += INS("H");
+		
 		for (FunctionDefinition func : functions) {
 			code += func.generateCode();
 		}
-		return HEADER() + code;
+		return HEADER() + code + INS("END", "START");
 	}
 }

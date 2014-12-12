@@ -6,23 +6,23 @@ public class Type {
 				return "int";
 			}
 	};
-	public static final Type charType = new Type(5) {
+	public static final Type charType = new Type(1) {
 		public String toString() {
 			return "char";
 		}
 	};
 
-	private int width = 5;
+	private int size;
 
-	public Type(int width){
-		this.width = width;
+	public Type(int size){
+		this.size = size;
 	}
 
 	public boolean equals(Type t) {
 		return this == t;
 	}
 
-	public int getWidth() {
-		return width;
+	public int sizeof() {
+		return size;
 	}
 }

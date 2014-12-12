@@ -37,9 +37,9 @@ public class SubtractExpression extends Expression {
 				//unimplemented :(
 				return null;
 			} else {
-				code += INS("S", STACK_REF(1), STACK_REF(2));
+				code += INS("S", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
 			}
-			code += POP();
+			code += POP(r.getType().sizeof());
 		}
 		return code;
 	}
