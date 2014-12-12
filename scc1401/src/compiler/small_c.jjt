@@ -428,21 +428,25 @@ Statement statement()  : {
 	Expression exp;
 }
 {
-		(";" {
+		";" {
 			return new EmptyStatement();
-		}) | (exp=expression() ";" {
+		}
+		| exp=expression() ";" {
 			return new ExpressionStatement(exp);
-		}) | (stat = blockStatement(false) {
+		}
+		| stat = blockStatement(false) {
 			return stat;
-		})
-    | (("if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())? ) {
+		}
+    | "if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())?  {
 			return new IfStatement(exp, stat, stat2);
-		})
+		}
     | "while" "(" exp=expression() ")" stat=statement() {
 			return new WhileStatement(exp, stat);
 		}
     //TODO | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
-    //TODO | "do" Statement() "while" "(" expression() ")" ";"
+    | "do" stat=statement() "while" "(" exp=expression() ")" ";" {
+			return new DoWhileStatement(exp, stat);
+		}
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
      * make another production rule for a switch statement body that looks like a block statement with cases. */
     //TODO| "switch" "(" expression() ")" CaseBlock()
