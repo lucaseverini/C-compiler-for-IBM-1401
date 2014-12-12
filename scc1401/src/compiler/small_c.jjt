@@ -425,7 +425,7 @@ BlockStatement blockStatement(boolean isFunction) : {
 
 Statement statement()  : {
 	Statement stat, stat2 = null;
-	Expression exp;
+	Expression exp=null, exp2=null, exp3=null;
 }
 {
 		";" {
@@ -443,7 +443,9 @@ Statement statement()  : {
     | "while" "(" exp=expression() ")" stat=statement() {
 			return new WhileStatement(exp, stat);
 		}
-    //TODO | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
+    | "for" "(" (exp=expression()";"| ";" ) (exp2=expression() ";" | ";" ) (exp3=expression() ")" | ")" ) stat=statement() {
+			return new ForStatement(exp, exp2, exp3, stat);
+		}
     | "do" stat=statement() "while" "(" exp=expression() ")" ";" {
 			return new DoWhileStatement(exp, stat);
 		}
