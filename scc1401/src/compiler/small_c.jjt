@@ -424,7 +424,7 @@ BlockStatement blockStatement(boolean isFunction) : {
 }
 
 Statement statement()  : {
-	Statement stat, stat2;
+	Statement stat, stat2 = null;
 	Expression exp;
 }
 {
@@ -435,9 +435,9 @@ Statement statement()  : {
 		}) | (stat = blockStatement(false) {
 			return stat;
 		})
-    //TODO | ("if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())? ) {
-			//return new IfStatement(exp, stat, stat2);
-		//})
+    | (("if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())? ) {
+		return new IfStatement(exp, stat, stat2);
+		})
     //TODO | "while" "(" expression() ")" Statement()
     //TODO | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
     //TODO | "do" Statement() "while" "(" expression() ")" ";"
@@ -488,7 +488,7 @@ Expression assignmentExpression() : {
 				r = new SubtractExpression(l, r);
 			}
 			| "*=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				r = new MultiplyExpression(l, r);
 			}
 			| "/=" r = assignmentExpression() {
 				//r = new DivideExpression(l, r);

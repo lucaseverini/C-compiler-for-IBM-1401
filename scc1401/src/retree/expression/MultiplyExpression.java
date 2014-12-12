@@ -30,20 +30,22 @@ public class MultiplyExpression extends Expression {
 	}
 	
 	public String generateCode(boolean valueNeeded) {
-		//TODO
-		return "";
-		/*
+		int size = r.getType().sizeof();
 		String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
 		if (valueNeeded) {
 			if (l.getType() instanceof PointerType) {
-				
-				code += INS("MA", STACK_REF(1), STACK_REF(2));
+				//TODO
+				//code += INS("MA", STACK_REF(1), STACK_REF(2));
 			} else {
-				code += INS("A", STACK_REF(1), STACK_REF(2));
+				code += INS("M", STACK_OFF(-size), STACK_OFF(size+1));
+				//this puts the product at size + 1 bits above the stack
+				code += INS("SW", STACK_OFF(2));
+				code += INS("MCW", STACK_OFF(size+1), STACK_OFF(-size));
+				code += INS("CW", STACK_OFF(2));
 			}
-			code += POP();
+			code += POP(size);
 		}
-		return code;*/
+		return code;
 	}
 
 }
