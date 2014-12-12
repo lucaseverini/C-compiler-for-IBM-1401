@@ -436,9 +436,11 @@ Statement statement()  : {
 			return stat;
 		})
     | (("if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())? ) {
-		return new IfStatement(exp, stat, stat2);
+			return new IfStatement(exp, stat, stat2);
 		})
-    //TODO | "while" "(" expression() ")" Statement()
+    | "while" "(" exp=expression() ")" stat=statement() {
+			return new WhileStatement(exp, stat);
+		}
     //TODO | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
     //TODO | "do" Statement() "while" "(" expression() ")" ";"
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
