@@ -2,6 +2,7 @@ package retree.expression;
 import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.type.*;
+import compiler.SmallCC;
 
 public class EqualExpression extends Expression {
 	private Expression l, r;

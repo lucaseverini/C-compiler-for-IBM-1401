@@ -4,10 +4,10 @@ import retree.exceptions.*;
 import retree.type.*;
 import compiler.SmallCC;
 
-public class LessThanOrEqualExpression extends Expression {
+public class GreaterThanOrEqualExpression extends Expression {
     private Expression l, r;
 
-    public LessThanOrEqualExpression(Expression l, Expression r) throws TypeMismatchException {
+    public GreaterThanOrEqualExpression(Expression l, Expression r) throws TypeMismatchException {
         super(l.getType());
         if (! l.getType().equals(r.getType())) {
             throw new TypeMismatchException(r, l.getType(), r.getType());
@@ -23,7 +23,7 @@ public class LessThanOrEqualExpression extends Expression {
             if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) {
                 return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() + ((ConstantExpression)r2).getValue());
             }
-            return new EqualExpression(l2, r2);
+            return new GreaterThanOrEqualExpression(l2, r2);
         } catch (TypeMismatchException e) {
             //should never happen
             return null;
@@ -38,7 +38,7 @@ public class LessThanOrEqualExpression extends Expression {
             code += INS("CMPB", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
             code += POP(1);
             code += INS("BCE", labelEqual, STACK_OFF(1), "3");
-            code += INS("BCE", labelEqual, STACK_OFF(1), "1");
+            code += INS("BCE", labelEqual, STACK_OFF(1), "2");
             code += PUSH(Type.intType.sizeof(), NUM_CONST(0));
             code += INS("B", labelEnd);
             code += LBL_INS(labelEqual, "NOP");
