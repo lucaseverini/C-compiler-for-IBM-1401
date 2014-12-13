@@ -32,7 +32,7 @@ public class SmallC
 
 		for(String file : files)
 		{
-			String outFile = SmallCPP.preprocessFile(file, paths, symTable, false);		
+			String outFile = SmallCPP.preprocessFile(file, paths, symTable, false);
 			if(outFile != null)
 			{
 				System.out.println("Final Preprocessed file: " + outFile);
