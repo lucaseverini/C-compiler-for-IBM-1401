@@ -1,6 +1,6 @@
 #ifdef NON_LIB_PRINTF
 
-int cprintf(char *cformat_str, ...)
+int printf(char *cformat_str, ...)
 {
 	char *arg;
 	// delta is the int value of the char ptr to -1

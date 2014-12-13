@@ -18,6 +18,7 @@ package preprocessor;
 
 import java.io.*;
 import java.util.*;
+import java.lang.*;
 
 public class SmallCPP
 {
@@ -84,6 +85,19 @@ public class SmallCPP
 				}
 
 				int ch = super.read();
+				if (ch == '/')
+				{
+					ch = super.read();
+					if (ch == '/')
+					{
+						ch = super.read();
+						while (ch != '\n')ch = super.read();
+					} else if (ch == '*')
+					{
+						ch = super.read();
+						while (ch != '*')ch = super.read();
+					}
+				}
 				// possible line continuation
 				if (ch == '\\')
 				{
@@ -176,6 +190,9 @@ public class SmallCPP
 
 		ignore = savedIgnore;
 
+		ProcessBuilder pb = new ProcessBuilder("sed", "-i.bak", "-e", "s/\\/\\/.*//", outFile);
+		Process p = pb.start();
+		p.waitFor();
 		return outFile;
 	}
 }
@@ -186,7 +203,7 @@ TOKEN :
 {
     <COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
   | <COMMENT: "//"(~["\n", "\r"])*>
-  | <COMMENT_BLOCK: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "/">
+  | <COMMENT_BLOCK: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "*/">
   | <STRINGS: <STRING_1> | <STRING_2>>
   | <STRING_1: "\""(~["\"", "\n"])*"\"">
   | <STRING_2: "<"(~["\"", "\n"])*">">
@@ -204,7 +221,7 @@ TOKEN :
 						"?" | "<" | ">" | "." | "," | "'" | "\"" | "(" | ")" | "[" | "]" | "{" | "}" | "\\">
 }
 
-void Comment(StringBuffer buf) : {}
+void Comment(StringBuffer buf, FileCopier copier) : {}
 {
     <COMMENTS>
     {
@@ -411,7 +428,7 @@ void Value(StringBuffer buf) : {}
 
 void Tokens(FileCopier copier) : { StringBuffer sb = new StringBuffer(); }
 {
-    (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
+    (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb, copier) | <SYMBOLS> | <WHITESPACE>)* <EOF>
 
 	{
 		// System.out.println("### Parsed tokens:\n" + sb.toString());
