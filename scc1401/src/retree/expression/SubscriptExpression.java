@@ -59,6 +59,7 @@ public class SubscriptExpression extends LValue {
             code += INS("SW", STACK_OFF(2));
             code += INS("MCW", STACK_OFF(1+Type.intType.sizeof()), STACK_OFF(-Type.intType.sizeof()));
             code += INS("CW", STACK_OFF(2));
+            code += POP(Type.intType.sizeof());
             //at this point, the top of the stack should be r*sizeof(l)
             code += SNIP("number_to_pointer");
             code += INS("MA", STACK_OFF(0), STACK_OFF(-3));
@@ -72,12 +73,14 @@ public class SubscriptExpression extends LValue {
     public String generateAddress() {
         String code = l.generateCode(true) + r.generateCode(true);
         PointerType ptype = (PointerType)l.getType();
-        PUSH(5, NUM_CONST(ptype.getType().sizeof()));
+        code += COM("raw index on the stack");
+        code += PUSH(5, NUM_CONST(ptype.getType().sizeof()));
         code += INS("M", STACK_OFF(-Type.intType.sizeof()), STACK_OFF(1+Type.intType.sizeof()));
         //this puts the product at size + 1 bits above the stack
         code += INS("SW", STACK_OFF(2));
         code += INS("MCW", STACK_OFF(1+Type.intType.sizeof()), STACK_OFF(-Type.intType.sizeof()));
         code += INS("CW", STACK_OFF(2));
+        code += POP(Type.intType.sizeof());
         //at this point, the top of the stack should be r*sizeof(l)
         code += COM("STACK TOP IS NOW ARRAY INDEX");
         code += SNIP("number_to_pointer");

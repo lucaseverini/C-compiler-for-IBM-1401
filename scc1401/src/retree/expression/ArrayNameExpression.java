@@ -20,10 +20,8 @@ public class ArrayNameExpression extends Expression{
 		if (array.isStatic()) {
 			return PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof()));
 		} else {
-			return COM("BEGIN") +
-				PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof())) +
-				INS("MA", "X3", STACK_OFF(0)) +
-				COM("END");
+				return PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof())) +
+				INS("MA", "X3", STACK_OFF(0));
 		}
 	}
 	

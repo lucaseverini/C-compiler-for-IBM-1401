@@ -3,6 +3,10 @@
      * make a copy of the top of the stack
                SW   1+X2
                MCW  0+X2,3+X2
+     * zero out the zone bits of our copy
+               MZ   @0@,3+X2
+               MZ   @0@,2+X2
+               MZ   @0@,1+X2
      * set the low-order digit's zone bits
                C    @04000@,0+X2
                BL   $HIGH
