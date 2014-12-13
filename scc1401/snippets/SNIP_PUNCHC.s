@@ -2,7 +2,7 @@
      ** PUNCHC - Copy a char to storage area and punch when full      
      ****************************************************************
      
-     PUNCHC    SBR  PUNC1+3            * Setup return address
+     $MAIN     SBR  PUNC1+3            * Setup return address
      
                POPB PUNC2              * Gets char from stack
      
