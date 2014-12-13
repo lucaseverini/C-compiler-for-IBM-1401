@@ -23,10 +23,10 @@ public class RetreeUtils {
 	public static String INS(String operation, String ... args) {
 		return LBL_INS("", operation, args);
 	}
-	
+
 	public static String COM(String comment) {
 		return "     * " + comment + "\n";
-		
+
 	}
 
 	public static String NUM_CONST(int val) {
@@ -36,7 +36,7 @@ public class RetreeUtils {
 	public static String ADDR_CONST(int val) {
 			return "@" + ADDR_COD(val) + "@";
 	}
-	
+
 	public static String CHAR_CONST(int value) {
 		//we take the given char as ascii, and return a 1401 constant
 		//TODO - robustify - check for illegal characters n stuff
@@ -67,7 +67,7 @@ public class RetreeUtils {
 		int firstDigitSet = 10 * ((addr%4000) / 1000);
 		int decPart = addr % 1000;
 		return digits[decPart/100 + firstDigitSet] + digits[(decPart/10)%10] + digits[decPart % 10 + lastDigitSet];
-		
+
 		//return digits[(addr  4000) / 100] + (addr / 10) % 10 + digits[10 * lastDigitSet + addr%10];
 	}
 
@@ -81,7 +81,7 @@ public class RetreeUtils {
 
 	public static String PUSH(int size) {
 		//remember we need to set the word mark for the stack
-		return COM("Push(" + size + ")") + 
+		return COM("Push(" + size + ")") +
 			INS("SW","1+X2") +
 			INS("MA", ADDR_CONST(size), "X2");
 	}
@@ -90,29 +90,29 @@ public class RetreeUtils {
 
 		return COM("Pop(" + location + ":" + size + ")") +
 			INS("MCW", "0+X2", location) +
-			INS("MA", ADDR_CONST(-size), "X2") + 
+			INS("MA", ADDR_CONST(-size), "X2") +
 			INS("CW", "1+X2");
 	}
-	
+
 	public static String POP(int size) {
 		return COM("Pop(" + size + ")") +
-			INS("MA", ADDR_CONST(-size), "X2") + 
+			INS("MA", ADDR_CONST(-size), "X2") +
 			INS("CW", "1+X2");
 
 	}
-	
+
 	//returns an address at the frame pointer + offset
 	public static String OFF(int offset) {
 		offset = (16000 + offset % 16000) % 16000; // offset :=  offset mod 16000
 		return offset + "+X3";
 	}
-	
+
 		//returns an address at the stack pointer + offset
 	public static String STACK_OFF(int offset) {
 		offset = (16000 + offset % 16000) % 16000; // offset :=  offset mod 16000
 		return offset + "+X2";
 	}
-	
+
 	public static String ADDR_LIT(int addr) {
 		return "" + ((16000 + addr % 16000) % 16000);
 	}
@@ -158,7 +158,7 @@ public class RetreeUtils {
 		label = snippetLabels.get(snippetName);
 		return INS("B", label);
 	}
-	
+
 	//this must be called AFTER all code generation.
 	public static String HEADER() {
 		String code = "";
@@ -167,7 +167,7 @@ public class RetreeUtils {
 		}
 		return loadSnippet("header") + code;
 	}
-	
+
 	public static String label(int labelNumber) {
 		//all our generated labels will start with a L
 		String label = "L";

@@ -42,14 +42,20 @@ public class VariableExpression extends LValue {
 			return OFF(offset);
 		}
 	}
-	
+
 	public String getWordMarkAddress() {
 		if (isStatic) {
 			return (offset + 1 - getType().sizeof()) + "";
 		} else {
 			return OFF(offset + 1 - getType().sizeof());
 		}
-		
-		
+	}
+
+	public boolean isStatic() {
+		return isStatic;
+	}
+
+	public int getOffset() {
+		return offset;
 	}
 }

@@ -769,7 +769,10 @@ Expression prefixExpression()  : {
 			return new DereferenceExpression(e);
 		}
     | "&" e = prefixExpression()	{
-			return new AddressOfExpression((LValue)e);
+			// &array_name == array_name
+			if (! (e instanceof ArrayNameExpression)) {
+				return new AddressOfExpression((LValue)e);
+			}
 		}
     | "sizeof" e = prefixExpression()	{
 			return new ConstantExpression(Type.intType, e.getType().sizeof());
@@ -814,15 +817,14 @@ List<Expression> expressionList() : {
 	List<Expression> list = new ArrayList<Expression>();
 	Expression exp;
 } {
-	exp=assignmentExpression() {
+	(exp=assignmentExpression() {
 		list.add(exp);	
 	}
 	("," exp=assignmentExpression() {
 		list.add(exp);
-	})*
+	})*)?
 	
 	{
-		System.out.println(exp);
 		return list;
 	}
 	
@@ -843,6 +845,8 @@ Expression AtomicExpression()  : {
 			} else {
 				return fun;
 			} 
+		} else if (var.getType() instanceof ArrayType) {
+			return new ArrayNameExpression(var);
 		} else {
 			return var;
 		}
