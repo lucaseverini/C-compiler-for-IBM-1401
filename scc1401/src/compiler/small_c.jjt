@@ -806,7 +806,7 @@ Expression SuffixExpression()  : {
 				e = new FunctionCallExpression(e,arguments);
 			}
 			| "[" inside = expression() "]" {
-				// e = new ArrayAccessExpression(e,inside);
+				e = new SubscriptExpression(e, inside);
 			} )*)
 			{
 				return e;

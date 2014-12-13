@@ -133,14 +133,17 @@ public class RetreeUtils {
 			//the snippet may contain labels of the form $ABC
 			//replace them with real labels.
 			String mainLabel = "";
-			Matcher m = Pattern.compile("\\#[A-Z ]{5}").matcher(code);
+			Matcher m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
 			while (m.find()) {
 				String group = m.group();
 				String label = label(SmallCC.nextLabelNumber());
-				code = code.replaceAll(group, label);
-				if (group.equals("#MAIN ")) mainLabel = label;
+				//first replace occurrences in the label column, preserving spacing
+				code = code.replace(group, label);
+				//then replace occurrences in the arguments, ignoring surrounding whitespace
+				code = code.replace(group.trim(), label);
+				if (group.equals("$MAIN ")) mainLabel = label;
 
-				m = Pattern.compile("\\#[A-Z ]{5}").matcher(code);
+				m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
 			}
 			snippetLabels.put(snippetName, mainLabel);
 			snippetCode.put(snippetName, code);
@@ -159,13 +162,18 @@ public class RetreeUtils {
 		return INS("B", label);
 	}
 
-	//this must be called AFTER all code generation.
+	//this must be called AFTER everything else, including FOOTER.
 	public static String HEADER() {
+		return loadSnippet("header");
+	}
+	
+	public static String FOOTER() {
 		String code = "";
+		//loadSnippet("CLIB");
 		for (Map.Entry<String,String> entry : snippetCode.entrySet()) {
 			code += entry.getValue();
 		}
-		return loadSnippet("header") + code;
+		return code;
 	}
 
 	public static String label(int labelNumber) {

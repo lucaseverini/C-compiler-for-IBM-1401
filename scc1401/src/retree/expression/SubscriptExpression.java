@@ -8,7 +8,7 @@ public class SubscriptExpression extends LValue {
     private Expression l, r;
 
     public SubscriptExpression(Expression l, Expression r) throws TypeMismatchException {
-        super(l.getType());
+        super(((PointerType)l.getType()).getType());
         if (!r.getType().equals(Type.intType))
         {
             r = new CastExpression(Type.intType, r);
@@ -20,7 +20,7 @@ public class SubscriptExpression extends LValue {
         this.r = r;
     }
 
-    public Expression collapse() {
+    public LValue collapse() {
         try {
             Expression l2 = l.collapse();
             Expression r2 = r.collapse();
@@ -30,15 +30,15 @@ public class SubscriptExpression extends LValue {
                 {
                     ConstantExpression c = (ConstantExpression)r2;
                     VariableExpression var = (VariableExpression)l2;
-                    return new VariableExpression(l2.getType().getType(), var.getOffset() + c.getValue(), var.isStatic());
+                    return new VariableExpression(((PointerType)l2.getType()).getType(), var.getOffset() + c.getValue(), var.isStatic());
                 } else if ((l2 instanceof ArrayNameExpression))
                 {
                     ConstantExpression c = (ConstantExpression)r2;
                     ArrayNameExpression arr = (ArrayNameExpression)l2;
                     int offset = arr.getArray().getOffset();
-                    ArrayType arrType = arr.getArray().getType();
+                    ArrayType arrType = (ArrayType) arr.getArray().getType();
                     offset = offset + arrType.getArrayBaseType().sizeof() - arrType.sizeof();
-                    return new VariableExpression(l2.getType().getType(), offset + c.getValue(), arr.getArray().isStatic());
+                    return new VariableExpression(((PointerType)l2.getType()).getType(), offset + c.getValue(), arr.getArray().isStatic());
                 }
 
             }
@@ -70,7 +70,7 @@ public class SubscriptExpression extends LValue {
     }
 
     public String generateAddress() {
-        String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+        String code = l.generateCode(true) + r.generateCode(true);
         PointerType ptype = (PointerType)l.getType();
         PUSH(5, NUM_CONST(ptype.getType().sizeof()));
         code += INS("M", STACK_OFF(-Type.intType.sizeof()), STACK_OFF(1+Type.intType.sizeof()));
@@ -79,9 +79,11 @@ public class SubscriptExpression extends LValue {
         code += INS("MCW", STACK_OFF(1+Type.intType.sizeof()), STACK_OFF(-Type.intType.sizeof()));
         code += INS("CW", STACK_OFF(2));
         //at this point, the top of the stack should be r*sizeof(l)
+        code += COM("STACK TOP IS NOW ARRAY INDEX");
         code += SNIP("number_to_pointer");
         code += INS("MA", STACK_OFF(0), STACK_OFF(-3));
         code += POP(3);
+        code += COM("STACK top is location in array now.");
         return code;
     }
 

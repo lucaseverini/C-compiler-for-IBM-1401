@@ -45,6 +45,7 @@ public class Program {
 		for (FunctionDefinition func : functions) {
 			code += func.generateCode();
 		}
+		code += FOOTER();
 		return HEADER() + code + INS("END", "START");
 	}
 }
