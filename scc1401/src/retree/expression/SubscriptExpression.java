@@ -24,10 +24,23 @@ public class SubscriptExpression extends Expression {
         try {
             Expression l2 = l.collapse();
             Expression r2 = r.collapse();
-            if ((r2 instanceof ConstantExpression) && ((l2 instanceof VariableExpression )))// || (l2 instanceof ArrayNameExpression)))
+            if ((r2 instanceof ConstantExpression))
             {
-                ConstantExpression c = (ConstantExpression)r2;
-                // return new VariableExpression(l2.getType().getType(), l2.getOffset() + c.getValue(), false);
+                if ((l2 instanceof VariableExpression ))
+                {
+                    ConstantExpression c = (ConstantExpression)r2;
+                    VariableExpression var = (VariableExpression)l2;
+                    return new VariableExpression(l2.getType().getType(), var.getOffset() + c.getValue(), var.isStatic());
+                } else if ((l2 instanceof ArrayNameExpression))
+                {
+                    ConstantExpression c = (ConstantExpression)r2;
+                    ArrayNameExpression arr = (ArrayNameExpression)l2;
+                    int offset = arr.getArray().getOffset();
+                    ArrayType arrType = arr.getArray().getType();
+                    offset = offset + arrType.getArrayBaseType().sizeof() - arrType.sizeof();
+                    return new VariableExpression(l2.getType().getType(), offset + c.getValue(), arr.getArray().isStatic());
+                }
+
             }
             return new SubscriptExpression(l2, r2);
         } catch (TypeMismatchException e) {
@@ -39,7 +52,11 @@ public class SubscriptExpression extends Expression {
     public String generateCode(boolean valueNeeded) {
         String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
         if (valueNeeded) {
-            // code += ;
+            code += SNIP("number_to_pointer");
+            code += INS("MA", STACK_OFF(0), STACK_OFF(-3));
+            code += POP(3);
+            code += POP(3,"X1");
+            code += PUSH(((PointerType)l.getType()).getType().sizeof(), "0+X1");
         }
         return code;
     }
