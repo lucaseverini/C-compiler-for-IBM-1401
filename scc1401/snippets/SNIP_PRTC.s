@@ -2,7 +2,7 @@
      ** PRTC - Copy a char to storage area and prints when full      
      ****************************************************************
      
-     PRTC      SBR  PRTC1+3            * Setup return address
+     $MAIN     SBR  PRTC1+3            * Setup return address
      
                POPB PRTC2              * Gets char from stack
      

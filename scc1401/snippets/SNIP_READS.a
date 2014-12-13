@@ -4,7 +4,7 @@
      **        Argument passed on stack: String pointer and String Max Length        
      ****************************************************************
      
-     READS     SBR  READS3+3           * Setup return address
+     $MAIN     SBR  READS3+3           * Setup return address
  
                R                       * Read a card
      

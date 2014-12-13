@@ -2,7 +2,7 @@
      ** PRTS - Copy a string to storage area and prints when full  
      ****************************************************************
      
-     PRTS      SBR  PRTS1+3            * Setup return address
+     $MAIN     SBR  PRTS1+3            * Setup return address
      
                MCW  X1, PRTS6          * Save X1
          

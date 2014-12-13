@@ -2,7 +2,7 @@
      ** PFLUSH - Prints and resets print area and character position
      ****************************************************************
      
-     PFLUSH    SBR  FLUSH9+3           * Setup return address     
+     $MAIN     SBR  FLUSH9+3           * Setup return address     
      
                W                       * Prints
                CS   332
