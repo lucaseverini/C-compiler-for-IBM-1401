@@ -1,6 +1,9 @@
 #define NON_LIB_PRINTF
+
 #include <nonstdlib.h>
-int main() {
+
+int main()
+{
 	int a = 0;
 	while (a++ < 10)
 	{
