@@ -2,7 +2,6 @@ package retree.type;
 public class ArrayType extends Type{
 	private int numElements;
 	private Type arrayBaseType;
-	private int width;
 
 	public ArrayType(int numElements, Type baseType) {
 		super(numElements * baseType.sizeof());

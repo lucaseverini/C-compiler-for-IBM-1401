@@ -3,11 +3,14 @@ import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.expression.*;
 import retree.type.*;
+import java.util.*;
 
 public class Initializer {
 	private VariableExpression variable;
 	private ConstantExpression value;
 	private boolean isStatic;
+	//these are used for array types
+	private List<Initializer> subInitializers = null;
 	public Initializer(VariableExpression variable, Expression value)  throws NonConstantExpressionException {
 		this.variable = variable;
 		this.value = null;
@@ -20,10 +23,27 @@ public class Initializer {
 			}
 		}
 		this.isStatic = isStatic;
+		if (variable.getType() instanceof ArrayType) {
+			this.subInitializers = new ArrayList<Initializer>();
+			ArrayType at = (ArrayType) variable.getType();
+			System.out.println(at.getArrayBaseType());
+			for (int i = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof()) {
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic());
+				Initializer subInitializer = new Initializer(subVar, null);
+				subInitializers.add(subInitializer);
+			}
+		}
 	}
 
 	public String generateCode() {
-		String code = INS("SW", variable.getWordMarkAddress());
+		String code = "";
+		if (subInitializers != null) {
+			for (Initializer i : subInitializers) {
+				code += i.generateCode();
+			}
+		} else {
+			code += INS("SW", variable.getWordMarkAddress());
+		}
 		if (value == null) {
 			return code;
 		}
@@ -43,7 +63,15 @@ public class Initializer {
 	//variable goes out of scope
 	//mainly just clears the word marker
 	public String freeCode() {
-		return INS("CW", variable.getWordMarkAddress());
+		String code = "";
+		if (subInitializers != null) {
+			for (Initializer i : subInitializers) {
+				code += i.freeCode();
+			}
+		} else {
+			code += INS("CW", variable.getWordMarkAddress());
+		}
+		return code;
 	}
 
 }

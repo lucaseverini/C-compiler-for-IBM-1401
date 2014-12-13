@@ -48,8 +48,14 @@ public class VariableExpression extends LValue {
 			return (offset + 1 - getType().sizeof()) + "";
 		} else {
 			return OFF(offset + 1 - getType().sizeof());
-		}
-		
-		
+		}		
+	}
+	
+	public boolean isStatic() {
+		return isStatic;
+	}
+	
+	public int getOffset() {
+		return offset;
 	}
 }
