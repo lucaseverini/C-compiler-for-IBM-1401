@@ -2,7 +2,7 @@
      ** PUNCHS - Copy a string to storage area and punch when full  
      ****************************************************************
      
-     $MAIN    SBR  PUNS1+3            * Setup return address
+     PUNCHS    SBR  PUNS1+3            * Setup return address
      
                MCW  X1, PUNS6          * Save X1
          
@@ -29,4 +29,3 @@
      
      PUNS5     DCW  0 
      PUNS6     DCW  000 
-

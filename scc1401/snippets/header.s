@@ -1,8 +1,15 @@
      ****************************************************************
 
-     READ      EQU  001
-     PUNCH     EQU  101
-     PRINT     EQU  201
+     READ      EQU  001                * Read area
+     PUNCH     EQU  101                * Punch area
+     PRINT     EQU  201                * Print area
+     
+     PRCPOS    DCW  000                * char position in print area
+     PUCPOS    DCW  000                * char position in punch area
+     PUNSIZ    DCW  @080@              * Size of punch area
+     PRTSIZ    DCW  @132@              * Size of print area
+     EOS       DCW  @'@                * End Of String char (string terminator)
+     EOL       DCW  @;@                * End Of Line char
 
                ORG  87
      X1        DSA  0                  * INDEX REGISTER 1
