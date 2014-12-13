@@ -21,7 +21,8 @@ all:
 	cp -r src/* temp; \
 	make compile; \
 	rm -r temp; \
-	cp -r snippets build;
+	cp -r snippets build; \
+	cp -r nonstdlib build;
 
 javacc: jjtree
 	cd temp/preprocessor; \

@@ -48,9 +48,13 @@ public class SmallCPP
 		{
 			for(String p : paths)
 			{
-				file = new File(p+inFile);
-				if (file != null && file.exists())
+				inFile = p + inFile;
+				file = new File(inFile);
+				if (file == null && !file.exists())
 				{
+					continue;
+				} else {
+					outFile = inFile + ".preproc";
 					break;
 				}
 			}
@@ -60,7 +64,7 @@ public class SmallCPP
 
 		if (file == null || !file.exists())
 		{
-			throw new Exception("No such header file: " + inFile);
+			throw new Exception("No such file: " + inFile);
 		}
 
 		System.out.println("Preprocessing file " + inFile + " size:" + file.length());
