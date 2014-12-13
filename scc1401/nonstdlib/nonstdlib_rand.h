@@ -1,6 +1,3 @@
-#ifndef NON_STD_LIB_RAND
-#define NON_STD_LIB_RAND
-
 #ifdef NON_LIB_RAND
 
 // Set the seed to a inital value
@@ -19,6 +16,5 @@ int nrand(int end)
 {
 	return genRand() % end;
 }
-#endif
 
 #endif
