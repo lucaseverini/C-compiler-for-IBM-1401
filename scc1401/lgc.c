@@ -13,7 +13,8 @@ int nrand(int end)
     return genRand() % end;
 }
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char * argv[])
+{
     int i = 1;
     for (; i < 61; i ++) {
         printf("Full random %d\n",genRand());
