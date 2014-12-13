@@ -10,5 +10,7 @@ int fact(int n)
 
 int main()
 {
-	fact(6);
+	int result = 0;
+	
+	result = fact(8);
 }

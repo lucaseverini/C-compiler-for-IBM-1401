@@ -1,6 +1,7 @@
 int f = 1;
 
-int main() {
+int main()
+{
 	int n = 6;
 	while (n) {
 		f *= n;
