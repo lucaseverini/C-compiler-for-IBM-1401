@@ -6,7 +6,6 @@
 //		include this library like normal: #include <nonstdlib.h>
 //	Example:
 //		#define NON_LIB_RAND
-//		#define ( P_STRINGS | C_STRINGS )
 //      #define NON_LIB_PRINTF
 //		#include <nonstdlib.h>
 //

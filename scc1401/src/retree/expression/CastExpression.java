@@ -6,12 +6,12 @@ import retree.type.Type;
 
 public class CastExpression extends Expression {
 	private Expression child;
-	
+
 	public CastExpression(Type castType, Expression child) {
 		super(castType);
 		this.child = child;
 	}
-	
+
 	public Expression collapse() {
 		Expression collapsedChild = child.collapse();
 		if (collapsedChild instanceof ConstantExpression) {
@@ -21,18 +21,21 @@ public class CastExpression extends Expression {
 			return new CastExpression(getType(), collapsedChild);
 		}
 	}
-	
+
 	public String generateCode(boolean valueNeeded) {
 		String code = child.generateCode(valueNeeded);
 		if (valueNeeded) {
-			if (getType() instanceof PointerType && !(child.getType() instanceof PointerType)) {
-				//Cast to pointer - todo
-			} else if (!(getType() instanceof PointerType) && child.getType() instanceof PointerType) {
-				//Cast from pointer - todo
+			if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.intType))) {
+				code += SNIP("number_to_pointer");
+			} else if ((!(getType() instanceof PointerType) && getType().equals(Type.intType)) && child.getType() instanceof PointerType) {
+				code += SNIP("pointer_to_number");
+			} else if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.charType))) {
+				code += SNIP("char_to_pointer");
+			} else if ((!(getType() instanceof PointerType) && getType().equals(Type.charType)) && child.getType() instanceof PointerType) {
+				code += SNIP("pointer_to_char");
 			}
 			//otherwise we don't need to do anything and our value is already on the stack.
 		}
 		return code;
 	}
-
 }
