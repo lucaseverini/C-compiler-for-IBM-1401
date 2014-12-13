@@ -740,7 +740,7 @@ Expression multiplicativeExpression()  : {
 }
 
 Expression prefixExpression()  : {
-	Expression e;
+	Expression e = null;
 	Type t;
 }
 {
@@ -748,11 +748,11 @@ Expression prefixExpression()  : {
     // TODO add casting back: "(" Type() ")"
     (e = SuffixExpression()
     | "++" e = prefixExpression()	{
-										// e = new PreIncrementExpression(e);
-									}
+			return new PreIncrementExpression((LValue)e);
+		}
     | "--" e = prefixExpression()	{
-										// e = new PreDecrementExpression(e);
-									}
+			return new PreDecrementExpression((LValue)e);
+		}
     | "+" e = prefixExpression()	{
 										// e = new PositiveExpression(e);
 									}
@@ -766,17 +766,20 @@ Expression prefixExpression()  : {
 										// e = new BitNotExpression(e);
 									}
     | "*" e = prefixExpression()	{
-										e = new DereferenceExpression(e);
-									}
+			return new DereferenceExpression(e);
+		}
     | "&" e = prefixExpression()	{
-										e = new AddressOfExpression((LValue)e);
-									}
+			return new AddressOfExpression((LValue)e);
+		}
     | "sizeof" e = prefixExpression()	{
-											// e = new SizeOfExpression(e);
-										}
+			return new ConstantExpression(Type.intType, e.getType().sizeof());
+		}
+		| "sizeof" "(" t=Type() ")" {
+			return new ConstantExpression(Type.intType, t.sizeof());
+		}
     | "(" t = Type() ")" e = prefixExpression()	{
-													// e = new CastExpression(t,e);
-												}
+			// return new CastExpression(t,e);
+		}
 	)
 	{
 		return e;
@@ -791,17 +794,17 @@ Expression SuffixExpression()  : {
 {
     (e = AtomicExpression()
 			( "++"	{
-						// e = new PostIncrementExpression(e);
-					}
+				e = new PostIncrementExpression((LValue)e);
+			}
 			| "--"	{
-						// e = new PostDecrementExpression(e);
-					}
+				e = new PostDecrementExpression((LValue)e);
+			}
 			| "(" arguments = expressionList() ")" {
 				e = new FunctionCallExpression(e,arguments);
 			}
 			| "[" inside = expression() "]" {
-												// e = new ArrayAccessExpression(e,inside);
-											} )*)
+				// e = new ArrayAccessExpression(e,inside);
+			} )*)
 			{
 				return e;
 			}

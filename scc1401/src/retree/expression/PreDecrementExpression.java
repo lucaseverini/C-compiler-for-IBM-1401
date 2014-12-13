@@ -4,14 +4,10 @@ import retree.exceptions.*;
 import retree.type.*;
 
 public class PreDecrementExpression extends Expression {
-	private Expression l;
+	private LValue l;
 
-	public PreDecrementExpression(Expression l) throws TypeMismatchException {
+	public PreDecrementExpression(LValue l) throws TypeMismatchException {
 		super(l.getType());
-		if (l.getType().equals(Type.charType)) {
-			// throw new TypeMismatchException(r, l.getType(), r.getType());
-			throw new Exception("You cannot pre inc a char type!");
-		}
 		this.l = l;
 	}
 
