@@ -7,7 +7,7 @@
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
-options 
+options
 {
 	STATIC = false;
 }
@@ -16,7 +16,6 @@ PARSER_BEGIN(SmallCPP)
 
 package preprocessor;
 
-import compiler.*;
 import java.io.*;
 import java.util.*;
 
@@ -26,7 +25,7 @@ public class SmallCPP
 	static List<String> paths = new ArrayList<String>();
 	static boolean ignore = false;
 
-	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable) throws Exception
+	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable, boolean isHeader) throws Exception
 	{
 		if(searchPaths != null)
 		{
@@ -43,17 +42,36 @@ public class SmallCPP
 
 		String outFile = inFile + ".preproc";
 
-		File file = new File(inFile);
+		File file = null;
+
+		if (isHeader)
+		{
+			for(String p : paths)
+			{
+				file = new File(p+inFile);
+				if (file != null && file.exists())
+				{
+					break;
+				}
+			}
+		} else {
+			file = new File(inFile);
+		}
+
+		if (file == null || !file.exists())
+		{
+			throw new Exception("No such header file: " + inFile);
+		}
 
 		System.out.println("Preprocessing file " + inFile + " size:" + file.length());
 
-		Reader sr = new FileReader(file) 
+		Reader sr = new FileReader(file)
 		{
 			private int[] lookahead = {-1, -1};
 
-			public int read() throws IOException 
+			public int read() throws IOException
 			{
-				if (lookahead[0] >= 0) 
+				if (lookahead[0] >= 0)
 				{
 					int ch = lookahead[0];
 					lookahead[0] = lookahead[1];
@@ -61,60 +79,60 @@ public class SmallCPP
 					return ch;
 				}
 
-				int ch = super.read();	
+				int ch = super.read();
 				// possible line continuation
-				if (ch == '\\') 
+				if (ch == '\\')
 				{
 					lookahead[0] = super.read();
 					if (lookahead[0] == '\r')
 					{
 						lookahead[1] = super.read();
-						if (lookahead[1] != '\n') 
+						if (lookahead[1] != '\n')
 						{
 							return ch;
-						} 
+						}
 						else
 						{
 							lookahead[0] = '\n';
 						}
 					}
-					
+
 					if (lookahead[0] == '\n')
 					{
 						lookahead[0] = lookahead[1] = -1;
-						do 
+						do
 						{
 							ch = super.read();
-							if (ch < 0) 
+							if (ch < 0)
 							{
 								return ch;
 							}
-						} 
+						}
 						while(Character.isWhitespace((char) ch));
 
 						return ch;
 					}
-				} 
+				}
 				else if (ch == '\r')
 				{
 					lookahead[0] = super.read();
-					if (lookahead[0] == '\n') 
+					if (lookahead[0] == '\n')
 					{
 						lookahead[0] = lookahead[1] = -1;
 						return '\n';
 					}
 				}
-				
+
 				return ch;
 			}
 
 			public int read(char[] cbuf, int offset, int length) throws IOException
 			{
 				int read = 0;
-				while (read < length && offset + read < cbuf.length) 
+				while (read < length && offset + read < cbuf.length)
 				{
 					int ch = read();
-					if (ch < 0) 
+					if (ch < 0)
 					{
 						break;
 					}
@@ -122,7 +140,7 @@ public class SmallCPP
 					cbuf[offset + (read++)] = (char)ch;
 				}
 
-				if (read == 0 && read < length) 
+				if (read == 0 && read < length)
 				{
 					return -1;
 				}
@@ -135,18 +153,18 @@ public class SmallCPP
 
 		FileCopier copier = new FileCopier(inFile, outFile);
 
-        try 
+        try
 		{
             parser.Tokens(copier);
 
 			copier.copyUntilEnd();
-		
+
 			System.out.println("### File " + inFile + " preprocessed successfully");
         }
-        catch (ParseException ex) 
+        catch (ParseException ex)
 		{
  			System.out.println("### Preprocessing error in file " + inFile);
- 
+
 			ex.printStackTrace();
 		}
 
@@ -160,7 +178,7 @@ public class SmallCPP
 
 PARSER_END(SmallCPP)
 
-TOKEN : 
+TOKEN :
 {
     <COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
   | <COMMENT: "//"(~["\n", "\r"])*>
@@ -238,13 +256,13 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 
 				copier.copyUntilLine(beginLine - 1);
 				copier.jumpUntilLine(beginLine);
-				
+
 				try
 				{
-					String procFile = preprocessFile(name, paths, symTable);
+					String procFile = preprocessFile(name, paths, symTable, true);
 					copier.copyFile(procFile);
 				}
-				catch(Exception ex) 
+				catch(Exception ex)
 				{
 					ex.printStackTrace();
 				}
@@ -390,8 +408,8 @@ void Value(StringBuffer buf) : {}
 void Tokens(FileCopier copier) : { StringBuffer sb = new StringBuffer(); }
 {
     (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
-    
-	{ 
-		// System.out.println("### Parsed tokens:\n" + sb.toString()); 
+
+	{
+		// System.out.println("### Parsed tokens:\n" + sb.toString());
 	}
 }

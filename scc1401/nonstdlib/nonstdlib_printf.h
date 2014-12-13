@@ -1,6 +1,3 @@
-#ifndef NON_STD_LIB_PRINTF
-#define NON_STD_LIB_PRINTF
-
 #ifdef NON_LIB_PRINTF
 
 int cprintf(char *cformat_str, ...)
@@ -27,6 +24,5 @@ int cprintf(char *cformat_str, ...)
 		cformat_str ++;
 	}
 }
-#endif
 
 #endif
