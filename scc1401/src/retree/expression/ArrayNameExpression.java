@@ -27,5 +27,9 @@ public class ArrayNameExpression extends Expression{
 		}
 	}
 	
+	public VariableExpression getArray() {
+		return array;
+	}
+	
 
 }
