@@ -4,7 +4,7 @@ import retree.exceptions.*;
 import retree.type.*;
 import compiler.SmallCC;
 
-public class SubscriptExpression extends Expression {
+public class SubscriptExpression extends LValue {
     private Expression l, r;
 
     public SubscriptExpression(Expression l, Expression r) throws TypeMismatchException {
@@ -52,12 +52,36 @@ public class SubscriptExpression extends Expression {
     public String generateCode(boolean valueNeeded) {
         String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
         if (valueNeeded) {
+            PointerType ptype = (PointerType)l.getType();
+            PUSH(5, NUM_CONST(ptype.getType().sizeof()));
+            code += INS("M", STACK_OFF(-Type.intType.sizeof()), STACK_OFF(1+Type.intType.sizeof()));
+            //this puts the product at size + 1 bits above the stack
+            code += INS("SW", STACK_OFF(2));
+            code += INS("MCW", STACK_OFF(1+Type.intType.sizeof()), STACK_OFF(-Type.intType.sizeof()));
+            code += INS("CW", STACK_OFF(2));
+            //at this point, the top of the stack should be r*sizeof(l)
             code += SNIP("number_to_pointer");
             code += INS("MA", STACK_OFF(0), STACK_OFF(-3));
             code += POP(3);
             code += POP(3,"X1");
-            code += PUSH(((PointerType)l.getType()).getType().sizeof(), "0+X1");
+            code += PUSH(ptype.getType().sizeof(), "0+X1");
         }
+        return code;
+    }
+
+    public String generateAddress() {
+        String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+        PointerType ptype = (PointerType)l.getType();
+        PUSH(5, NUM_CONST(ptype.getType().sizeof()));
+        code += INS("M", STACK_OFF(-Type.intType.sizeof()), STACK_OFF(1+Type.intType.sizeof()));
+        //this puts the product at size + 1 bits above the stack
+        code += INS("SW", STACK_OFF(2));
+        code += INS("MCW", STACK_OFF(1+Type.intType.sizeof()), STACK_OFF(-Type.intType.sizeof()));
+        code += INS("CW", STACK_OFF(2));
+        //at this point, the top of the stack should be r*sizeof(l)
+        code += SNIP("number_to_pointer");
+        code += INS("MA", STACK_OFF(0), STACK_OFF(-3));
+        code += POP(3);
         return code;
     }
 
