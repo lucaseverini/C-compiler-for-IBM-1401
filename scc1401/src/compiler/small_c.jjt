@@ -200,7 +200,7 @@ Program program() throws Exception : {
   		{
 				int mainLabelNumber = functionTable.get("main").getValue();
 				program.setMainLabelNumber(mainLabelNumber);
-				
+
 				return program;
 			}
 }
@@ -541,7 +541,7 @@ Expression assignmentExpression() : {
 				if (r != null) {
 					if (l instanceof LValue)
 						try {
-							return new AssignmentExpression((LValue)l, r); 
+							return new AssignmentExpression((LValue)l, r);
 						} catch (TypeMismatchException e) {
 							throw new Error("type mismatch");
 						}
@@ -833,16 +833,16 @@ List<Expression> expressionList() : {
 	Expression exp;
 } {
 	(exp=assignmentExpression() {
-		list.add(exp);	
+		list.add(exp);
 	}
 	("," exp=assignmentExpression() {
 		list.add(exp);
 	})*)?
-	
+
 	{
 		return list;
 	}
-	
+
 }
 
 Expression AtomicExpression()  : {
@@ -859,7 +859,7 @@ Expression AtomicExpression()  : {
 				return null;
 			} else {
 				return fun;
-			} 
+			}
 		} else if (var.getType() instanceof ArrayType) {
 			return new ArrayNameExpression(var);
 		} else {
