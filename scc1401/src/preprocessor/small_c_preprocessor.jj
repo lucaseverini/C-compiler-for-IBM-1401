@@ -18,15 +18,16 @@ package preprocessor;
 
 import java.io.*;
 import java.util.*;
-import java.lang.*;
 
 public class SmallCPP
 {
 	static PreProcSymTab symTable = new PreProcSymTab();
 	static List<String> paths = new ArrayList<String>();
 	static boolean ignore = false;
+	static boolean keepComments = false;
 
-	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable, boolean isHeader) throws Exception
+	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable, 
+														boolean isHeader, boolean comments) throws Exception
 	{
 		if(searchPaths != null)
 		{
@@ -37,6 +38,8 @@ public class SmallCPP
 		{
 			symTable = presetTable;
 		}
+
+		keepComments = comments;
 
 		boolean savedIgnore = ignore;
 		ignore = false;
@@ -49,23 +52,34 @@ public class SmallCPP
 		{
 			for(String p : paths)
 			{
-				inFile = p + inFile;
-				file = new File(inFile);
-				if (file == null && !file.exists())
+				file = new File(p+inFile);
+				if (file != null && file.exists())
 				{
-					continue;
-				} else {
-					outFile = inFile + ".preproc";
 					break;
 				}
 			}
-		} else {
+		} 
+		else 
+		{
 			file = new File(inFile);
 		}
 
 		if (file == null || !file.exists())
 		{
-			throw new Exception("No such file: " + inFile);
+			if (isHeader)
+			{
+				// throw new Exception("No header file: " + inFile);
+
+				System.out.println("\n########## NO HEADER FILE " + inFile + " ##########\n");
+				return null;
+			}
+			else
+			{
+				// throw new Exception("No source file: " + inFile);
+
+				System.out.println("\n########## NO SOURCE FILE " + inFile + " ##########\n");
+				return null;
+			}
 		}
 
 		System.out.println("Preprocessing file " + inFile + " size:" + file.length());
@@ -85,19 +99,6 @@ public class SmallCPP
 				}
 
 				int ch = super.read();
-				if (ch == '/')
-				{
-					ch = super.read();
-					if (ch == '/')
-					{
-						ch = super.read();
-						while (ch != '\n')ch = super.read();
-					} else if (ch == '*')
-					{
-						ch = super.read();
-						while (ch != '*')ch = super.read();
-					}
-				}
 				// possible line continuation
 				if (ch == '\\')
 				{
@@ -190,20 +191,24 @@ public class SmallCPP
 
 		ignore = savedIgnore;
 
-		ProcessBuilder pb = new ProcessBuilder("sed", "-i.bak", "-e", "s/\\/\\/.*//", outFile);
-		Process p = pb.start();
-		p.waitFor();
 		return outFile;
 	}
 }
 
 PARSER_END(SmallCPP)
 
+/*
+SKIP : 
+{
+	<IGNORED: <COMMENTS>>
+}
+*/
+
 TOKEN :
 {
-    <COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
+  <COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
   | <COMMENT: "//"(~["\n", "\r"])*>
-  | <COMMENT_BLOCK: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "*/">
+  | <COMMENT_BLOCK: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "/">
   | <STRINGS: <STRING_1> | <STRING_2>>
   | <STRING_1: "\""(~["\"", "\n"])*"\"">
   | <STRING_2: "<"(~["\"", "\n"])*">">
@@ -225,8 +230,21 @@ void Comment(StringBuffer buf, FileCopier copier) : {}
 {
     <COMMENTS>
     {
-		// System.out.println("Comment:");
-		// System.out.println(token.image);
+		//System.out.println("Comment:");
+		//System.out.println(token.image);
+
+		if(!keepComments)
+		{
+			int beginLine = token.beginLine;
+			int endLine = token.endLine;
+			int beginCol = token.beginColumn;
+			int endCol = token.endColumn;
+			String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
+			
+			System.out.println("##### COMMENT REMOVED at " + position + " #####");
+			
+			copier.jumpFromUntil(beginLine, beginCol, endLine, endCol);
+		}
     }
 }
 
@@ -280,8 +298,11 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 
 				try
 				{
-					String procFile = preprocessFile(name, paths, symTable, true);
-					copier.copyFile(procFile);
+					String procFile = preprocessFile(name, paths, symTable, true, keepComments);
+					if(procFile != null)
+					{
+						copier.copyFile(procFile);
+					}
 				}
 				catch(Exception ex)
 				{
@@ -428,7 +449,7 @@ void Value(StringBuffer buf) : {}
 
 void Tokens(FileCopier copier) : { StringBuffer sb = new StringBuffer(); }
 {
-    (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb, copier) | <SYMBOLS> | <WHITESPACE>)* <EOF>
+    (Statement(sb, copier) | Identifier(sb, copier) | Comment(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
 
 	{
 		// System.out.println("### Parsed tokens:\n" + sb.toString());

@@ -20,6 +20,12 @@ int main()
 		prt[i] = 'A';
 	}
 	
+	i = 0;
+	
+	prt[i++] = 'B';
+	prt[i++] = 'C';
+	prt[i++] = 'D';
+	
 	result = fact(8);
 }
 
