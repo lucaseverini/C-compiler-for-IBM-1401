@@ -872,8 +872,31 @@ Expression AtomicExpression()  : {
 		e = ce;
 	}
     | StringLiteral()
-    | str=CharacterConstant(){ //TODO - fix.
-		ce = new ConstantExpression(Type.charType, 65);
+    | str=CharacterConstant() {
+			int val = 0;
+			//strip the quote characters
+			str = str.substring(1, str.length() - 1);
+			if (str.charAt(0) == '\\') {
+				if (str.length() != 2) {
+					//invalid char constant
+					return null;
+				}
+				switch(str.charAt(1)) {
+					case 'n':
+						val = '\n';
+						break;
+					case '0':
+						val = 0;
+						break;
+				}
+			} else {
+				if (str.length() != 1) {
+					//invalid char constant.
+					return null;
+				}
+				val = Character.toUpperCase(str.charAt(0));
+			}
+		ce = new ConstantExpression(Type.charType, val);
 		e = ce;
 	}
     | "(" expression() ")")
