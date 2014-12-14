@@ -18,11 +18,13 @@ package preprocessor;
 
 import java.io.*;
 import java.util.*;
+import java.nio.file.Paths;
 
 public class SmallCPP
 {
 	static PreProcSymTab symTable = new PreProcSymTab();
 	static List<String> paths = new ArrayList<String>();
+	static String tmpDir = System.getProperty("java.io.tmpdir");
 	static boolean ignore = false;
 	static boolean keepComments = false;
 
@@ -44,23 +46,33 @@ public class SmallCPP
 		boolean savedIgnore = ignore;
 		ignore = false;
 
-		String outFile = inFile + ".preproc";
-
 		File file = null;
+		String outFile = null;
 
 		if (isHeader)
 		{
+			String fileName = Paths.get(inFile).getFileName().toString();
+			outFile = tmpDir + fileName + ".preproc";
+
 			for(String p : paths)
 			{
-				file = new File(p+inFile);
+				if(p.charAt(p.length() - 1) != File.separatorChar)
+				{
+					p = p.concat(File.separator);
+				}
+
+				file = new File(p + inFile);
 				if (file != null && file.exists())
 				{
+					inFile = p + inFile;
 					break;
 				}
 			}
-		} 
-		else 
+		}
+		else
 		{
+			outFile = inFile + ".preproc";
+
 			file = new File(inFile);
 		}
 
@@ -70,19 +82,20 @@ public class SmallCPP
 			{
 				// throw new Exception("No header file: " + inFile);
 
-				System.out.println("\n########## NO HEADER FILE " + inFile + " ##########\n");
+				System.out.println("\n##### NO HEADER FILE " + inFile + " #####\n");
 				return null;
 			}
 			else
 			{
 				// throw new Exception("No source file: " + inFile);
 
-				System.out.println("\n########## NO SOURCE FILE " + inFile + " ##########\n");
+				System.out.println("\n##### NO SOURCE FILE " + inFile + " #####\n");
 				return null;
 			}
 		}
 
-		System.out.println("Preprocessing file " + inFile + " size:" + file.length());
+		System.out.println();
+		System.out.println("##### PREPROCESSING FILE " + inFile + " size:" + file.length() + " #####");
 
 		Reader sr = new FileReader(file)
 		{
@@ -170,6 +183,8 @@ public class SmallCPP
 
 		SmallCPP parser = new SmallCPP(sr);
 
+	    parser.setTabSize(1);
+
 		FileCopier copier = new FileCopier(inFile, outFile);
 
         try
@@ -178,11 +193,12 @@ public class SmallCPP
 
 			copier.copyUntilEnd();
 
-			System.out.println("### File " + inFile + " preprocessed successfully");
+			System.out.println("### FILE " + inFile + " PREPROCESSED SUCCESSFULLY ###");
+			System.out.println();
         }
         catch (ParseException ex)
 		{
- 			System.out.println("### Preprocessing error in file " + inFile);
+ 			System.out.println("### PREPROCESSING ERROR IN FILE " + inFile + " ###");
 
 			ex.printStackTrace();
 		}
@@ -193,6 +209,18 @@ public class SmallCPP
 
 		return outFile;
 	}
+
+    // Setting the tab size makes the token locations more accurate.
+    public void setTabSize(int size) 
+	{
+        jj_input_stream.setTabSize(size);
+    }
+
+    // return the current tab size that the parser is using
+    public int getTabSize() 
+	{
+        return jj_input_stream.getTabSize();
+    }
 }
 
 PARSER_END(SmallCPP)
@@ -235,15 +263,22 @@ void Comment(StringBuffer buf, FileCopier copier) : {}
 
 		if(!keepComments)
 		{
-			int beginLine = token.beginLine;
-			int endLine = token.endLine;
-			int beginCol = token.beginColumn;
-			int endCol = token.endColumn;
-			String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
-			
-			System.out.println("##### COMMENT REMOVED at " + position + " #####");
-			
-			copier.jumpFromUntil(beginLine, beginCol, endLine, endCol);
+	        if(!ignore)
+            {
+				int beginLine = token.beginLine;
+				int endLine = token.endLine;
+				int beginCol = token.beginColumn;
+				int endCol = token.endColumn;
+				String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
+
+				System.out.println("##### COMMENT REMOVED at " + position + " #####");
+
+				copier.jumpFromUntil(beginLine, beginCol, endLine, endCol);
+            }
+		}
+		else
+		{
+			buf.append("Type: Comment").append(", Value: ").append(token.image).append("\n");
 		}
     }
 }
@@ -449,7 +484,7 @@ void Value(StringBuffer buf) : {}
 
 void Tokens(FileCopier copier) : { StringBuffer sb = new StringBuffer(); }
 {
-    (Statement(sb, copier) | Identifier(sb, copier) | Comment(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
+    (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb, copier) | <SYMBOLS> | <WHITESPACE>)* <EOF>
 
 	{
 		// System.out.println("### Parsed tokens:\n" + sb.toString());

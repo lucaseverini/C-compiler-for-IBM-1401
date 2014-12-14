@@ -1,5 +1,5 @@
 /*
-	SmallC.java
+	SmallC_PreProcessor.java
 
     Assignment #6 - CS153 - SJSU
 	November-11-2014
@@ -13,8 +13,8 @@ import compiler.*;
 import java.util.ArrayList;
 import java.util.List;
 
-// SmallC -----------------------------------------------------
-public class SmallC
+// SmallC_PreProcessor -----------------------------------------------------
+public class SmallC_PreProcessor
 {
 	static PreProcSymTab symTable = new PreProcSymTab();
 	static List<String> paths = new ArrayList<>();
@@ -25,7 +25,6 @@ public class SmallC
     {
 		System.out.println("Small-C Pre-processor.");
 		System.out.println("Version 1.0 - December 13 2014");
-		System.out.println();
 		
 		parseArguments(args);
 /*

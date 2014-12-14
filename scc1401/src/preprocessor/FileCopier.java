@@ -19,8 +19,8 @@ public class FileCopier
 	int lineCount;
 	int colCount;
 	long lastWriteStart;
-	String newLine = System.getProperty("line.separator");
-	
+	static String newLine = System.getProperty("line.separator");
+ 	
 	FileCopier(String fileToRead, String fileToWrite)
 	{
 		lineCount = 0;
@@ -43,19 +43,24 @@ public class FileCopier
         }		
 	}
 
-	int completeCurrentLine()
+	int consumeCurrentLine()
 	{
+		if(colCount == 0)
+		{
+			return 0;
+		}
+
 		try
 		{
-			int ch = 0;
-			while(ch != 10)
+			String theLine = reader.readLine();
+			if(theLine != null)
 			{
-				ch = (char)reader.read();
-				writer.write((char)ch);
+				writer.writeBytes(theLine + newLine);
+				lineCount++;
 			}
 
-			lineCount++;
 			colCount = 0;
+
 		}
         catch(Exception ex)
         {
@@ -65,19 +70,22 @@ public class FileCopier
 		return 0;
 	}
 
-	int jumpUntilLine(int lineNum)
+	int copyUntilLine(int lineNum)
 	{
 		try
 		{
-			if(colCount != 0)
-			{
-				completeCurrentLine();
-			}
-			
+			consumeCurrentLine();
+
 			String theLine = null;		
 			while (lineCount < lineNum && (theLine = reader.readLine()) != null) 
 			{
 				lineCount++;
+				
+				if(theLine.length() > 0)
+				{
+					lastWriteStart = writer.getFilePointer();
+					writer.writeBytes(theLine + newLine);
+				}
 			}
 		}
         catch(Exception ex)
@@ -94,24 +102,65 @@ public class FileCopier
 		
 		try
 		{
-			int lines = endLine - startLine;
 			colCount = 0;
 			while(colCount < startCol - 1)
 			{
 				char ch = (char)reader.read();
-				writer.write(ch);
-				colCount++;
+				if(ch < 256)
+				{
+					writer.write(ch);
+					colCount++;
+				}
+				else
+				{
+					break;
+				}
 			}
 			
+			int lines = endLine - startLine;
 			if(lines > 0)
 			{
+				while(lines-- > 0)
+				{
+					String theLine = reader.readLine();
+					
+					lineCount++;
+				}
+				
 				colCount = 0;
 			}
 			
 			while(colCount < endCol)
 			{
 				char ch = (char)reader.read();
-				colCount++;
+				if(ch < 256)
+				{
+					colCount++;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+		
+		return 0;
+	}
+
+	int jumpUntilLine(int lineNum)
+	{
+		try
+		{
+			consumeCurrentLine();
+			
+			String theLine = null;		
+			while (lineCount < lineNum && (theLine = reader.readLine()) != null) 
+			{
+				lineCount++;
 			}
 		}
         catch(Exception ex)
@@ -126,17 +175,13 @@ public class FileCopier
 	{
 		try
 		{
-			if(colCount != 0)
-			{
-				completeCurrentLine();
-			}
+			consumeCurrentLine();
 
 			String theLine = null;		
 			while ((theLine = reader.readLine()) != null) 
 			{
 				lineCount++;
 				
-				theLine = theLine.trim();
 				if(theLine.length() > 0)
 				{
 					lastWriteStart = writer.getFilePointer();
@@ -156,17 +201,13 @@ public class FileCopier
 	{
 		try
 		{
-			if(colCount != 0)
-			{
-				completeCurrentLine();
-			}
+			consumeCurrentLine();
 
 			String theLine = reader.readLine();
 			if(theLine != null)
 			{
 				lineCount++;
 				
-				theLine = theLine.trim();
 				if(theLine.length() > 0)
 				{
 					lastWriteStart = writer.getFilePointer();
@@ -187,10 +228,7 @@ public class FileCopier
 	{		
 		try
 		{
-			if(colCount != 0)
-			{
-				completeCurrentLine();
-			}
+			consumeCurrentLine();
 
 			if(lineCount < lineNum - 1)
 			{
@@ -216,37 +254,7 @@ public class FileCopier
 			
 			if(theLine != null)
 			{
-				theLine = theLine.trim().replace(toReplace, replacement);				
-				if(theLine.length() > 0)
-				{
-					lastWriteStart = writer.getFilePointer();
-					writer.writeBytes(theLine + newLine);
-				}
-			}
-		}
-        catch(Exception ex)
-        {
-            ex.printStackTrace();
-        }
-		
-		return 0;
-	}
-
-	int copyUntilLine(int lineNum)
-	{
-		try
-		{
-			if(colCount != 0)
-			{
-				completeCurrentLine();
-			}
-
-			String theLine = null;		
-			while (lineCount < lineNum && (theLine = reader.readLine()) != null) 
-			{
-				lineCount++;
-				
-				theLine = theLine.trim();
+				theLine = theLine.replace(toReplace, replacement);				
 				if(theLine.length() > 0)
 				{
 					lastWriteStart = writer.getFilePointer();
@@ -272,7 +280,6 @@ public class FileCopier
 			String theLine = null;		
 			while ((theLine = rd.readLine()) != null) 
 			{
-				theLine = theLine.trim();
 				if(theLine.length() > 0)
 				{
 					lastWriteStart = writer.getFilePointer();

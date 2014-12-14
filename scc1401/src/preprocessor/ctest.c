@@ -9,6 +9,9 @@
 #define PART_B "World!\n");
 #define PART_C oooo
 
+#include "nonstdlib.h"
+#include "nonstdlib_printf.h"
+
 #define STDIO <stdio.h>
 #define STDIO2 STDIO
 // Include STDIO2
