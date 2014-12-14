@@ -19,20 +19,22 @@ public class SmallC
 	static PreProcSymTab symTable = new PreProcSymTab();
 	static List<String> paths = new ArrayList<>();
 	static List<String> files = new ArrayList<>();
+	static boolean keepComments = false;
 
     public static void main(String[] args) throws Exception
     {
 		System.out.println("Small-C Pre-processor");
 
 		parseArguments(args);
+/*
 		if(paths.size() == 0)
 		{
 			System.exit(1);
 		}
-
+*/
 		for(String file : files)
 		{
-			String outFile = SmallCPP.preprocessFile(file, paths, symTable, false);
+			String outFile = SmallCPP.preprocessFile(file, paths, symTable, false, keepComments);		
 			if(outFile != null)
 			{
 				System.out.println("Final Preprocessed file: " + outFile);
@@ -53,6 +55,10 @@ public class SmallC
 		{
 			switch(s)
 			{
+				case "-C":
+					keepComments = true;
+					break;
+
 				case "-D":
 					status = 1;
 					break;
