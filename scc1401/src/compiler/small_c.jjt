@@ -668,15 +668,15 @@ Expression equalityExpression() : {
 }
 {
     l = greaterThanExpression() ( "==" r = greaterThanExpression() {
-			/*
-			l = new EqualityExpression(l, r);
-			*/
+			try {
+			l = new EqualExpression(l, r);
+			} catch(TypeMismatchException e) {
+				reportError(e, token);
+			}
 
 		}
     | "!=" r = greaterThanExpression() {
-			/*
-			l = new InequalityExpression(l, r);
-			*/
+			l = new NotEqualExpression(l, r);
 		})*
 	{
 		return l;

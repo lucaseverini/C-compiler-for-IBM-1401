@@ -21,7 +21,7 @@ public class EqualExpression extends Expression {
 			Expression l2 = l.collapse();
 			Expression r2 = r.collapse();
 			if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) {
-				return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() + ((ConstantExpression)r2).getValue());
+				return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() == ((ConstantExpression)r2).getValue() ? 1 : 0);
 			}
 			return new EqualExpression(l2, r2);
 		} catch (TypeMismatchException e) {
@@ -35,13 +35,23 @@ public class EqualExpression extends Expression {
 		String labelEnd = label(SmallCC.nextLabelNumber());
 		String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
 		if (valueNeeded) {
-			code += INS("CMPB", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
-			code += POP(1);
-			code += INS("BCE", labelEqual, STACK_OFF(1), "3");
+			int size = l.getType().sizeof();
+			
+			code += INS("C", STACK_OFF(0), STACK_OFF(-size));
+			code += POP(size) + POP(size);
 			code += PUSH(Type.intType.sizeof(), NUM_CONST(0));
+			
+			if (l.getType().equals(Type.intType)) {				
+				//branch to end if less than or greater than
+				code += INS("B", labelEnd, "T");
+				code += INS("B", labelEnd, "U");
+				code += INS("B", labelEqual);
+			} else {
+				code += INS("B", labelEqual, "S");
+			}
+
 			code += INS("B", labelEnd);
-			code += LBL_INS(labelEqual, "NOP");
-			code += PUSH(Type.intType.sizeof(), NUM_CONST(1));
+			code += LBL_INS(labelEqual, "MCW", NUM_CONST(1), STACK_OFF(0));
 			code += LBL_INS(labelEnd, "NOP");
 
 		}
