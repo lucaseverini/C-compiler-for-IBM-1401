@@ -17,6 +17,9 @@
      X2        DSA  0                  * INDEX REGISTER 2
                ORG  97
      X3        DSA  0                  * INDEX REGISTER 3
+     
+     * I need a single digit flag - should I replace this with a DA?
+     RF        EQU  150
 
                ORG  6000
   

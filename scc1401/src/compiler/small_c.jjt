@@ -9,7 +9,7 @@
 
 options
 {
-	DEBUG_PARSER=false;// true;
+	DEBUG_PARSER=true;// true;
 	LOOKAHEAD=99999;
   //NODE_CLASS="MyNode";
 }
@@ -27,6 +27,7 @@ import retree.program.*;
 import retree.type.*;
 import retree.symtab.*;
 import java.io.*;
+import static retree.RetreeUtils.*;
 
 public class SmallCC
 {
@@ -336,11 +337,12 @@ FunctionDefinition functionDefinition() : {
 	String name;
 	BlockStatement block;
 	variableTable.push();
-	//this is the function's return address.
-	//stored under the identifier "return", as that is a reserved word.
-	//the value will be assigned automatically.
+	
 	try {
-		variableTable.add("return", new PointerType(Type.charType), false);
+		//this is the function's return address.
+		//stored under an empty identifier, so no variable can collide with it
+		//the value will be assigned automatically.
+		variableTable.add("", new PointerType(Type.charType), false);
 	} catch(Exception e) {}
 }
 {
@@ -351,12 +353,20 @@ FunctionDefinition functionDefinition() : {
 			parameters.add(param);
 		} ("," param=functionDefinitionParameter(parameters.size()) {
 			parameters.add(param);
-		})*)? ")" ) ) {
+		})*)? ("..." {parameters.add(null);})? ")" ) ) {
 			List<Type> paramTypes = new ArrayList<Type>();
+			boolean variadic = false;
 			for (VariableExpression p : parameters) {
+				if (p == null) {
+					variadic = true;
+					break;
+				}
 				paramTypes.add(p.getType());
+			} if (!variadic) {
+				//we're calling the location of the return value "return"
+				variableTable.add("return", retType, true);
 			}
-			type = new FunctionType(retType, paramTypes);
+			type = new FunctionType(retType, paramTypes, variadic);
 			ConstantExpression dec = functionTable.get(name);
 			if (dec != null) {
 				if (! dec.getType().equals(type)) {
@@ -368,7 +378,8 @@ FunctionDefinition functionDefinition() : {
 				functionTable.put(name, dec);
 			}
 		}
-        block = blockStatement(true)
+				//we provide no return label - this is a top-level block.
+        block = blockStatement(true, null)
 		{
 			variableTable.pop();
 			return new FunctionDefinition(dec, block);
@@ -393,14 +404,15 @@ VariableExpression functionDefinitionParameter(int paramNum): {
 	}
 }
 
-BlockStatement blockStatement(boolean isFunction) : {
+BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 	List<Initializer> initializers = new ArrayList<Initializer>();
 	List<Statement> statements = new ArrayList<Statement>();
 	List<Initializer> initList;
+	String newReturnLabel = label(nextLabelNumber());
 	Statement s;
 	if (isFunction) {
 		try {
-			initializers.add(new Initializer(variableTable.searchStack("return"), null));
+			initializers.add(new Initializer(variableTable.searchStack(""), null));
 		} catch (Exception e) {}
 	}
 }{
@@ -412,18 +424,20 @@ BlockStatement blockStatement(boolean isFunction) : {
 		for (Initializer init : initList) {
 			initializers.add(init);
 		}
-	})* (s = statement() {
+	})* (s = statement(newReturnLabel) {
 		statements.add(s);		
 	})* "}"
 	{
 		//System.out.println(variableTable.peek().getStackOffset());
-		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalSize());
-		if (!isFunction) variableTable.pop();
+		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalSize(), newReturnLabel, returnLabel);
+		if (!isFunction) {
+			variableTable.pop();
+		}
 		return bs;
 	}
 }
 
-Statement statement()  : {
+Statement statement(String returnLabel)  : {
 	Statement stat, stat2 = null;
 	Expression exp=null, exp2=null, exp3=null;
 }
@@ -434,19 +448,19 @@ Statement statement()  : {
 		| exp=expression() ";" {
 			return new ExpressionStatement(exp);
 		}
-		| stat = blockStatement(false) {
+		| stat = blockStatement(false, returnLabel) {
 			return stat;
 		}
-    | "if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())?  {
+    | "if" "(" exp=expression() ")" stat=statement(returnLabel) ("else" stat2=statement(returnLabel))?  {
 			return new IfStatement(exp, stat, stat2);
 		}
-    | "while" "(" exp=expression() ")" stat=statement() {
+    | "while" "(" exp=expression() ")" stat=statement(returnLabel) {
 			return new WhileStatement(exp, stat);
 		}
-    | "for" "(" (exp=expression()";"| ";" ) (exp2=expression() ";" | ";" ) (exp3=expression() ")" | ")" ) stat=statement() {
+    | "for" "(" (exp=expression()";"| ";" ) (exp2=expression() ";" | ";" ) (exp3=expression() ")" | ")" ) stat=statement(returnLabel) {
 			return new ForStatement(exp, exp2, exp3, stat);
 		}
-    | "do" stat=statement() "while" "(" exp=expression() ")" ";" {
+    | "do" stat=statement(returnLabel) "while" "(" exp=expression() ")" ";" {
 			return new DoWhileStatement(exp, stat);
 		}
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
@@ -454,11 +468,14 @@ Statement statement()  : {
     //TODO| "switch" "(" expression() ")" CaseBlock()
     //TODO| "break" ";"
     //TODO| "continue" ";"
-    //TODO| "return" (expression())? ";"
+    | "return" (exp=expression())? ";" {
+			return new ReturnStatement(exp, variableTable.searchStack("return"), returnLabel);
+			
+		}
     //TODO| Identifier() ":" Statement()
     //TODO| "goto" Identifier() ";"
 }
-
+/*
 void CaseStatement() : {}
 {
 	(("case" expression() | "default") ":" (CaseStatement() | statement()))
@@ -468,7 +485,7 @@ void CaseBlock() : {}
 {
 	"{" (localVariableDeclaration())* (statement() | CaseStatement()) * "}"
 }
-
+*/
 /** Left-to-right*/
 Expression expression() : {
 	Expression l = null;
@@ -720,10 +737,8 @@ Expression multiplicativeExpression()  : {
 }
 {
     (l = prefixExpression() ( "*" r = prefixExpression(){
-		/*
-			l = new MultiplicationExpression(l, r);
-		*/
-	}
+			l = new MultiplyExpression(l, r);
+		}
     | "/" r = prefixExpression(){
 		/*
 			l = new DivideExpression(l, r);
