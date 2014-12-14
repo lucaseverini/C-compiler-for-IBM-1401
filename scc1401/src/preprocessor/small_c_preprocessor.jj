@@ -337,6 +337,9 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 					if(procFile != null)
 					{
 						copier.copyFile(procFile);
+
+						File file = new File(procFile);
+						file.delete();
 					}
 				}
 				catch(Exception ex)
