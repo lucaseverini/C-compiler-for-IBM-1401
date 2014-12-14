@@ -8,7 +8,7 @@ public class EqualExpression extends Expression {
 	private Expression l, r;
 
 	public EqualExpression(Expression l, Expression r) throws TypeMismatchException {
-		super(l.getType());
+		super(Type.intType);
 		if (! l.getType().equals(r.getType())) {
 			throw new TypeMismatchException(r, l.getType(), r.getType());
 		}

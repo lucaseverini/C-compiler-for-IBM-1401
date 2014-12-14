@@ -8,7 +8,7 @@ public class NotEqualExpression extends Expression {
 	private Expression l, r;
 
 	public NotEqualExpression(Expression l, Expression r) throws TypeMismatchException {
-		super(l.getType());
+		super(Type.intType);
 		if (! l.getType().equals(r.getType())) {
 			throw new TypeMismatchException(r, l.getType(), r.getType());
 		}
@@ -21,7 +21,7 @@ public class NotEqualExpression extends Expression {
 			Expression l2 = l.collapse();
 			Expression r2 = r.collapse();
 			if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) {
-				return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() + ((ConstantExpression)r2).getValue());
+				return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() == ((ConstantExpression)r2).getValue() ? 0 : 1);
 			}
 			return new NotEqualExpression(l2, r2);
 		} catch (TypeMismatchException e) {
