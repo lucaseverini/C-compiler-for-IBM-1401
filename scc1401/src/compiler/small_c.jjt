@@ -9,7 +9,7 @@
 
 options
 {
-	DEBUG_PARSER=true;// true;
+	DEBUG_PARSER=false;// true;
 	LOOKAHEAD=99999;
   //NODE_CLASS="MyNode";
 }
@@ -52,10 +52,24 @@ public class SmallCC
 
     SmallCC parser = new SmallCC(sr);
     Program program = parser.program();
-    System.out.print(program.generateCode());
+    if (errorFree) {
+			System.out.print(program.generateCode());
+		}
 		//printTree(program);
 
   }
+  
+  private static boolean errorFree = true;
+  
+  public static void reportError(Exception e, Token t) {
+		reportError(e.toString(), t);
+	}
+	
+	public static void reportError(String m, Token t) {
+		errorFree = false;
+		System.out.println("Error on line " + t.beginLine + " column " + t.beginColumn);
+		System.out.println(m);
+	}
 
   public static void printTree(SimpleNode node)
   {
@@ -343,7 +357,9 @@ FunctionDefinition functionDefinition() : {
 		//stored under an empty identifier, so no variable can collide with it
 		//the value will be assigned automatically.
 		variableTable.add("", new PointerType(Type.charType), false);
-	} catch(Exception e) {}
+	} catch(Exception e) {
+		reportError("we should never be here 1", token);
+	}
 }
 {
 
@@ -413,7 +429,9 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 	if (isFunction) {
 		try {
 			initializers.add(new Initializer(variableTable.searchStack(""), null));
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			reportError("We should never be here 0", token);
+		}
 	}
 }{
 	{
@@ -503,6 +521,12 @@ Expression expression() : {
 /** Right-to-left */
 Expression assignmentExpression() : {
 	Expression l = null, r = null;
+	Token lToken = null;
+	try {
+		lToken = getToken(1);
+	} catch(Exception e) {
+		reportError("Unexpected end of file.", token);
+	}
 }
 {
     (l = ternaryExpression()
@@ -543,12 +567,11 @@ Expression assignmentExpression() : {
 						try {
 							return new AssignmentExpression((LValue)l, r);
 						} catch (TypeMismatchException e) {
-							throw new Error("type mismatch");
+							reportError(e, lToken);
 						}
-					else throw new Error(l + " is not an LValue");
-				} else {
-					return l;
+					else reportError("Left side of assignment must be an lvalue.", lToken);
 				}
+				return l;
 			}
 }
 
@@ -1056,10 +1079,11 @@ void Not_Equals() : {}
 }
 
 JAVACODE
-String handleError(ParseException ex)
+String handleError(String message)
 {
+	ParseException ex = generateParseException();
 	Token token = ex.currentToken;
-	System.out.println(ex.getMessage());
+	System.out.println(ex.getMessage() + "\n" + message);
 
 	do {
 		token = getNextToken();

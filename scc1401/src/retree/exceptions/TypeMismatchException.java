@@ -10,4 +10,8 @@ public class TypeMismatchException extends Exception {
 		this.expected = expected;
 		this.found = found;
 	}
+	
+	public String toString() {
+		return  "Type mismatch.  Expected: " + expected.toString() + ", found: " + found.toString();
+	}
 }
