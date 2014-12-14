@@ -21,6 +21,7 @@ public class SubscriptExpression extends LValue {
     }
 
     public LValue collapse() {
+			/* Broken for now.
         try {
             Expression l2 = l.collapse();
             Expression r2 = r.collapse();
@@ -47,6 +48,8 @@ public class SubscriptExpression extends LValue {
             //should never happen
             return null;
         }
+        */
+        return this;
     }
 
     public String generateCode(boolean valueNeeded) {

@@ -40,7 +40,11 @@ public class RetreeUtils {
 	public static String CHAR_CONST(int value) {
 		//we take the given char as ascii, and return a 1401 constant
 		//TODO - robustify - check for illegal characters n stuff
-		return "@" + Character.toUpperCase((char)value) + "@";
+		if (value == 0) {
+			return "EOS";
+		} else if (value == '\n') {
+			return "EOL";
+		} else return "@" + Character.toUpperCase((char)value) + "@";
 	}
 
 

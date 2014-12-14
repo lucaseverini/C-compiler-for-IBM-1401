@@ -16,6 +16,7 @@ public class FunctionDefinition {
 	//address.
 	public String generateCode() {
 		return LBL_INS(label(declaration.getValue()), "SBR", "3+X3") +
+			//INS("SW", "1+X3") +
 			block.generateCode() +
 			INS("MCW", "3+X3", "X1") + 
 			INS("B", "0+X1");
