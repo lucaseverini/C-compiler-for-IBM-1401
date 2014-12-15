@@ -289,7 +289,7 @@ Initializer variableInitializer(Type baseType, boolean isStatic) : {
 	                                                     //ternaryExpression, since we can't have a comma-separated or assignment expression
 	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression())?
 	{
-		if (isStatic && value != null && value.getStr() == true)
+		if (value != null && value.getStr() == true)
 		{
 			stringInits.add(value.getInitializer());
 		}
@@ -310,6 +310,7 @@ VariableExpression suffixedVariable(Type baseType, boolean isStatic) : {
 	(pair=PrefixedVariable(baseType) "[" (arraySize = expression()) "]" {
 		arraySize = arraySize.collapse();
 		if (!(arraySize instanceof ConstantExpression)) {
+			System.out.println("Array size is not a constant!");
 			throw new NonConstantExpressionException(arraySize);
 		}
 		size = ((ConstantExpression) arraySize).getValue();
@@ -384,18 +385,22 @@ FunctionDefinition functionDefinition() : {
 		} ("," param=functionDefinitionParameter(parameters.size()) {
 			parameters.add(param);
 		})*)? ("..." {parameters.add(null);})? ")" ) ) {
+			System.out.println(name == null);
 			List<Type> paramTypes = new ArrayList<Type>();
 			boolean variadic = false;
 			for (VariableExpression p : parameters) {
 				if (p == null) {
 					variadic = true;
+					paramTypes.add(null);
 					break;
 				}
 				paramTypes.add(p.getType());
-			} if (!variadic) {
+			}
+			if (!variadic) {
 				//we're calling the location of the return value "return"
 				variableTable.add("return", retType, true);
 			}
+
 			type = new FunctionType(retType, paramTypes, variadic);
 			ConstantExpression dec = functionTable.get(name);
 			if (dec != null) {
@@ -840,7 +845,7 @@ Expression SuffixExpression()  : {
 	List<Expression> arguments;
 }
 {
-    (e = AtomicExpression()
+    (e = AtomicExpression(){System.out.println(e);}
 			( "++"	{
 				e = new PostIncrementExpression((LValue)e);
 			}
@@ -886,6 +891,7 @@ Expression AtomicExpression()  : {
 		if (var == null){
 			ConstantExpression fun = functionTable.get(str);
 			if (fun == null) {
+				reportError("Did not find: " + str + " anywhere did you forget to declare it?", token);
 				return null;
 			} else {
 				return fun;

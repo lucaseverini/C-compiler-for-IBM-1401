@@ -46,25 +46,28 @@ public abstract class Expression {
 	{
 		s = s.substring(1,s.length()-1);
 		Scanner sc = new Scanner(s);
-		String op = sc.next();
-		ArrayList<String> instructionPartsList = new ArrayList<String>();
-		while(sc.hasNext())
+		if (sc.hasNext())
 		{
-			String tmp = sc.next();
-			if(tmp.contains(","))
+			String op = sc.next();
+			ArrayList<String> instructionPartsList = new ArrayList<String>();
+			while(sc.hasNext())
 			{
-				String[] parts = tmp.split(",");
-				for (String tmp1 : parts) {
-					instructionPartsList.add(tmp1);
+				String tmp = sc.next();
+				if(tmp.contains(","))
+				{
+					String[] parts = tmp.split(",");
+					for (String tmp1 : parts) {
+						instructionPartsList.add(tmp1);
+					}
+				} else {
+					instructionPartsList.add(tmp);
 				}
-			} else {
-				instructionPartsList.add(tmp);
 			}
+			sc.close();
+			int len = instructionPartsList.toArray().length;
+			String[] instrParts = new String[len];
+			asmSnippet += INS(op,instructionPartsList.toArray(instrParts));
 		}
-		sc.close();
-		int len = instructionPartsList.toArray().length;
-		String[] instrParts = new String[len];
-		asmSnippet += INS(op,instructionPartsList.toArray(instrParts));
 	}
 
 	public Expression collapse() {
