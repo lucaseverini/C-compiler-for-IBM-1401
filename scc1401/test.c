@@ -1,8 +1,7 @@
-char *test = "testing";
+#define NON_LIB_PRINTF
+#include <nonstdlib.h>
 
 int main() {
-    char *printLine;
-    printLine = "This is a test print line";
-    test[0] = 'H';
-    asm("MCW @005@,X1","R","D");
+    char *tmp = "fail whale";
+    int i = 0;
 }
