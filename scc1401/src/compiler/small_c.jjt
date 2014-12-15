@@ -986,7 +986,7 @@ Expression AtomicExpression()  : {
 		ce = new ConstantExpression(Type.charType, val);
 		e = ce;
 	}
-    | "(" expression() ")")
+    | "(" e=expression() ")")
 	{
 
 		return e;
