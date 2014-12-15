@@ -23,7 +23,8 @@ all:
 	make compile; \
 	rm -r temp; \
 	cp -r snippets build; \
-	cp -r nonstdlib build;
+	cp -r nonstdlib build; \
+	rm -r temp;
 
 javacc: jjtree
 	cd temp/preprocessor; \
