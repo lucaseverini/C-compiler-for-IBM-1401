@@ -21,7 +21,12 @@ public class FunctionType extends Type {
 	public Type getReturnType() {
 		return returnType;
 	}
-	
+
+	public boolean getVariadic()
+	{
+		return variadic;
+	}
+
 	public boolean Equals(Object other) {
 		if (!(other instanceof FunctionType)) return false;
 		FunctionType f = (FunctionType)other;
@@ -32,7 +37,7 @@ public class FunctionType extends Type {
 		}
 		return variadic == f.variadic;
 	}
-	
+
 	public String toString() {
 		String str = returnType.toString() + " (";
 		for (Type paramType : paramTypes) {

@@ -50,6 +50,11 @@ public class SmallCC
   {
     File file = new File(fileName);
     Reader sr = new FileReader(file);
+	ArrayList<Type> tmp = new ArrayList<Type>();
+	tmp.add(new PointerType(Type.charType));
+	tmp.add(null);
+	int asmFuncNumber = nextLabelNumber();
+	functionTable.put("asm", new ConstantExpression(new FunctionType(Type.intType, tmp, true), asmFuncNumber));
 
     SmallCC parser = new SmallCC(sr);
     Program program = parser.program();
@@ -826,6 +831,7 @@ Expression prefixExpression()  : {
 }
 
 Expression SuffixExpression()  : {
+	String s = "";
 	Expression e, inside;
 	List<Expression> arguments;
 }
@@ -837,7 +843,7 @@ Expression SuffixExpression()  : {
 			| "--"	{
 				e = new PostDecrementExpression((LValue)e);
 			}
-			| "(" arguments = expressionList() ")" {
+			| "(" arguments = expressionList(e) ")" {
 				e = new FunctionCallExpression(e,arguments);
 			}
 			| "[" inside = expression() "]" {
@@ -848,14 +854,14 @@ Expression SuffixExpression()  : {
 			}
 }
 
-List<Expression> expressionList() : {
+List<Expression> expressionList(Expression e) : {
 	List<Expression> list = new ArrayList<Expression>();
 	Expression exp;
 } {
-	(exp=assignmentExpression() {
+	(exp=assignmentExpression(){e.setIdent(token.image);} {
 		list.add(exp);
 	}
-	("," exp=assignmentExpression() {
+	("," exp=assignmentExpression(){e.setIdent(token.image);} {
 		list.add(exp);
 	})*)?
 

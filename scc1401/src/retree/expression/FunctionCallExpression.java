@@ -13,21 +13,32 @@ public class FunctionCallExpression extends Expression {
 	public FunctionCallExpression(Expression function, List<Expression> arguments) throws Exception{
 		super(((FunctionType)function.getType()).getReturnType());
 		List<Type> paramTypes = ((FunctionType)function.getType()).getParamTypes();
-		if (arguments.size() != paramTypes.size()) {
-			throw new Exception("Arity Mismatch");
-		}
-		for (int i = 0; i < arguments.size(); ++i) {
-			if (!arguments.get(i).getType().equals(paramTypes.get(i))) {
-				throw new TypeMismatchException(this, paramTypes.get(i), arguments.get(i).getType());
+		if (!((FunctionType)function.getType()).getVariadic()) {
+			if (arguments.size() != paramTypes.size()) {
+				throw new Exception("Arity Mismatch");
+			}
+			for (int i = 0; i < arguments.size(); ++i) {
+				if (!arguments.get(i).getType().equals(paramTypes.get(i))) {
+					throw new TypeMismatchException(this, paramTypes.get(i), arguments.get(i).getType());
+				}
 			}
 		}
 		this.function = (ConstantExpression) function;
 		this.arguments = arguments;
 	}
-	
+
 	public String generateCode(boolean valueNeeded) {
-		FunctionType functionType = (FunctionType)function.getType();
 		String code = "";
+		// Note we assume that the asm function is number 0
+		if (function.getValue() == 0)
+		{
+			code += COM("Inserting ASM snippet from code");
+			code += function.getIdent();
+			code += COM("Finish inserting ASM snippet from code");
+			return code;
+		}
+
+		FunctionType functionType = (FunctionType)function.getType();
 		//first, push room for our return address to the stack.
 		code += PUSH(functionType.getReturnType().sizeof());
 		int i = arguments.size();
@@ -56,4 +67,3 @@ public class FunctionCallExpression extends Expression {
 		return code;
 	}
 }
-

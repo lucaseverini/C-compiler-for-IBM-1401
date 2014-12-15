@@ -1,10 +1,6 @@
 char *test = "testing";
 
 int main() {
-    char b;
-    char c;
-    int a;
-    test[1] = 'H';
-    c = test[1];
-    test[0] = c;
+    test[0] = 'H';
+    asm("MCW @005@,X1","R","D");
 }
