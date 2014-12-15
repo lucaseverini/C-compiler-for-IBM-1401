@@ -289,6 +289,10 @@ Initializer variableInitializer(Type baseType, boolean isStatic) : {
 	                                                     //ternaryExpression, since we can't have a comma-separated or assignment expression
 	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression())?
 	{
+		if (isStatic && value != null && value.getStr() == true)
+		{
+			stringInits.add(value.getInitializer());
+		}
 		return new Initializer(variable, value);
 	}
 }
@@ -858,10 +862,10 @@ List<Expression> expressionList(Expression e) : {
 	List<Expression> list = new ArrayList<Expression>();
 	Expression exp;
 } {
-	(exp=assignmentExpression(){e.setIdent(token.image);} {
+	(exp=assignmentExpression(){e.addASM(token.image);} {
 		list.add(exp);
 	}
-	("," exp=assignmentExpression(){e.setIdent(token.image);} {
+	("," exp=assignmentExpression(){e.addASM(token.image);} {
 		list.add(exp);
 	})*)?
 
@@ -902,7 +906,9 @@ Expression AtomicExpression()  : {
 		VariableExpression ve = variableTable.searchStack(str);
 		if (ve != null)
 		{
-			return new ArrayNameExpression(ve);
+			ArrayNameExpression ane = new ArrayNameExpression(ve);
+			ane.setStr(true);
+			return ane;
 		} else {
 			str = str.substring(1, str.length() - 1);
 			List<Expression> list = new ArrayList<Expression>();
@@ -936,8 +942,9 @@ Expression AtomicExpression()  : {
 			}
 			// need the +1 for the \0 char
 			ve = variableTable.addStatic("\""+str+"\"", new ArrayType(str.length()+1, Type.charType));
-			stringInits.add(new Initializer(ve, rlist));
 			ArrayNameExpression ane = new ArrayNameExpression(ve);
+			ane.setStr(true);
+			ane.setInitializer(new Initializer(ve, rlist));
 			return ane;
 		}
 		// check symtab for this string

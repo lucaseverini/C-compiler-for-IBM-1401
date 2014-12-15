@@ -1,25 +1,48 @@
 package retree.expression;
 import java.util.*;
+import retree.program.Initializer;
 import retree.type.Type;
 import static retree.RetreeUtils.*;
 public abstract class Expression {
 	private Type type;
 	private String asmSnippet = "";
 
+	// the below two are for string only
+	private boolean str = false;
+	private Initializer init = null;
+
 	public Expression(Type type) {
 		this.type = type;
+	}
+
+	public Initializer getInitializer()
+	{
+		return init;
+	}
+
+	public void setInitializer(Initializer i)
+	{
+		init = i;
 	}
 
 	public Type getType() {
 		return type;
 	}
 
-	public String getIdent()
+	public boolean getStr() {
+		return str;
+	}
+
+	public void setStr(boolean b){
+		str = b;
+	}
+
+	public String getASM()
 	{
 		return asmSnippet;
 	}
 
-	public void setIdent(String s)
+	public void addASM(String s)
 	{
 		s = s.substring(1,s.length()-1);
 		Scanner sc = new Scanner(s);

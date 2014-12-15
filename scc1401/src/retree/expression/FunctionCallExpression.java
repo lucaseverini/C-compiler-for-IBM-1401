@@ -33,7 +33,7 @@ public class FunctionCallExpression extends Expression {
 		if (function.getValue() == 0)
 		{
 			code += COM("Inserting ASM snippet from code");
-			code += function.getIdent();
+			code += function.getASM();
 			code += COM("Finish inserting ASM snippet from code");
 			return code;
 		}
