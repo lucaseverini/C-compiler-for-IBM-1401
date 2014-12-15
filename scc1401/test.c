@@ -1,8 +1,10 @@
-char *test = "testing";
+char *print_area = (char *)201;
+char *hello = "Hello World";
 
 int main() {
-    char *printLine;
-    printLine = "This is a test print line";
-    test[0] = 'H';
-    asm("MCW @005@,X1","R","D");
+    int i = 0;
+    for (i = 0; i < 11; ++i) {
+        print_area[i] = hello[i];
+    }
+    asm("W");
 }

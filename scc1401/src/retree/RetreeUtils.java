@@ -126,7 +126,7 @@ public class RetreeUtils {
 
 	//this needs to be tested
 	private static String loadSnippet(String snippetName) {
-		String line;
+		String line = "";
 		String code = "";
 		String fileName = "snippets/" + snippetName + ".s";
 		try {
@@ -160,7 +160,11 @@ public class RetreeUtils {
 	public static String SNIP(String snippetName) {
 		String label;
 		if (!snippetLabels.containsKey(snippetName)) {
-			loadSnippet(snippetName);
+			String s = loadSnippet(snippetName);
+			if (s.equals(""))
+			{
+				System.out.println("Missing " + snippetName);
+			}
 		}
 		label = snippetLabels.get(snippetName);
 		return INS("B", label);
@@ -170,7 +174,7 @@ public class RetreeUtils {
 	public static String HEADER() {
 		return loadSnippet("header");
 	}
-	
+
 	public static String FOOTER() {
 		String code = "";
 		//loadSnippet("CLIB");
