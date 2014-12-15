@@ -13,6 +13,7 @@ public class CastExpression extends Expression {
 	}
 
 	public Expression collapse() {
+		if (child.getType().equals(getType())) return child.collapse();
 		Expression collapsedChild = child.collapse();
 		if (collapsedChild instanceof ConstantExpression) {
 			//this should handle casting that can be done at compile time
