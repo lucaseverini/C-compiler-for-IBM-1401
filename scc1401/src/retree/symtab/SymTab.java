@@ -7,13 +7,13 @@ public class SymTab {
 	private int topOffset, localOffset;
 	private int paramOffset;
 	private boolean isStatic = false;
-	
+
 	public SymTab(int offset, boolean isStatic) {
 		topOffset = localOffset = offset;
 		paramOffset = -3;
 		this.isStatic = isStatic;
 	}
-	
+
 	public SymTab(int offset, int spaceToReserve, boolean isStatic) {
 		topOffset = offset;
 		localOffset = topOffset + spaceToReserve;
@@ -38,15 +38,15 @@ public class SymTab {
 			return varExp;
 		}
 	}
-	
+
 	public int getLocalSize() {
 		return localOffset - topOffset;
 	}
-	
+
 	public int getLocalOffset() {
 		return localOffset;
 	}
-	
+
 	public boolean isStatic() {
 		return isStatic;
 	}

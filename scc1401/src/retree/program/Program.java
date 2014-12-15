@@ -23,7 +23,7 @@ public class Program {
 	public void addFunction(FunctionDefinition func) {
 		functions.add(func);
 	}
-	
+
 	public void setMainLabelNumber(int mainLabelNumber) {
 		this.mainLabelNumber = mainLabelNumber;
 	}
@@ -37,11 +37,11 @@ public class Program {
 		for (Initializer init : initializers) {
 			code += init.generateCode();
 		}
-		
+
 		code += INS("B", label(mainLabelNumber));
-		
+
 		code += INS("H");
-		
+
 		for (FunctionDefinition func : functions) {
 			code += func.generateCode();
 		}

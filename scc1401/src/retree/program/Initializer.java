@@ -26,12 +26,32 @@ public class Initializer {
 		if (variable.getType() instanceof ArrayType) {
 			this.subInitializers = new ArrayList<Initializer>();
 			ArrayType at = (ArrayType) variable.getType();
-			System.out.println(at.getArrayBaseType());
 			for (int i = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof()) {
 				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic());
-				Initializer subInitializer = new Initializer(subVar, null);
+				Initializer subInitializer = new Initializer(subVar, (Expression)null);
 				subInitializers.add(subInitializer);
 			}
+		}
+	}
+
+	public Initializer(VariableExpression variable, List<Expression> l)  throws Exception {
+		this.variable = variable;
+		this.value = null;
+		this.isStatic = isStatic;
+		if (variable.getType() instanceof ArrayType) {
+			this.subInitializers = new ArrayList<Initializer>();
+			ArrayType at = (ArrayType) variable.getType();
+			int index = 0;
+			for (int i = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof()) {
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic());
+				Expression tmp = l.get(index++);
+				tmp = tmp.collapse();
+				Initializer subInitializer = new Initializer(subVar, tmp);
+				subInitializers.add(subInitializer);
+			}
+		}
+		else {
+			throw new Exception("Not Array Type");
 		}
 	}
 
@@ -58,7 +78,7 @@ public class Initializer {
 			return null;
 		}
 	}
-	
+
 	//this generates code that occurs when the initialized
 	//variable goes out of scope
 	//mainly just clears the word marker

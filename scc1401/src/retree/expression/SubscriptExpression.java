@@ -53,7 +53,7 @@ public class SubscriptExpression extends LValue {
     }
 
     public String generateCode(boolean valueNeeded) {
-        String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+        /*String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
         if (valueNeeded) {
             PointerType ptype = (PointerType)l.getType();
             PUSH(5, NUM_CONST(ptype.getType().sizeof()));
@@ -69,6 +69,16 @@ public class SubscriptExpression extends LValue {
             code += POP(3);
             code += POP(3,"X1");
             code += PUSH(ptype.getType().sizeof(), "0+X1");
+        }
+        return code;
+        */
+        String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+        if (valueNeeded) {
+            PointerType ptype = (PointerType)l.getType();
+            code += generateAddress();
+            code += POP(3,"X1");
+            code += PUSH(ptype.getType().sizeof(), "0+X1");
+
         }
         return code;
     }

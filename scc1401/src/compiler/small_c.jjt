@@ -32,6 +32,7 @@ import static retree.RetreeUtils.*;
 public class SmallCC
 {
 	// used during tree build
+  private static List<Initializer> stringInits = new ArrayList<Initializer>();
   public static SymbolTableStack variableTable = new SymbolTableStack();
   public static HashMap<String,ConstantExpression> functionTable = new HashMap<String,ConstantExpression>();
 
@@ -52,19 +53,23 @@ public class SmallCC
 
     SmallCC parser = new SmallCC(sr);
     Program program = parser.program();
+	for (Initializer i : stringInits)
+	{
+		program.addInitializer(i);
+	}
     if (errorFree) {
 			System.out.print(program.generateCode());
 		}
 		//printTree(program);
 
   }
-  
+
   private static boolean errorFree = true;
-  
+
   public static void reportError(Exception e, Token t) {
 		reportError(e.toString(), t);
 	}
-	
+
 	public static void reportError(String m, Token t) {
 		errorFree = false;
 		System.out.println("Error on line " + t.beginLine + " column " + t.beginColumn);
@@ -351,7 +356,7 @@ FunctionDefinition functionDefinition() : {
 	String name;
 	BlockStatement block;
 	variableTable.push();
-	
+
 	try {
 		//this is the function's return address.
 		//stored under an empty identifier, so no variable can collide with it
@@ -428,7 +433,7 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 	Statement s;
 	if (isFunction) {
 		try {
-			initializers.add(new Initializer(variableTable.searchStack(""), null));
+			initializers.add(new Initializer(variableTable.searchStack(""), (Expression) null));
 		} catch (Exception e) {
 			reportError("We should never be here 0", token);
 		}
@@ -443,7 +448,7 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 			initializers.add(init);
 		}
 	})* (s = statement(newReturnLabel) {
-		statements.add(s);		
+		statements.add(s);
 	})* "}"
 	{
 		//System.out.println(variableTable.peek().getStackOffset());
@@ -488,7 +493,7 @@ Statement statement(String returnLabel)  : {
     //TODO| "continue" ";"
     | "return" (exp=expression())? ";" {
 			return new ReturnStatement(exp, variableTable.searchStack("return"), returnLabel);
-			
+
 		}
     //TODO| Identifier() ":" Statement()
     //TODO| "goto" Identifier() ";"
@@ -886,7 +891,61 @@ Expression AtomicExpression()  : {
 		ce = new ConstantExpression(Type.intType, val);
 		e = ce;
 	}
-    | StringLiteral()
+    | str = StringLiteral() {
+		str = str.toUpperCase();
+		VariableExpression ve = variableTable.searchStack(str);
+		if (ve != null)
+		{
+			return new ArrayNameExpression(ve);
+		} else {
+			str = str.substring(1, str.length() - 1);
+			List<Expression> list = new ArrayList<Expression>();
+			List<Expression> rlist = new ArrayList<Expression>();
+			for(int i = 0; i < str.length(); i++)
+			{
+				if (str.charAt(i) == '\\')
+				{
+					int val = 0;
+					if(i < str.length() - 1)
+					{
+						switch(str.charAt(i+1))
+						{
+							case 'n':
+								val = '\n';
+								break;
+							case '0':
+								val = 0;
+								break;
+						}
+					}
+					list.add(new ConstantExpression(Type.charType, val));
+				} else {
+					list.add(new ConstantExpression(Type.charType,str.charAt(i)));
+				}
+			}
+			list.add(new ConstantExpression(Type.charType, 0));
+			for (int i = list.size()-1; i > -1; i -- )
+			{
+				rlist.add(list.get(i));
+			}
+			// need the +1 for the \0 char
+			ve = variableTable.addStatic("\""+str+"\"", new ArrayType(str.length()+1, Type.charType));
+			stringInits.add(new Initializer(ve, rlist));
+			ArrayNameExpression ane = new ArrayNameExpression(ve);
+			return ane;
+		}
+		// check symtab for this string
+		// if it is Put that in arry name expr and ret that
+		// get list of const expr
+		// add to static symtab if not there
+		// var with arrtype len  = len of list
+		// arry name expr wrap the varexpr enter it key token text with quotes
+		// type = arr type
+		// add to private list initilzer for string
+		// end add to program b4 code gen
+		// return array name
+		//
+	}
     | str=CharacterConstant() {
 			int val = 0;
 			//strip the quote characters
@@ -950,6 +1009,7 @@ String StringLiteral() : {}
 {
     <STRING_LIT>
 	{
+
 		return token.image;
 	}
 }

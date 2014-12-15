@@ -21,7 +21,7 @@ all:
 	mkdir -p temp/wci/util; \
 	cp -r src/* temp; \
 	make compile; \
-	#rm -r temp; \
+	rm -r temp; \
 	cp -r snippets build; \
 	cp -r nonstdlib build;
 

@@ -1,3 +1,4 @@
+#define NON_LIB_PRINTF
 #include <nonstdlib.h>
 
 int main() {
@@ -15,7 +16,7 @@ int main() {
 	format_str[10] = 'D';
 	format_str[11] = '\n';
 	format_str[12] = '\0';
-	
+
 	printf(format_str);
 
 }
