@@ -33,23 +33,22 @@ public class NotEqualExpression extends Expression {
 	public String generateCode(boolean valueNeeded) {
 		String labelEqual = label(SmallCC.nextLabelNumber());
 		String labelEnd = label(SmallCC.nextLabelNumber());
-		String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+		String code = l.generateCode(valueNeeded);
+		if (valueNeeded && l.getType().equals(Type.intType)) {
+			code += SNIP("clean_number");
+		}
+		code += r.generateCode(valueNeeded);
+		if (valueNeeded && r.getType().equals(Type.intType)) {
+			code += SNIP("clean_number");
+		}
 		if (valueNeeded) {
 			int size = l.getType().sizeof();
 			
 			code += INS("C", STACK_OFF(0), STACK_OFF(-size));
 			code += POP(size) + POP(size);
 			code += PUSH(Type.intType.sizeof(), NUM_CONST(1));
-			
-			if (l.getType().equals(Type.intType)) {				
-				//branch to end if less than or greater than
-				code += INS("B", labelEnd, "T");
-				code += INS("B", labelEnd, "U");
-				code += INS("B", labelEqual);
-			} else {
-				code += INS("B", labelEqual, "S");
-			}
-
+				
+			code += INS("BE", labelEqual);
 			code += INS("B", labelEnd);
 			code += LBL_INS(labelEqual, "MCW", NUM_CONST(0), STACK_OFF(0));
 			code += LBL_INS(labelEnd, "NOP");

@@ -5,48 +5,47 @@ import retree.type.*;
 import compiler.SmallCC;
 
 public class LessThanOrEqualExpression extends Expression {
-    private Expression l, r;
+	private Expression l, r;
 
-    public LessThanOrEqualExpression(Expression l, Expression r) throws TypeMismatchException {
-        super(l.getType());
-        if (! l.getType().equals(r.getType())) {
-            throw new TypeMismatchException(r, l.getType(), r.getType());
-        }
-        this.l = l;
-        this.r = r;
-    }
+	public LessThanOrEqualExpression(Expression l, Expression r) {
+		super(Type.intType);
+		if (! l.getType().equals(Type.intType)) {
+			l = new CastExpression(Type.intType, l);
+		}
 
-    public Expression collapse() {
-        try {
-            Expression l2 = l.collapse();
-            Expression r2 = r.collapse();
-            if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) {
-                return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() + ((ConstantExpression)r2).getValue());
-            }
-            return new EqualExpression(l2, r2);
-        } catch (TypeMismatchException e) {
-            //should never happen
-            return null;
-        }
-    }
+		if (! r.getType().equals(Type.intType)) {
+			r = new CastExpression(Type.intType, r);
+		}
+		this.l = l;
+		this.r = r;
+	}
 
-    public String generateCode(boolean valueNeeded) {
-        String labelEqual = label(SmallCC.nextLabelNumber());
-        String labelEnd = label(SmallCC.nextLabelNumber());
-        String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
-        if (valueNeeded) {
-            code += INS("CMPB", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
-            code += POP(1);
-            code += INS("BCE", labelEqual, STACK_OFF(1), "3");
-            code += INS("BCE", labelEqual, STACK_OFF(1), "1");
-            code += PUSH(Type.intType.sizeof(), NUM_CONST(0));
-            code += INS("B", labelEnd);
-            code += LBL_INS(labelEqual, "NOP");
-            code += PUSH(Type.intType.sizeof(), NUM_CONST(1));
-            code += LBL_INS(labelEnd, "NOP");
+	public Expression collapse() {
+		Expression l2 = l.collapse();
+		Expression r2 = r.collapse();
+		if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) {
+				return new ConstantExpression(Type.intType, ((ConstantExpression)l2).getValue() <= ((ConstantExpression)r2).getValue() ? 1 : 0);
+		}
+		return new LessThanOrEqualExpression(l2, r2);
+	}
 
-        }
-        return code;
-    }
+	public String generateCode(boolean valueNeeded) {
+		if (valueNeeded) {
+				String code = l.generateCode(valueNeeded) + SNIP("clean_number") +
+					r.generateCode(valueNeeded) + SNIP("clean_number");
+				String labelLessThan = label(SmallCC.nextLabelNumber());
+				String labelEnd = label(SmallCC.nextLabelNumber());
+				code += INS("C", STACK_OFF(0), STACK_OFF(-5));
+				code += POP(5);
+				code += INS("MCW", NUM_CONST(1), STACK_OFF(0));
+				code += INS("BH", labelLessThan);
+				code += INS("B", labelEnd);
+				code += LBL_INS(labelLessThan, "MCW", NUM_CONST(0), STACK_OFF(0));
+				code += LBL_INS(labelEnd, "NOP");
+				return code;
+			} else {
+				return l.generateCode(false) + r.generateCode(false);
+			}
+		}
 
 }

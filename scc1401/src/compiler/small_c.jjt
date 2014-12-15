@@ -688,14 +688,10 @@ Expression greaterThanExpression() : {
 }
 {
     l = lessThanExpression() ( ">" r = lessThanExpression() {
-			/*
 			l = new GreaterThanExpression(l, r);
-			*/
 		}
 		| ">=" r = lessThanExpression() {
-			/*
 			l = new GreaterThanOrEqualExpression(l, r);
-			*/
 		})*
 	{
 		return l;
@@ -707,14 +703,10 @@ Expression lessThanExpression() : {
 }
 {
     l = bitshiftExpression() ( "<" r = bitshiftExpression() {
-			/*
 			l = new LessThanExpression(l, r);
-			*/
 		}
 		| "<=" r = bitshiftExpression() {
-			/*
 			l = new LessThanOrEqualExpression(l, r);
-			*/
 		})*
 	{
 		return l;
