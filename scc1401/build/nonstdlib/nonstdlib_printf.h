@@ -9,10 +9,12 @@ int putc(char c)
 	{
 		char *tmp;
 		asm("W");
-		while(print_place --> print_area)
+		while(print_place > print_area)
 		{
 			*print_place = ' ';
+			print_place -= 1;
 		}
+		*print_place = ' ';
 		if (c == '\n') return;
 	}
 	*print_place = c;

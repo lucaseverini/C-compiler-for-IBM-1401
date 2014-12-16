@@ -36,6 +36,8 @@ public class SmallCC
   public static SymbolTableStack variableTable = new SymbolTableStack();
   public static HashMap<String,ConstantExpression> functionTable = new HashMap<String,ConstantExpression>();
 
+  public static boolean inAsmFunc = false;
+
   private static int labelNumber = 0;
   public static int nextLabelNumber() {
 		return labelNumber++;
@@ -289,10 +291,6 @@ Initializer variableInitializer(Type baseType, boolean isStatic) : {
 	                                                     //ternaryExpression, since we can't have a comma-separated or assignment expression
 	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression())?
 	{
-		if (value != null && value.getStr() == true)
-		{
-			stringInits.add(value.getInitializer());
-		}
 		return new Initializer(variable, value);
 	}
 }
@@ -378,14 +376,13 @@ FunctionDefinition functionDefinition() : {
 }
 {
 
-    (retType=Type())? name=Identifier()
+    (retType=Type())? name=Identifier(){if(name.equals("asm")){inAsmFunc = true;}else{inAsmFunc = false;}}
 
 		(("(" (param=functionDefinitionParameter(parameters.size()) {
 			parameters.add(param);
 		} ("," param=functionDefinitionParameter(parameters.size()) {
 			parameters.add(param);
 		})*)? ("," "..." {parameters.add(null);})? ")" ) ) {
-			System.out.println(name == null);
 			List<Type> paramTypes = new ArrayList<Type>();
 			boolean variadic = false;
 			for (VariableExpression p : parameters) {
@@ -845,7 +842,7 @@ Expression SuffixExpression()  : {
 	List<Expression> arguments;
 }
 {
-    (e = AtomicExpression(){System.out.println(e);}
+    (e = AtomicExpression()//{System.out.println(e);}
 			( "++"	{
 				e = new PostIncrementExpression((LValue)e);
 			}
@@ -908,7 +905,6 @@ Expression AtomicExpression()  : {
 		e = ce;
 	}
     | str = StringLiteral() {
-		str = str.toUpperCase();
 		VariableExpression ve = variableTable.searchStack(str);
 		if (ve != null)
 		{
@@ -923,34 +919,37 @@ Expression AtomicExpression()  : {
 			{
 				if (str.charAt(i) == '\\')
 				{
-					int val = 0;
 					if(i < str.length() - 1)
 					{
 						switch(str.charAt(i+1))
 						{
 							case 'n':
-								val = '\n';
+								list.add(new ConstantExpression(Type.charType, '\n'));
 								break;
 							case '0':
-								val = 0;
+								list.add(new ConstantExpression(Type.charType, 0));
 								break;
 						}
+						i ++;
 					}
-					list.add(new ConstantExpression(Type.charType, val));
 				} else {
-					list.add(new ConstantExpression(Type.charType,str.charAt(i)));
+					list.add(new ConstantExpression(Type.charType,("" + str.charAt(i)).toUpperCase().charAt(0)));
 				}
 			}
 			list.add(new ConstantExpression(Type.charType, 0));
-			for (int i = list.size()-1; i > -1; i -- )
+			for (int i = list.size()-1; i >= 0; i -- )
 			{
 				rlist.add(list.get(i));
 			}
 			// need the +1 for the \0 char
-			ve = variableTable.addStatic("\""+str+"\"", new ArrayType(str.length()+1, Type.charType));
+			ve = variableTable.addStatic("\""+str+"\"", new ArrayType(rlist.size(), Type.charType));
 			ArrayNameExpression ane = new ArrayNameExpression(ve);
 			ane.setStr(true);
 			ane.setInitializer(new Initializer(ve, rlist));
+			if (!inAsmFunc)
+			{
+				stringInits.add(new Initializer(ve, rlist));
+			}
 			return ane;
 		}
 		// check symtab for this string

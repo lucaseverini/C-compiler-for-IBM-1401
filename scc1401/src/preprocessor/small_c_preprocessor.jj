@@ -19,6 +19,7 @@ package preprocessor;
 import java.io.*;
 import java.util.*;
 import java.nio.file.Paths;
+import preprocessor.SmallC;
 
 public class SmallCPP
 {
@@ -28,7 +29,8 @@ public class SmallCPP
 	static boolean ignore = false;
 	static boolean keepComments = false;
 
-	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable, 
+
+	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable,
 														boolean isHeader, boolean comments) throws Exception
 	{
 		if(searchPaths != null)
@@ -93,9 +95,11 @@ public class SmallCPP
 				return null;
 			}
 		}
-
-		System.out.println();
-		System.out.println("##### PREPROCESSING FILE " + inFile + " size:" + file.length() + " #####");
+		if (SmallC.printOutput)
+		{
+			System.out.println();
+			System.out.println("##### PREPROCESSING FILE " + inFile + " size:" + file.length() + " #####");
+		}
 
 		Reader sr = new FileReader(file)
 		{
@@ -192,9 +196,11 @@ public class SmallCPP
             parser.Tokens(copier);
 
 			copier.copyUntilEnd();
-
-			System.out.println("### FILE " + inFile + " PREPROCESSED SUCCESSFULLY ###");
-			System.out.println();
+			if (SmallC.printOutput)
+			{
+				System.out.println("### FILE " + inFile + " PREPROCESSED SUCCESSFULLY ###");
+				System.out.println();
+			}
         }
         catch (ParseException ex)
 		{
@@ -211,13 +217,13 @@ public class SmallCPP
 	}
 
     // Setting the tab size makes the token locations more accurate.
-    public void setTabSize(int size) 
+    public void setTabSize(int size)
 	{
         jj_input_stream.setTabSize(size);
     }
 
     // return the current tab size that the parser is using
-    public int getTabSize() 
+    public int getTabSize()
 	{
         return jj_input_stream.getTabSize();
     }
@@ -226,7 +232,7 @@ public class SmallCPP
 PARSER_END(SmallCPP)
 
 /*
-SKIP : 
+SKIP :
 {
 	<IGNORED: <COMMENTS>>
 }
@@ -270,8 +276,10 @@ void Comment(StringBuffer buf, FileCopier copier) : {}
 				int beginCol = token.beginColumn;
 				int endCol = token.endColumn;
 				String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
-
-				System.out.println("##### COMMENT REMOVED at " + position + " #####");
+				if (SmallC.printOutput)
+				{
+					System.out.println("##### COMMENT REMOVED at " + position + " #####");
+				}
 
 				copier.jumpFromUntil(beginLine, beginCol, endLine, endCol);
             }
@@ -325,9 +333,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				name = name.replaceAll("\"", "");
 				name = name.replaceAll("<", "");
 				name = name.replaceAll(">", "");
-
-				System.out.println("##### INCLUDE " + name + " at " + position + " #####");
-
+				if (SmallC.printOutput)
+				{
+					System.out.println("##### INCLUDE " + name + " at " + position + " #####");
+				}
 				copier.copyUntilLine(beginLine - 1);
 				copier.jumpUntilLine(beginLine);
 
@@ -375,7 +384,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				ignore = !symTable.isDefined(name);
 				if(ignore)
 				{
-					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					if (SmallC.printOutput)
+					{
+						System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					}
 				}
 
 				copier.copyUntilLine(beginLine - 1);
@@ -389,7 +401,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				ignore = symTable.isDefined(name);
 				if(ignore)
 				{
-					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					if (SmallC.printOutput)
+					{
+						System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					}
 				}
 
 				copier.copyUntilLine(beginLine - 1);
@@ -401,7 +416,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			if(!ignore)
 			{
 				ignore = true;
-				System.out.println("##### BEGIN IGNORE at " + position + " #####");
+				if (SmallC.printOutput)
+				{
+					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+				}
 
 				copier.copyUntilLine(beginLine - 1);
 				copier.jumpUntilLine(beginLine);
@@ -409,7 +427,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			else
 			{
 				ignore = false;
-				System.out.println("##### END IGNORE at " + position + " #####");
+				if (SmallC.printOutput)
+				{
+					System.out.println("##### END IGNORE at " + position + " #####");
+				}
 
 				copier.jumpUntilLine(beginLine);
 			}
@@ -419,7 +440,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			if(ignore)
 			{
 				ignore = false;
-				System.out.println("##### END IGNORE at " + position + " #####");
+				if (SmallC.printOutput)
+				{
+					System.out.println("##### END IGNORE at " + position + " #####");
+				}
 
 				copier.jumpUntilLine(beginLine);
 			}
@@ -451,7 +475,10 @@ void Identifier(StringBuffer buf, FileCopier copier) : {}
 			String value = symTable.getValue(token.image);
 			if(value != null)
 			{
-				System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
+				if (SmallC.printOutput)
+				{
+					System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
+				}
 
 				copier.copyUntilLineAndReplace(beginLine, token.image, value);
 			}

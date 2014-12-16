@@ -3,8 +3,7 @@
 
 int main() {
     char *tmp = "fail whale\n";
-    puts("testing\n");
-    // puts(tmp);
     printf("%c\n",'f');
+    printf("testing\n");
     printf("%s\n",tmp);
 }
