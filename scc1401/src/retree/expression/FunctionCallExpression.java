@@ -55,9 +55,8 @@ public class FunctionCallExpression extends Expression {
 		//restore our frame
 		code += POP(3, "X3");
 		//pop off all the arguments
-		List<Type> paramTypes = functionType.getParamTypes();
-		for (Type t : paramTypes) {
-			code += POP(t.sizeof());
+		for (Expression e: arguments) {
+			code += POP(e.getType().sizeof());
 		}
 		//now our return address should be at the top of the stack.
 		//if we don't want a value, pop it

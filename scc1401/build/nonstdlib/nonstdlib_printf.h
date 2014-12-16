@@ -5,32 +5,18 @@ char *print_place = (char*)201;
 
 int putc(char c)
 {
-	if (c == '\n')
+	if (c == '\n' || print_place - print_area >= 132)
 	{
 		char *tmp;
-		tmp = print_area;
 		asm("W");
-		while(tmp-print_area < 131)
+		while(print_place --> print_area)
 		{
-			*tmp++ = ' ';
+			*print_place = ' ';
 		}
-		print_place = print_area;
+		if (c == '\n') return;
 	}
-	if (print_place - print_area >= 132) {
-		char *tmp;
-		tmp = print_area;
-		asm("W");
-		while(tmp-print_area < 131)
-		{
-			*tmp++ = ' ';
-		}
-		print_place = print_area;
-		*print_place++ = c;
-	}
-	if (print_place - print_area < 132)
-	{
-		*print_place++ = c;
-	}
+	*print_place = c;
+	print_place += 1;
 	return 0;
 }
 
@@ -40,7 +26,8 @@ int puts(char *s)
 	tmp = s;
 	while(*tmp != '\0')
 	{
-		putc(*tmp++);
+		putc(*tmp);
+		tmp += 1;
 	}
 }
 
@@ -50,17 +37,17 @@ int printf(char *cformat_str, ...)
 	char *charDelta = (char *) 15999;
 	char *intDelta = (char *) 15995;
 	arg = cformat_str + charDelta;
-	while(*cformat_str != 0)
+	while(*cformat_str != '\0')
 	{
 		if (*cformat_str == '%')
 		{
-			if (*(cformat_str+1) == '%'){ putc('%'); cformat_str++; }
-			else if (*(cformat_str+1) == 'c'){ putc(*arg); arg += charDelta; cformat_str++; }
-			else if (*(cformat_str+1) == 's'){ puts(arg); arg += charDelta; cformat_str++; }
+			if (*(cformat_str+1) == '%'){ putc('%'); cformat_str+=1; }
+			else if (*(cformat_str+1) == 'c'){ putc(*arg); arg += charDelta; cformat_str+=1; }
+			else if (*(cformat_str+1) == 's'){ puts(arg); arg += charDelta; cformat_str+=1; }
 		} else {
 			putc(*cformat_str);
 		}
-		cformat_str ++;
+		cformat_str += 1;
 	}
 }
 

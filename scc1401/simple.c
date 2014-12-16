@@ -1,11 +1,10 @@
-#define NON_LIB_PRINTF
-#include <nonstdlib.h>
+int fact(int n)
+{
+	if (n == 0) return 1;
+	return n * fact(n-1);
+}
 
 int main()
 {
-	int a = 0;
-	while (a++ < 10)
-	{
-		printf("Hello world! %d", a);
-	}
+	return fact(8);
 }

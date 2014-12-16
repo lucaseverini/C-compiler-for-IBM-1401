@@ -50,7 +50,7 @@ int printf(char *cformat_str, ...)
 	char *charDelta = (char *) 15999;
 	char *intDelta = (char *) 15995;
 	arg = cformat_str + charDelta;
-	while(*cformat_str != 0)
+	while(*cformat_str != '\0')
 	{
 		if (*cformat_str == '%')
 		{
@@ -65,4 +65,3 @@ int printf(char *cformat_str, ...)
 	}
 
 	#endif
-	

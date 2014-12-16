@@ -384,7 +384,7 @@ FunctionDefinition functionDefinition() : {
 			parameters.add(param);
 		} ("," param=functionDefinitionParameter(parameters.size()) {
 			parameters.add(param);
-		})*)? ("..." {parameters.add(null);})? ")" ) ) {
+		})*)? ("," "..." {parameters.add(null);})? ")" ) ) {
 			System.out.println(name == null);
 			List<Type> paramTypes = new ArrayList<Type>();
 			boolean variadic = false;

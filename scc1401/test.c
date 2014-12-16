@@ -2,6 +2,9 @@
 #include <nonstdlib.h>
 
 int main() {
-    char *tmp = "fail whale";
-    int i = 0;
+    char *tmp = "fail whale\n";
+    puts("testing\n");
+    // puts(tmp);
+    printf("%c\n",'f');
+    printf("%s\n",tmp);
 }
