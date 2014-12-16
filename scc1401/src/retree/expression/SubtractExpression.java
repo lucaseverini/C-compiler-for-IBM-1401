@@ -43,7 +43,14 @@ public class SubtractExpression extends Expression {
 		if (getType() instanceof PointerType) {
 			Expression r2 = new CastExpression(r.getType(), new SubtractExpression(new ConstantExpression(Type.intType, 16000), new CastExpression(Type.intType, r)));
 			return new AddExpression(l, r2).collapse();
-		} else return new SubtractExpression(l.collapse(), r.collapse());
+		} else {
+			Expression l2 = l.collapse();
+			Expression r2 = r.collapse();
+			if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) {
+				return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() - ((ConstantExpression)r2).getValue());
+			}
+			return new SubtractExpression(l2, r2);
+		}
 	}
 	
 	public String generateCode(boolean valueNeeded) {
@@ -53,5 +60,10 @@ public class SubtractExpression extends Expression {
 			code += POP(r.getType().sizeof());
 		}
 		return code;
+	}
+	
+	public String toString() {
+		return "(" + l + " - " + r + ")";
+		
 	}
 }

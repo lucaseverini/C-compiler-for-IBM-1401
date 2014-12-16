@@ -5,11 +5,13 @@ import retree.type.Type;
 public class VariableExpression extends LValue {
 	private int offset;
 	private boolean isStatic;
+	private String name;
 
-	public VariableExpression(Type type, int offset, boolean isStatic) {
+	public VariableExpression(Type type, int offset, boolean isStatic, String name) {
 		super(type);
 		this.offset = offset;
 		this.isStatic = isStatic;
+		this.name = name;
 	}
 
 	public String generateCode(boolean valueNeeded) {
@@ -57,5 +59,9 @@ public class VariableExpression extends LValue {
 
 	public int getOffset() {
 		return offset;
+	}
+	
+	public String toString() {
+		return name;
 	}
 }

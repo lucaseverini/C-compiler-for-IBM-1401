@@ -26,8 +26,8 @@ public class Initializer {
 		if (variable.getType() instanceof ArrayType) {
 			this.subInitializers = new ArrayList<Initializer>();
 			ArrayType at = (ArrayType) variable.getType();
-			for (int i = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof()) {
-				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic());
+			for (int i = 0, index=0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++) {
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic(), variable + "[" + index + "]");
 				Initializer subInitializer = new Initializer(subVar, (Expression)null);
 				subInitializers.add(subInitializer);
 			}
@@ -41,8 +41,8 @@ public class Initializer {
 		if (variable.getType() instanceof ArrayType) {
 			this.subInitializers = new ArrayList<Initializer>();
 			ArrayType at = (ArrayType) variable.getType();
-			for (int i = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof()) {
-				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic());
+			for (int i = 0, index = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++) {
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic(), variable + "[" + index + "]");
 				Expression tmp = l.get(i / at.getArrayBaseType().sizeof());
 				tmp = tmp.collapse();
 				Initializer subInitializer = new Initializer(subVar, tmp);

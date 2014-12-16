@@ -29,5 +29,20 @@ public class ConstantExpression extends Expression{
 	public int getValue() {
 		return val;
 	}
+	
+	public String toString() {
+		if (getType().equals(Type.intType)) return val + "";
+		if (getType().equals(Type.charType)) {
+			switch(val) {
+				case 0:
+					return "'\\0'";
+				case '\n':
+					return "'\\n'";
+				default:
+					return "'" + ((char)val) + "'";
+			}
+		}
+		else return "((" + getType() + ")" + val + ")";
+	}
 
 }

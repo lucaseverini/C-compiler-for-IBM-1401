@@ -39,4 +39,10 @@ public class CastExpression extends Expression {
 		}
 		return code;
 	}
+	
+	public String toString() {
+		return "((" + getType() + ") "  + child + ")";
+		
+	}
+	
 }

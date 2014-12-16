@@ -1,26 +1,30 @@
 #ifdef NON_LIB_PRINTF
 
-char *print_area = (char*)201;
-char *print_place = (char*)201;
 
-int putc(char c)
+#define PRINT_AREA ((char *)201)
+
+char *__putchar_pos = PRINT_AREA;
+char *__putchar_last = PRINT_AREA - 1;
+
+int putchar(char c)
 {
-	if (c == '\n' || print_place - print_area >= 132)
-	{
-		char *tmp;
-		asm("W");
-		while(print_place > print_area)
-		{
-			*print_place = ' ';
-			print_place -= 1;
-		}
-		*print_place = ' ';
-		if (c == '\n') return;
+	if (c != '\n') {
+	 *__putchar_pos++ = c;
+	} else {
+	 while (__putchar_last > __putchar_pos) {
+		 *__putchar_last-- = ' ';
+	 }
+	 __putchar_last = __putchar_pos;
+	 __putchar_pos = PRINT_AREA;
+	 asm("W");
 	}
-	*print_place = c;
-	print_place += 1;
-	return 0;
+	if (__putchar_pos == PRINT_AREA + 132) {
+		__putchar_last = __putchar_pos;
+		__putchar_pos = PRINT_AREA;
+		asm("W");
+	}
 }
+#undef PRINT_AREA
 
 int puts(char *s)
 {
@@ -28,7 +32,7 @@ int puts(char *s)
 	tmp = s;
 	while(*tmp != '\0')
 	{
-		putc(*tmp);
+		putchar(*tmp);
 		tmp += 1;
 	}
 }
@@ -43,11 +47,11 @@ int printf(char *cformat_str, ...)
 	{
 		if (*cformat_str == '%')
 		{
-			if (*(cformat_str+1) == '%'){ putc('%'); cformat_str+=1; }
-			else if (*(cformat_str+1) == 'c'){ putc(*arg); arg += charDelta; cformat_str+=1; }
+			if (*(cformat_str+1) == '%'){ putchar('%'); cformat_str+=1; }
+			else if (*(cformat_str+1) == 'c'){ putchar(*arg); arg += charDelta; cformat_str+=1; }
 			else if (*(cformat_str+1) == 's'){ puts(arg); arg += charDelta; cformat_str+=1; }
 		} else {
-			putc(*cformat_str);
+			putchar(*cformat_str);
 		}
 		cformat_str += 1;
 	}

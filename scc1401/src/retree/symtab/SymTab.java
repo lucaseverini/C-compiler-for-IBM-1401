@@ -27,13 +27,13 @@ public class SymTab {
 
 	public VariableExpression put(String identifier, Type t, boolean isParam){
 		if (isParam) {
-			VariableExpression varExp = new VariableExpression(t, paramOffset, false);
+			VariableExpression varExp = new VariableExpression(t, paramOffset, false, identifier);
 			paramOffset -= t.sizeof();
 			table.put(identifier, varExp);
 			return varExp;
 		} else {
 			localOffset += t.sizeof();
-			VariableExpression varExp = new VariableExpression(t, localOffset, isStatic);
+			VariableExpression varExp = new VariableExpression(t, localOffset, isStatic, identifier);
 			table.put(identifier, varExp);
 			return varExp;
 		}
