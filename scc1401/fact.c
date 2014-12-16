@@ -1,36 +1,8 @@
-int f = 1;
-int x = 0;
-
-int fact(int n)
-{
-	if (n)
-	{
-		f *= n;
-		fact(n-1);
-	}
+int fact(int n) {
+	if (n == 0) return 1;
+	return n*fact(n-1);
 }
 
-int main()
-{
-	int result = 0, i;
-	char *prt = 201;
-	
-	for(i = 10; i ; i--)
-	{
-		prt[i] = 'A';
-	}
-	
-	i = 0;
-	
-	prt[i++] = 'B';
-	prt[i++] = 'C';
-	prt[i++] = 'D';
-	
-	result = fact(8);
-}
-
-int test(int v)
-{
-	x = v * 2;
-	return v;
+int main() {
+	return fact(8);
 }

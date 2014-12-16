@@ -26,7 +26,12 @@ public class PostIncrementExpression extends Expression {
 		if (valueNeeded) {
 			code += PUSH(l.getType().sizeof(),"0+X1");
 		}
-		code += INS("A", NUM_CONST(1), "0+X1");
+		if (getType() instanceof PointerType) {
+			PointerType pt = (PointerType) getType();
+			code += INS("MA", ADDR_CONST(pt.getType().sizeof()), "0+X1");
+		} else {
+			code += INS("A", NUM_CONST(1), "0+X1");
+		}
 		return code;
 	}
 

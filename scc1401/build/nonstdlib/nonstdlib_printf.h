@@ -51,6 +51,6 @@ int printf(char *cformat_str, ...)
 		}
 		cformat_str += 1;
 	}
-}
 
-#endif
+	#endif
+	
