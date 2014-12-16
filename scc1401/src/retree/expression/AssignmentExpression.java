@@ -25,7 +25,7 @@ public class AssignmentExpression extends Expression {
 
 	public String generateCode(boolean valueNeeded) {
 		//no sequence point, so we can evaluate the right side first
-		String code = r.generateCode(true) + 
+		String code = r.generateCode(true) +
 			l.generateAddress() +
 			POP(3, "X1");
 		if (valueNeeded) {
@@ -36,5 +36,9 @@ public class AssignmentExpression extends Expression {
 		return code;
 	}
 
+	public String toString()
+	{
+		return "(" + l + " = " + r + ")";
+	}
 
 }

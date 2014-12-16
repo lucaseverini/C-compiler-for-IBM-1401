@@ -65,4 +65,13 @@ public class FunctionCallExpression extends Expression {
 		}
 		return code;
 	}
+
+	public String toString() {
+		String s = "";
+		for(Expression e : arguments)
+		{
+			s += (" " + e.toString());
+		}
+		return "(" + function.getValue() + "(" + s + ")" + ")";
+	}
 }

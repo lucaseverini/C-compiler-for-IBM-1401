@@ -16,7 +16,7 @@ public class GreaterThanOrEqualExpression extends Expression {
 		if (! l.getType().equals(Type.intType)) {
 			l = new CastExpression(Type.intType, l);
 		}
-		
+
 		if (! r.getType().equals(Type.intType)) {
 			r = new CastExpression(Type.intType, r);
 		}
@@ -52,4 +52,8 @@ public class GreaterThanOrEqualExpression extends Expression {
 			}
 		}
 
+	public String toString()
+	{
+		return "(" + l + " >= " + r + ")";
+	}
 }

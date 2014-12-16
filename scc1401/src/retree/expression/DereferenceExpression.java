@@ -36,7 +36,7 @@ public class DereferenceExpression extends LValue {
 			if (!valueNeeded) {
 				return child.generateCode(false);
 			} else {
-				return child.generateCode(true) + 
+				return child.generateCode(true) +
 					POP(3,"X1") +
 					PUSH(getReferenceType(child).sizeof(), "0+X1");
 			}
@@ -44,9 +44,13 @@ public class DereferenceExpression extends LValue {
 			return null;
 		}
 	}
-	
+
 	public String generateAddress() {
 		return child.generateCode(true);
+	}
+
+	public String toString() {
+		return "( " + "*" + child +" )";
 	}
 
 }

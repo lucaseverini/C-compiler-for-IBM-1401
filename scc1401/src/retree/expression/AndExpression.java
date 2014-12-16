@@ -50,4 +50,8 @@ public class AndExpression extends Expression {
         return code;
     }
 
+    public String toString() {
+        return "(" + l +" && "+ r + ")";
+    }
+
 }

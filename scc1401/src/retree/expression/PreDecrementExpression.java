@@ -35,4 +35,9 @@ public class PreDecrementExpression extends Expression {
 		return code;
 	}
 
+	public String toString()
+	{
+		return "(" + "--" + l + ")";
+	}
+
 }

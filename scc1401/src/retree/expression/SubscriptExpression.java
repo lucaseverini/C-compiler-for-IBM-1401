@@ -103,4 +103,9 @@ public class SubscriptExpression extends LValue {
         return code;
     }
 
+    public String toString()
+    {
+        return "(" + l + "[" + r + "]" + ")";
+    }
+
 }

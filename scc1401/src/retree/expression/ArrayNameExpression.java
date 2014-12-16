@@ -38,5 +38,7 @@ public class ArrayNameExpression extends Expression{
 		return this;
 	}
 
-
+	public String toString() {
+		return array.toString();
+	}
 }

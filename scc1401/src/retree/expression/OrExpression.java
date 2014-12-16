@@ -52,4 +52,9 @@ public class OrExpression extends Expression {
         return code;
     }
 
+    public String toString()
+    {
+        return "(" + l + " || " + r + ")";
+    }
+
 }

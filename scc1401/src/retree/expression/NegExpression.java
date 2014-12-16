@@ -13,7 +13,7 @@ public class NegExpression extends Expression {
 		super(child.getType());
 		this.child = child;
 	}
-	
+
 	public Expression collapse() {
 		Expression collapsedChild = child.collapse();
 		if (collapsedChild instanceof ConstantExpression)
@@ -32,6 +32,11 @@ public class NegExpression extends Expression {
 			}
 		}
 		return code;
+	}
+
+	public String toString()
+	{
+		return "(" + "-" + child + ")";
 	}
 
 }

@@ -43,11 +43,11 @@ public class NotEqualExpression extends Expression {
 		}
 		if (valueNeeded) {
 			int size = l.getType().sizeof();
-			
+
 			code += INS("C", STACK_OFF(0), STACK_OFF(-size));
 			code += POP(size) + POP(size);
 			code += PUSH(Type.intType.sizeof(), NUM_CONST(1));
-				
+
 			code += INS("BE", labelEqual);
 			code += INS("B", labelEnd);
 			code += LBL_INS(labelEqual, "MCW", NUM_CONST(0), STACK_OFF(0));
@@ -55,6 +55,11 @@ public class NotEqualExpression extends Expression {
 
 		}
 		return code;
+	}
+
+	public String toString()
+	{
+		return "(" + l + " != " + r + ")";
 	}
 
 }

@@ -34,4 +34,9 @@ public class PostDecrementExpression extends Expression {
 		return code;
 	}
 
+	public String toString()
+	{
+		return "(" + l + "--" + ")";
+	}
+
 }

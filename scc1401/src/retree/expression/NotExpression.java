@@ -9,18 +9,14 @@ public class NotExpression extends Expression {
 
     public NotExpression(Expression l) throws TypeMismatchException {
         super(Type.intType);
-        if (! l.getType().equals(r.getType())) {
-            throw new TypeMismatchException(r, l.getType(), r.getType());
-        }
         this.l = l;
-        this.r = r;
     }
 
     public Expression collapse() {
         try {
             Expression l2 = l.collapse();
             if (l2 instanceof ConstantExpression) {
-                return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() ? 0 : 1);
+                return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() == 0 ? 1 : 0);
             }
             return new NotExpression(l2);
         } catch (TypeMismatchException e) {
@@ -40,6 +36,11 @@ public class NotExpression extends Expression {
         code += INS("MCW", NUM_CONST(0), STACK_OFF(0));
         code += LBL_INS(labelEnd, "NOP");
         return code;
+    }
+
+    public String toString()
+    {
+        return "(" + "!" + l + ")";
     }
 
 }

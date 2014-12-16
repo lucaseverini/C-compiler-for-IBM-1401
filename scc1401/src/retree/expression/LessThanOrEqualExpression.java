@@ -48,4 +48,9 @@ public class LessThanOrEqualExpression extends Expression {
 			}
 		}
 
+	public String toString()
+	{
+		return "(" + l + " <= " + r + ")";
+	}
+
 }

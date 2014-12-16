@@ -35,4 +35,9 @@ public class PostIncrementExpression extends Expression {
 		return code;
 	}
 
+	public String toString()
+	{
+		return "(" + l + "++" + ")";
+	}
+
 }

@@ -48,4 +48,8 @@ public class GreaterThanExpression extends Expression {
 			}
 		}
 
+	public String toString()
+	{
+		return "(" + l + " > " + r +")";
+	}
 }

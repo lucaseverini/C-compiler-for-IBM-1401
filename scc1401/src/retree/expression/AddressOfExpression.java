@@ -23,4 +23,9 @@ public class AddressOfExpression extends Expression {
 		return new AddressOfExpression(child.collapse());
 	}
 
+	public String toString()
+	{
+		return "( &" + child + " )";
+	}
+
 }
