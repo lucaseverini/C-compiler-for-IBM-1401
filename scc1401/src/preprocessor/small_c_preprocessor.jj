@@ -26,7 +26,7 @@ public class SmallCPP
 {
 	static PreProcSymTab symTable = new PreProcSymTab();
 	static List<String> paths = new ArrayList<String>();
-	static String tmpDir = System.getProperty("java.io.tmpdir");
+	static String tmpDir = "temp/"; //System.getProperty("java.io.tmpdir");
 	static boolean ignore = false;
 	static boolean keepComments = false;
 
@@ -55,7 +55,6 @@ public class SmallCPP
 		if (isHeader)
 		{
 			String fileName = Paths.get(inFile).getFileName().toString();
-			outFile = tmpDir + fileName + ".preproc";
 
 			for(String p : paths)
 			{
@@ -68,6 +67,11 @@ public class SmallCPP
 				if (file != null && file.exists())
 				{
 					inFile = p + inFile;
+					outFile = p + fileName + ".preproc";
+					if (SmallC_PreProcessor.printOutput)
+					{
+						System.out.println(outFile);
+					}
 					break;
 				}
 			}

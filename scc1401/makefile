@@ -15,6 +15,7 @@ JAVACC=$(HOME)/bin/javacc-6.0
 
 all:
 	mkdir -p build; \
+	mkdir -p build/temp; \
 	mkdir -p temp/compiler; \
 	mkdir -p temp/preprocessor; \
 	mkdir -p temp/wci/intermediate; \
