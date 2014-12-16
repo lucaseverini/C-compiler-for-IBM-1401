@@ -1,8 +1,9 @@
 /*
 	small_c_preprocessor.jj
 
-    Assignment #6 - CS153 - SJSU
-	November-8-2014
+	Small-C compiler for IBM 1401
+    Final Project - CS153 - SJSU
+	December-16-2014
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -19,7 +20,7 @@ package preprocessor;
 import java.io.*;
 import java.util.*;
 import java.nio.file.Paths;
-import preprocessor.SmallC;
+import preprocessor.SmallC_PreProcessor;
 
 public class SmallCPP
 {
@@ -95,7 +96,7 @@ public class SmallCPP
 				return null;
 			}
 		}
-		if (SmallC.printOutput)
+		if (SmallC_PreProcessor.printOutput)
 		{
 			System.out.println();
 			System.out.println("##### PREPROCESSING FILE " + inFile + " size:" + file.length() + " #####");
@@ -196,7 +197,7 @@ public class SmallCPP
             parser.Tokens(copier);
 
 			copier.copyUntilEnd();
-			if (SmallC.printOutput)
+			if (SmallC_PreProcessor.printOutput)
 			{
 				System.out.println("### FILE " + inFile + " PREPROCESSED SUCCESSFULLY ###");
 				System.out.println();
@@ -276,7 +277,7 @@ void Comment(StringBuffer buf, FileCopier copier) : {}
 				int beginCol = token.beginColumn;
 				int endCol = token.endColumn;
 				String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
-				if (SmallC.printOutput)
+				if (SmallC_PreProcessor.printOutput)
 				{
 					System.out.println("##### COMMENT REMOVED at " + position + " #####");
 				}
@@ -333,7 +334,7 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				name = name.replaceAll("\"", "");
 				name = name.replaceAll("<", "");
 				name = name.replaceAll(">", "");
-				if (SmallC.printOutput)
+				if (SmallC_PreProcessor.printOutput)
 				{
 					System.out.println("##### INCLUDE " + name + " at " + position + " #####");
 				}
@@ -384,7 +385,7 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				ignore = !symTable.isDefined(name);
 				if(ignore)
 				{
-					if (SmallC.printOutput)
+					if (SmallC_PreProcessor.printOutput)
 					{
 						System.out.println("##### BEGIN IGNORE at " + position + " #####");
 					}
@@ -401,7 +402,7 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				ignore = symTable.isDefined(name);
 				if(ignore)
 				{
-					if (SmallC.printOutput)
+					if (SmallC_PreProcessor.printOutput)
 					{
 						System.out.println("##### BEGIN IGNORE at " + position + " #####");
 					}
@@ -416,7 +417,7 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			if(!ignore)
 			{
 				ignore = true;
-				if (SmallC.printOutput)
+				if (SmallC_PreProcessor.printOutput)
 				{
 					System.out.println("##### BEGIN IGNORE at " + position + " #####");
 				}
@@ -427,7 +428,7 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			else
 			{
 				ignore = false;
-				if (SmallC.printOutput)
+				if (SmallC_PreProcessor.printOutput)
 				{
 					System.out.println("##### END IGNORE at " + position + " #####");
 				}
@@ -440,7 +441,7 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			if(ignore)
 			{
 				ignore = false;
-				if (SmallC.printOutput)
+				if (SmallC_PreProcessor.printOutput)
 				{
 					System.out.println("##### END IGNORE at " + position + " #####");
 				}
@@ -475,7 +476,7 @@ void Identifier(StringBuffer buf, FileCopier copier) : {}
 			String value = symTable.getValue(token.image);
 			if(value != null)
 			{
-				if (SmallC.printOutput)
+				if (SmallC_PreProcessor.printOutput)
 				{
 					System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
 				}

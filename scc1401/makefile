@@ -40,8 +40,7 @@ jjtree:
 	cd ../..;
 
 compile: javacc
-	javac -classpath temp temp/preprocessor/SmallCPP.java -d build; \
-	javac -classpath temp temp/preprocessor/SmallC.java -d build; \
+	javac -classpath temp temp/preprocessor/SmallC_PreProcessor.java -d build; \
 	javac -classpath temp temp/retree/exceptions/*.java -d build; \
 	javac -classpath temp temp/retree/expression/*.java -d build; \
 	javac -classpath temp temp/retree/symtab/*.java -d build; \

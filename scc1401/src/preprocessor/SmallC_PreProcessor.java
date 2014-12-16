@@ -20,12 +20,17 @@ public class SmallC_PreProcessor
 	static List<String> paths = new ArrayList<>();
 	static List<String> files = new ArrayList<>();
 	static boolean keepComments = false;
+	public static boolean printOutput = false;
 
     public static void main(String[] args) throws Exception
     {
-		System.out.println("Small-C Pre-processor.");
-		System.out.println("Version 1.0 - December 13 2014");
-		
+		if (printOutput)
+		{
+			System.out.println("Small-C Pre-processor.");
+			System.out.println("Version 1.0 - December 16 2014");
+			System.out.println();
+		}
+
 		parseArguments(args);
 /*
 		if(paths.size() == 0)
@@ -35,11 +40,14 @@ public class SmallC_PreProcessor
 */
 		for(String file : files)
 		{
-			String outFile = SmallCPP.preprocessFile(file, paths, symTable, false, keepComments);		
+			String outFile = SmallCPP.preprocessFile(file, paths, symTable, false, keepComments);
 			if(outFile != null)
 			{
-				System.out.println("Final Preprocessed file: " + outFile);
-				System.out.println("Final Symbol table:\n" + symTable);
+				if (printOutput)
+				{
+					System.out.println("Preprocessed file: " + outFile);
+					System.out.println("Preprocessor symbol table:\n" + symTable);
+				}
 
 				SmallCC.compile(outFile);
 			}
@@ -59,7 +67,11 @@ public class SmallC_PreProcessor
 				case "-C":
 					keepComments = true;
 					break;
-
+					
+				case "-X": // this allows us to print out all preprocessor messages otherwise it just prints error messages
+					printOutput = true;
+					break;
+					
 				case "-D":
 					status = 1;
 					break;
