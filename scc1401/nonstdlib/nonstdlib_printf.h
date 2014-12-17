@@ -28,32 +28,32 @@ int putchar(char c)
 
 int puts(char *s)
 {
-	char *tmp;
-	tmp = s;
-	while(*tmp != '\0')
+	while(*s != '\0')
 	{
-		putchar(*tmp);
-		tmp += 1;
+		putchar(*s++);
 	}
 }
 
 int printf(char *cformat_str, ...)
 {
 	char *arg;
-	char *charDelta = (char *) 15999;
-	char *intDelta = (char *) 15995;
-	arg = cformat_str + charDelta;
-	while(*cformat_str != '\0')
-	{
-		if (*cformat_str == '%')
-		{
-			if (*(cformat_str+1) == '%'){ putchar('%'); cformat_str+=1; }
-			else if (*(cformat_str+1) == 'c'){ putchar(*arg); arg += charDelta; cformat_str+=1; }
-			else if (*(cformat_str+1) == 's'){ puts(arg); arg += charDelta; cformat_str+=1; }
-		} else {
-			putchar(*cformat_str);
+	char c;
+	arg = (char *)(&cformat_str - 1);
+	while ((c = *cformat_str++) != '\0') {
+		if (c != '%') putchar(c);
+		else {
+			c = *cformat_str++;
+			if (c == '%') {
+				putchar('%');
+			} else if (c == 'c') {
+				putchar(*arg--);
+			} else if (c == 's') {
+				puts(*((char **)arg));
+				arg -= sizeof(char *);
+			} else if (c == 'd') {
+				//TODO
+			} else return;
 		}
-		cformat_str += 1;
 	}
 }
 

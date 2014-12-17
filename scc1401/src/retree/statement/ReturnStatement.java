@@ -17,8 +17,8 @@ public class ReturnStatement implements Statement {
 	
 	public String generateCode() {
 		String code = "";
-		int offset = returnLocation.getOffset();
 		if (exp != null && returnLocation != null) {
+			int offset = returnLocation.getOffset();
 			code += exp.generateCode(true);
 			code += POP(exp.getType().sizeof(), OFF(offset));
 		}

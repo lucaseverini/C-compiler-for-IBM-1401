@@ -293,12 +293,18 @@ Initializer variableInitializer(Type baseType, boolean isStatic) : {
 	Initializer init = null;
 	VariableExpression variable;
 	Expression value = null;
+	Token t = null;
 }
 {
-	                                                     //ternaryExpression, since we can't have a comma-separated or assignment expression
-	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression())?
+	                                                               //ternaryExpression, since we can't have a comma-separated or assignment expression
+	variable = suffixedVariable(baseType, isStatic) ("=" {t=token;} value=ternaryExpression())?
 	{
-		return new Initializer(variable, value);
+		try {
+			return new Initializer(variable, value);
+		} catch(Exception e) {
+			reportError(e, t);
+			return new Initializer(variable, (Expression)null);
+		}
 	}
 }
 
@@ -621,9 +627,7 @@ Expression orExpression() : {
 }
 {
     l = andExpression() ("||" r = andExpression() {
-			/*
 			l = new OrExpression(l, r);
-			*/
 		})*
 	{
 		return l;
@@ -635,9 +639,7 @@ Expression andExpression() : {
 }
 {
     l = bitOrExpression() ("&&" r = bitOrExpression() {
-		/*
-		l = new AndExpression(l, r);
-		*/
+			l = new AndExpression(l, r);
 		})*
 	{
 		return l;
@@ -799,7 +801,7 @@ Expression prefixExpression()  : {
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
-    (e = SuffixExpression()
+    (e = suffixExpression()
     | "++" e = prefixExpression()	{
 			return new PreIncrementExpression((LValue)e);
 		}
@@ -813,8 +815,8 @@ Expression prefixExpression()  : {
 										// e = new NegativeExpression(e);
 									}
     | "!" e = prefixExpression()	{
-										// e = new NotExpression(e);
-									}
+			e = new NotExpression(e);
+		}
     | "~" e = prefixExpression()	{
 										// e = new BitNotExpression(e);
 									}
@@ -834,7 +836,7 @@ Expression prefixExpression()  : {
 			return new ConstantExpression(Type.intType, t.sizeof());
 		}
     | "(" t = Type() ")" e = prefixExpression()	{
-			// return new CastExpression(t,e);
+			return new CastExpression(t,e);
 		}
 	)
 	{
@@ -843,7 +845,7 @@ Expression prefixExpression()  : {
 
 }
 
-Expression SuffixExpression()  : {
+Expression suffixExpression()  : {
 	String s = "";
 	Expression e, inside;
 	List<Expression> arguments;
@@ -851,10 +853,18 @@ Expression SuffixExpression()  : {
 {
     (e = AtomicExpression()//{System.out.println(e);}
 			( "++"	{
-				e = new PostIncrementExpression((LValue)e);
+				try {
+					e = new PostIncrementExpression((LValue)e);
+				} catch (Exception ex) {
+					reportError("Expression " + e + "is not an LValue", token);
+				}
 			}
 			| "--"	{
-				e = new PostDecrementExpression((LValue)e);
+				try {
+					e = new PostDecrementExpression((LValue)e);
+				} catch (Exception ex) {
+					reportError("Expression " + e + "is not an LValue", token);
+				}
 			}
 			| "(" arguments = expressionList(e) ")" {
 				e = new FunctionCallExpression(e,arguments);
