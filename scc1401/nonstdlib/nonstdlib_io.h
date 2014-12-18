@@ -1,6 +1,4 @@
 #ifdef NON_LIB_PRINTF
-
-
 #define PRINT_AREA ((char *)201)
 
 char *__putchar_pos = PRINT_AREA;
@@ -55,6 +53,21 @@ int printf(char *cformat_str, ...)
 			} else return;
 		}
 	}
+}
+#endif
+
+#ifdef NON_LIB_READ
+
+char *__getCharPosition = (char *)81;
+
+char getchar()
+{
+	if (__getCharPosition > (char *)80)
+	{
+		asm("R");
+		__getCharPosition = (char *)1;
+	}
+	return *__getCharPosition++;
 }
 
 #endif

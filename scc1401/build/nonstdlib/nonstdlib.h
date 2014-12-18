@@ -6,7 +6,7 @@
 //		include this library like normal: #include <nonstdlib.h>
 //	Example:
 //		#define NON_LIB_RAND
-//      #define NON_LIB_PRINTF
+//      #define NON_LIB_IO
 //		#include <nonstdlib.h>
 //
 //		The above example only includes the printf and
@@ -16,7 +16,7 @@
 
 #include <nonstdlib_mem.h>
 
-#include <nonstdlib_printf.h>
+#include <nonstdlib_io.h>
 
 #include <nonstdlib_str.h>
 
