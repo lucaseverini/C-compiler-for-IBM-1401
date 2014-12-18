@@ -11,29 +11,31 @@ int main()
 	
 	for (i = 0, d = 0; i < 11; ++i)
 	{
-		print_area[d++] = hello[i];
+		print_area[i] = hello[i];
 	}
 	
 	asm("W");
 	asm("CS   299");
 	
-	for (i = 0, d = 0; i < 10; ++i)
+	for (i = 0; i < 10; ++i)
 	{
-		print_area[d++] = hello2[i];
+		print_area[i] = hello2[i];
 	}
 
-	print_area[d++] = ' ';
+	asm("W");
+	asm("CS   299");
 	
 	for (i = 0; i < 10; ++i)
 	{
-		print_area[d++] = hello3[i];
+		print_area[i] = hello3[i];
 	}
 
-	print_area[d++] = ' ';
+	asm("W");
+	asm("CS   299");
 
 	for (i = 0; i < 13; ++i)
 	{
-		print_area[d++] = hello4[i];
+		print_area[i] = hello4[i];
 	}
 
 	asm("W");
