@@ -1,4 +1,4 @@
-#ifdef NON_LIB_PRINTF
+
 #define PRINT_AREA ((char *)201)
 
 char *__putchar_pos = PRINT_AREA;
@@ -54,9 +54,6 @@ int printf(char *cformat_str, ...)
 		}
 	}
 }
-#endif
-
-#ifdef NON_LIB_READ
 
 char *__getCharPosition = (char *)81;
 
@@ -69,5 +66,3 @@ char getchar()
 	}
 	return *__getCharPosition++;
 }
-
-#endif

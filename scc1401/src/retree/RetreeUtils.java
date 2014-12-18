@@ -147,7 +147,7 @@ public class RetreeUtils {
 				code = code.replace(group.trim(), label);
 				if (group.equals("$MAIN ")) mainLabel = label;
 
-				m = Pattern.compile("\\$[A-Z ]{5}").matcher(code);
+				m = Pattern.compile("\\$[A-Z0-9 ]{5}").matcher(code);
 			}
 			snippetLabels.put(snippetName, mainLabel);
 			snippetCode.put(snippetName, code);

@@ -590,10 +590,10 @@ Expression assignmentExpression() : {
 				r = new MultiplyExpression(l, r);
 			}
 			| "/=" r = assignmentExpression() {
-				//r = new DivideExpression(l, r);
+				r = new DivideExpression(l, r);
 			}
 			| "%=" r = assignmentExpression() {
-				//r = new ModExpression(l, r);
+				r = new ModuloExpression(l, r);
 			}
 			| ">>=" r = assignmentExpression() {
 				//r = new RightShiftExpression(l, r);
@@ -804,14 +804,10 @@ Expression multiplicativeExpression()  : {
 			l = new MultiplyExpression(l, r);
 		}
     | "/" r = prefixExpression(){
-		/*
 			l = new DivideExpression(l, r);
-		*/
-	}
+		}
     | "%" r = prefixExpression(){
-		/*
-			l = new ModExpression(l, r);
-		*/
+			l = new ModuloExpression(l, r);
 	} )*)
 	{
 		return l;
