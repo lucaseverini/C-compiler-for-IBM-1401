@@ -1,0 +1,5 @@
+#ifdef NON_LIB_STRING
+// STRING FUNCTIONS
+
+
+#endif

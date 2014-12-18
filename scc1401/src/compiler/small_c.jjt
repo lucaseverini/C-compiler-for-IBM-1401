@@ -35,8 +35,13 @@ public class SmallCC
   private static List<Initializer> stringInits = new ArrayList<Initializer>();
   public static SymbolTableStack variableTable = new SymbolTableStack();
   public static HashMap<String,ConstantExpression> functionTable = new HashMap<String,ConstantExpression>();
+  //when a function is defined, we stage it here.  Only when it is called do we add it to our program.
+  private static HashMap<ConstantExpression, FunctionDefinition> pendingFunctionDefinitions = new HashMap<ConstantExpression, FunctionDefinition>();
+	private static HashSet<FunctionDefinition> includedFunctions = new HashSet<FunctionDefinition>();
+
 
   public static boolean inAsmFunc = false;
+
 
   private static int labelNumber = 0;
   public static int nextLabelNumber() {
@@ -231,11 +236,23 @@ Program program() throws Exception : {
 			}
 				| functionDeclaration() //not supported just yet...
 				| func = functionDefinition() {
-					program.addFunction(func);
+					pendingFunctionDefinitions.put(func.getDeclaration(), func);
+					//program.addFunction(func);
 				}
 			)*
   		{
-				int mainLabelNumber = functionTable.get("main").getValue();
+				ConstantExpression mainDec = functionTable.get("main");
+				if (mainDec == null) {
+					System.out.println("Missing main function");
+					System.exit(1);
+				}
+				if (pendingFunctionDefinitions.containsKey(mainDec)) {
+					includedFunctions.add(pendingFunctionDefinitions.remove(mainDec));
+				}
+				int mainLabelNumber = mainDec.getValue();
+				for (FunctionDefinition def : includedFunctions) {
+					program.addFunction(def);
+				}
 				program.setMainLabelNumber(mainLabelNumber);
 
 				return program;
@@ -544,7 +561,7 @@ Expression expression() : {
 }
 {
     l = assignmentExpression() ("," r = assignmentExpression() {
-			//l = new CommaExpression(l, r);
+			l = new CommaExpression(l, r);
 		})*
     {
 			return l;
@@ -927,6 +944,10 @@ Expression AtomicExpression()  : {
 				reportError("Did not find: " + str + " anywhere did you forget to declare it?", token);
 				return null;
 			} else {
+				if (pendingFunctionDefinitions.containsKey(fun)) {
+					//lazily add our function definition to the program
+					includedFunctions.add(pendingFunctionDefinitions.remove(fun));
+				}
 				return fun;
 			}
 		} else if (var.getType() instanceof ArrayType) {

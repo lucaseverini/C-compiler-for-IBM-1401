@@ -52,3 +52,6 @@ compile: javacc
 	javac -classpath temp temp/retree/program/*.java -d build; \
 	javac -classpath temp temp/retree/statement/*.java -d build; \
 	javac -classpath temp temp/compiler/*.java -d build;
+
+lib:
+	cp -r nonstdlib build
