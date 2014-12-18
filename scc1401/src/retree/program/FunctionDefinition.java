@@ -11,6 +11,10 @@ public class FunctionDefinition {
 		this.block = block;
 	}
 	
+	public ConstantExpression getDeclaration() {
+		return declaration;
+	}
+	
 	//As per our calling conventions, the caller is responsible for pushing
 	//the new stack frame down.  We are simply responsible for our return
 	//address.
