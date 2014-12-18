@@ -1,3 +1,4 @@
+// #define NON_LIB_PRINTF to be able to use printf, putchar, and puts
 #ifdef NON_LIB_PRINTF
 #define PRINT_AREA ((char *)201)
 
@@ -56,6 +57,7 @@ int printf(char *cformat_str, ...)
 }
 #endif
 
+// #define NON_LIB_READ to include the read function so that you can read from cards
 #ifdef NON_LIB_READ
 
 char *__getCharPosition = (char *)81;

@@ -58,7 +58,7 @@ int printf(char *cformat_str, ...)
 
 #ifdef NON_LIB_READ
 
-char *__getCharPosition = (char *)1;
+char *__getCharPosition = (char *)81;
 
 char getchar()
 {
