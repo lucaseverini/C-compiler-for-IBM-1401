@@ -20,4 +20,6 @@
 
 #include <nonstdlib_str.h>
 
+#include <string.h>
+
 #endif

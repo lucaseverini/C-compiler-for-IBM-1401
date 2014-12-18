@@ -9,7 +9,7 @@ int putchar(char c)
 	if (c != '\n') {
 	 *__putchar_pos++ = c;
 	} else {
-	 while (__putchar_last > __putchar_pos) {
+	 while (__putchar_last >= __putchar_pos) {
 		 *__putchar_last-- = ' ';
 	 }
 	 __putchar_last = __putchar_pos;
