@@ -66,14 +66,18 @@ public class SmallCC
 	functionTable.put("asm", new ConstantExpression(new FunctionType(Type.intType, tmp, true), asmFuncNumber));
 
     SmallCC parser = new SmallCC(sr);
-    Program program = parser.program();
-	for (Initializer i : stringInits)
-	{
-		program.addInitializer(i);
-	}
-    if (errorFree) {
+    try {
+		Program program = parser.program();
+		for (Initializer i : stringInits)
+		{
+			program.addInitializer(i);
+		}
+	    if (errorFree) {
 			System.out.print(program.generateCode());
 		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
 		//printTree(program);
 
   }
@@ -215,7 +219,7 @@ TOKEN :
 
 Program program() throws Exception : {
 	Program program = new Program();
-	List<Initializer> initList;
+	List<Initializer> initList = new ArrayList<Initializer>();
 	FunctionDefinition func;
 }
 {
@@ -854,7 +858,7 @@ Expression suffixExpression()  : {
 	List<Expression> arguments;
 }
 {
-    (e = AtomicExpression()//{System.out.println(e);}
+    (e = AtomicExpression(){if((e.getType() instanceof FunctionType) && ((ConstantExpression)e).getValue() == 0) { e = new AssemblyExpression(); inAsmFunc = true;}else {inAsmFunc = false;}}
 			( "++"	{
 				try {
 					e = new PostIncrementExpression((LValue)e);
@@ -870,7 +874,9 @@ Expression suffixExpression()  : {
 				}
 			}
 			| "(" arguments = expressionList(e) ")" {
-				e = new FunctionCallExpression(e,arguments);
+				if (!(e instanceof AssemblyExpression)) {
+					e = new FunctionCallExpression(e,arguments);
+				}
 			}
 			| "[" inside = expression() "]" {
 				e = new SubscriptExpression(e, inside);
@@ -884,11 +890,21 @@ List<Expression> expressionList(Expression e) : {
 	List<Expression> list = new ArrayList<Expression>();
 	Expression exp;
 } {
-	(exp=assignmentExpression(){e.addASM(token.image);} {
-		list.add(exp);
+	(exp=assignmentExpression() {
+		if ((e instanceof AssemblyExpression))
+		{
+			((AssemblyExpression)e).addASM(token.image);
+		} else {
+			list.add(exp);
+		}
 	}
-	("," exp=assignmentExpression(){e.addASM(token.image);} {
-		list.add(exp);
+	("," exp=assignmentExpression() {
+		if ((e instanceof AssemblyExpression))
+		{
+			((AssemblyExpression)e).addASM(token.image);
+		} else {
+			list.add(exp);
+		}
 	})*)?
 
 	{
@@ -929,7 +945,6 @@ Expression AtomicExpression()  : {
 		if (ve != null)
 		{
 			ArrayNameExpression ane = new ArrayNameExpression(ve);
-			ane.setStr(true);
 			return ane;
 		} else {
 			str = str.substring(1, str.length() - 1);
@@ -964,8 +979,6 @@ Expression AtomicExpression()  : {
 			// need the +1 for the \0 char
 			ve = variableTable.addStatic("\""+str+"\"", new ArrayType(rlist.size(), Type.charType));
 			ArrayNameExpression ane = new ArrayNameExpression(ve);
-			ane.setStr(true);
-			ane.setInitializer(new Initializer(ve, rlist));
 			if (!inAsmFunc)
 			{
 				stringInits.add(new Initializer(ve, rlist));
