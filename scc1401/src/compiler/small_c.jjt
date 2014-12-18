@@ -540,7 +540,7 @@ Expression expression() : {
 }
 {
     l = assignmentExpression() ("," r = assignmentExpression() {
-			//l = new CommaExpression(l, r);
+			l = new CommaExpression(l, r);
 		})*
     {
 			return l;
