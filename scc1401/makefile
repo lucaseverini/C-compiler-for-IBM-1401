@@ -20,10 +20,13 @@ all:
 	mkdir -p temp/preprocessor; \
 	mkdir -p temp/wci/intermediate; \
 	mkdir -p temp/wci/util; \
+	rm -r netbeans; \
+	mkdir -p netbeans; \
 	cp -r src/* temp; \
 	make compile; \
 	cp -r snippets build; \
 	cp -r nonstdlib build; \
+	cp -r temp/* netbeans/; \
 	rm -r temp;
 
 javacc: jjtree
