@@ -610,12 +610,15 @@ Expression ternaryExpression() : {
 {
     (l = orExpression() ("?" t = expression() ":" f = ternaryExpression() )?)
     {
-		/*
 		if (t != null && f != null)
 		{
-			return new TernaryExpression(l,t,f);
+			try {
+				return new TernaryExpression(l,t,f);
+			} catch (TypeMismatchException e) {
+				reportError(e, token);
+				return null;
+			}
 		}
-		*/
 		return l;
 	}
 }
