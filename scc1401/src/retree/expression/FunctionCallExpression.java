@@ -29,14 +29,6 @@ public class FunctionCallExpression extends Expression {
 
 	public String generateCode(boolean valueNeeded) {
 		String code = "";
-		// Note we assume that the asm function is number 0
-		if (function.getValue() == 0)
-		{
-			code += COM("Inserting ASM snippet from code");
-			code += function.getASM();
-			code += COM("Finish inserting ASM snippet from code");
-			return code;
-		}
 
 		FunctionType functionType = (FunctionType)function.getType();
 		//first, push room for our return address to the stack.
