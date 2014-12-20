@@ -54,7 +54,7 @@ public class AssemblyExpression extends Expression {
 	}
 	
 	public String generateCode(boolean valueNeeded) {
-		return asmInstructions;
+		return COM("Start asm block") + asmInstructions + COM("End asm block");
 	}
 	
 	public String toString() {

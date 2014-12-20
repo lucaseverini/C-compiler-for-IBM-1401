@@ -832,7 +832,7 @@ Expression prefixExpression()  : {
 										// e = new PositiveExpression(e);
 									}
     | "-" e = prefixExpression()	{
-										// e = new NegativeExpression(e);
+										e = new NegExpression(e);
 									}
     | "!" e = prefixExpression()	{
 			e = new NotExpression(e);

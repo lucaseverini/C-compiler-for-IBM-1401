@@ -37,7 +37,7 @@ int putnumber(int num)
 	char *digits;
 	int counter = 0;
 	asm("NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP");
-	if (num < 0)
+	if (num < -1)
 	{
 		putchar('-');
 		num = -num;
