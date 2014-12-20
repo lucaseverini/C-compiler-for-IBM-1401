@@ -1,3 +1,4 @@
+#include <nonstdlib.h>
 int isPrime(int p) {
 	int n;
 	int m;
@@ -19,7 +20,9 @@ int main() {
 		while (isPrime(n) == 0) {
 			n++;
 		}
+		printf("%d\n",n);
 		primes[primes_found] = n++;
+		
 	}
 	
 }
