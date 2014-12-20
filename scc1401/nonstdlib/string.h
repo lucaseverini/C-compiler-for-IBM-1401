@@ -32,7 +32,7 @@ char *itoa(int value, char *str, int base) {
 		str[1] = '\0';
 		return start;
 	}
-	while (exp < value/base) exp *= base;
+	while (exp <= value/base) exp *= base;
 	while (exp) {
 		*str++ = digits[value / exp];
 		value %= exp;
