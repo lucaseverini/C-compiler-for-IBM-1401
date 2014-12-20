@@ -1,0 +1,34 @@
+Small-C preprocessor
+
+The preprocessor is developed in Java using JavaCC.
+It does all its work in a single pass regardless the size of the input, the number
+and size of the include files.
+
+It supports the following preprocessor statements:
+#include
+#define / #undef
+#ifdef / #ifndef / #else / #endif
+#asm / #endasm (Not implemented yet. Use ASM() function directly from C instead)
+#CODE
+#STACK / #STACK_SIZE
+#DATA
+#HEAP
+
+#CODE define the position where the code is loaded.
+#STACK define the position where the stack begins.
+#STACK_SIZE define the max size the stack can grow before to stop the program (not implemented).
+#DATA defines the position where the constants, which correspond to the DC and DCW declarations, are loaded.
+#HEAP should set the position for the heap (not used for now).
+
+The include files are searched in the folders whose path is passed after the argument -h
+
+The argument -D permits to preset some symbols equivalent to #define.
+For example "-D USE_STRINGS=1" set USE_STRINGS to 1.
+"-D USE_STRING" define USE_STRING without a value. 
+
+-X allows to print all messages to stdout otherwise it just prints error messages.
+Using it may interfere with the code generation.
+
+-C keeps the comments in the preprocessed c file however, at know, the compiler doesn't like them.
+
+If preprocessing is successfull a new file with the postfix .preproc is generated in the same folder of the source file.

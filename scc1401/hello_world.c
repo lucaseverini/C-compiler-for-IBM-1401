@@ -1,65 +1,48 @@
 /*	hello_world.c
 
-	A trivial C program for the IBM 1401
+	A simple C program for the IBM 1401
 */
 
-// #include "nonstdlib.h"
+#include "nonstdlib.h"
 
 int main() 
 {
 	char *read_area = (char *)1;
 	char *print_area = (char *)201;
-	char *hello =  "Hello World";
-	char *hello2 = "Sean Papay";
-	char *hello3 = "Matt Pleva";
-	char *hello4 = "Luca Severini";
+	int i, d;	
 	
-	// printf("%s %s %s %s\n", hello, hello2, hello3, hello4);
-	// printf("-----------\n");
-	// printf("Bye!!\n\n", hello, hello2, hello3, hello4);
+	i = -20;
+	d = -30;
+	printf("I = %d\n", i);
+	printf("D = %d\n", d);			
 	
-	int i;	
-	for (i = 0; i < 11; ++i)
+	for(i = -20; i <= 20; i++)
 	{
-		print_area[i] = hello[i];
+		for(d = -20; d <= 20; d++)
+		{
+			printf("I = %d\n", i);
+			printf("D = %d\n", d);			
+			printf("I * D = %d\n", i * d);
+		
+			if(i < d)
+			{
+				printf("I < D\n");
+			}
+			else if(i > d)
+			{
+				printf("I > D\n");
+			}
+			else
+			{
+				printf("I == D\n");
+			}
+		
+			printf("\n");
+		}
 	}
 	
-	asm("W");
-	asm("CS   299");
-	
-	for (i = 0; i < 10; ++i)
-	{
-		print_area[i] = hello2[i];
-	}
-
-	asm("W");
-	asm("CS   299");
-	
-	for (i = 0; i < 10; ++i)
-	{
-		print_area[i] = hello3[i];
-	}
-
-	asm("W");
-	asm("CS   299");
-
-	for (i = 0; i < 13; ++i)
-	{
-		print_area[i] = hello4[i];
-	}
-
-	asm("W");
-	asm("CS   299");
-	
-	asm("R");
-	
-	for (i = 0; i <= 80; ++i)
-	{
-		print_area[i] = read_area[i];
-	}
-
-	asm("W");
-	asm("CS   299");
+	printf("-----------\n");
+	printf("Bye!!\n");
 	
 	return 0;
 }
