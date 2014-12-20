@@ -1,3 +1,10 @@
+/*	hello_world.c
+
+	A trivial C program for the IBM 1401
+*/
+
+// #include "nonstdlib.h"
+
 int main() 
 {
 	char *read_area = (char *)1;
@@ -7,9 +14,12 @@ int main()
 	char *hello3 = "Matt Pleva";
 	char *hello4 = "Luca Severini";
 	
-	int i, d;
+	// printf("%s %s %s %s\n", hello, hello2, hello3, hello4);
+	// printf("-----------\n");
+	// printf("Bye!!\n\n", hello, hello2, hello3, hello4);
 	
-	for (i = 0, d = 0; i < 11; ++i)
+	int i;	
+	for (i = 0; i < 11; ++i)
 	{
 		print_area[i] = hello[i];
 	}
@@ -50,4 +60,6 @@ int main()
 
 	asm("W");
 	asm("CS   299");
+	
+	return 0;
 }
