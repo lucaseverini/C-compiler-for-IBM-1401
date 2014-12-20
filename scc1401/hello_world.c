@@ -3,7 +3,7 @@
 	A trivial C program for the IBM 1401
 */
 
-#include <nonstdlib.h>
+// #include "nonstdlib.h"
 
 int main() 
 {
@@ -14,9 +14,9 @@ int main()
 	char *hello3 = "Matt Pleva";
 	char *hello4 = "Luca Severini";
 	
-	printf("%s %s %s %s\n", hello, hello2, hello3, hello4);
-	printf("-----------\n");
-	printf("Bye!!\n\n", hello, hello2, hello3, hello4);
+	// printf("%s %s %s %s\n", hello, hello2, hello3, hello4);
+	// printf("-----------\n");
+	// printf("Bye!!\n\n", hello, hello2, hello3, hello4);
 	
 	int i;	
 	for (i = 0; i < 11; ++i)

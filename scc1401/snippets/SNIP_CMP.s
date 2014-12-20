@@ -7,10 +7,12 @@
 
      $MAIN     SBR  CMP6+3             * Setup return address
      
-               POPI OP2
-               POPI OP1
+               POP  OP2
+               POP  OP1
 
                MCW  @3@, RES           * Preset RESULT for EQUAL
+               C    OP1, OP2           * Check if operand equal
+               BE   CMP5               * Jump over if they are
                B    CHKZI              * Check for negative zeros
                ZA   OP2, TMP           * Move OP2 to TMP
                S    OP1, TMP           * SUBTRACT OP1 FROM TMP
@@ -26,7 +28,7 @@
      CMP4      MCW  @2@, RES           * Set RESULT to 2 if op2 > op1
      
      CMP5      NOP
-               PUSHB RES
+               PUSH RES
      
      CMP6      B    000                * Jump back
 
