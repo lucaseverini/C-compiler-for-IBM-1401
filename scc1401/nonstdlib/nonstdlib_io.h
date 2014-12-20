@@ -32,6 +32,28 @@ int puts(char *s)
 	}
 }
 
+int putnumber(int num)
+{
+	char *digits;
+	int counter = 0;
+	asm("NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP","NOP");
+	if (num < 0)
+	{
+		putchar('-');
+		num = -num;
+	}
+	digits = (char*)(&num);
+	digits -= 4;
+	while (*digits++ == '0' && counter < 6){counter += 1;}
+	if (counter >= 5)
+	{
+		putchar('0');
+	} else {
+		digits -= 1;
+		while ((5 - counter) > 0){ putchar(*digits++); counter ++;}
+	}
+}
+
 int printf(char *cformat_str, ...)
 {
 	char *arg;
@@ -49,7 +71,8 @@ int printf(char *cformat_str, ...)
 				puts(*((char **)arg));
 				arg -= sizeof(char *);
 			} else if (c == 'd') {
-				//TODO
+				putnumber(*((int*)arg));
+				arg -= sizeof(int);
 			} else return;
 		}
 	}

@@ -29,6 +29,7 @@ public class NegExpression extends Expression {
 				//todo
 			} else {
 				code += INS("ZS", STACK_OFF(0));
+				code += SNIP("clean_number");
 			}
 		}
 		return code;
