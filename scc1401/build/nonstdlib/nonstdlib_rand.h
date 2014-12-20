@@ -1,7 +1,7 @@
 
 // Set the seed to a inital value
 // Also use the 1st char of the 1st card if availible
-int seed = 69105;
+int seed = 6574;
 
 // Generate a random number
 int genRand()
