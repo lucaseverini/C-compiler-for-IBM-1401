@@ -71,7 +71,10 @@ int printf(char *cformat_str, ...)
 				puts(*((char **)arg));
 				arg -= sizeof(char *);
 			} else if (c == 'd') {
-				putnumber(*((int*)arg));
+				char a[7];
+				//putnumber(*((int*)arg));
+				itoa(*((int*)arg), a, 10);
+				puts(a);
 				arg -= sizeof(int);
 			} else return;
 		}

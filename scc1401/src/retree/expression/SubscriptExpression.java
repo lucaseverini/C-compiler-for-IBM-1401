@@ -72,7 +72,8 @@ public class SubscriptExpression extends LValue {
         }
         return code;
         */
-        String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+        //String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+        String code = "";
         if (valueNeeded) {
             PointerType ptype = (PointerType)l.getType();
             code += generateAddress();

@@ -16,10 +16,10 @@
 
 #include <nonstdlib_mem.h>
 
+#include <string.h>
+
 #include <nonstdlib_io.h>
 
 #include <nonstdlib_str.h>
-
-#include <string.h>
 
 #endif
