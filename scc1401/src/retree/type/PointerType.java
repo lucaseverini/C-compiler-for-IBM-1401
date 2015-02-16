@@ -4,7 +4,7 @@ public class PointerType extends Type{
 	private Type refType;
 
 	public PointerType(Type refType) {
-		super(5);
+		super(3);
 		this.refType = refType;
 	}
 

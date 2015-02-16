@@ -27,12 +27,21 @@ import retree.program.*;
 import retree.type.*;
 import retree.symtab.*;
 import java.io.*;
+import static retree.RetreeUtils.*;
 
 public class SmallCC
 {
 	// used during tree build
+  private static List<Initializer> stringInits = new ArrayList<Initializer>();
   public static SymbolTableStack variableTable = new SymbolTableStack();
   public static HashMap<String,ConstantExpression> functionTable = new HashMap<String,ConstantExpression>();
+  //when a function is defined, we stage it here.  Only when it is called do we add it to our program.
+  private static HashMap<ConstantExpression, FunctionDefinition> pendingFunctionDefinitions = new HashMap<ConstantExpression, FunctionDefinition>();
+	private static HashSet<FunctionDefinition> includedFunctions = new HashSet<FunctionDefinition>();
+
+
+  public static boolean inAsmFunc = false;
+
 
   private static int labelNumber = 0;
   public static int nextLabelNumber() {
@@ -41,20 +50,54 @@ public class SmallCC
 
   public static void main(String args[]) throws Exception
   {
+	if(args.length == 0)
+	{
+		System.out.println("No input file");
+	}
+	else
+	{
 		compile(args[0]);
+	}
   }
 
   public static void compile(String fileName) throws Exception
   {
     File file = new File(fileName);
     Reader sr = new FileReader(file);
+	ArrayList<Type> tmp = new ArrayList<Type>();
+	tmp.add(new PointerType(Type.charType));
+	tmp.add(null);
+	int asmFuncNumber = nextLabelNumber();
+	functionTable.put("asm", new ConstantExpression(new FunctionType(Type.intType, tmp, true), asmFuncNumber));
 
     SmallCC parser = new SmallCC(sr);
-    Program program = parser.program();
-    System.out.print(program.generateCode());
+    try {
+		Program program = parser.program();
+		for (Initializer i : stringInits)
+		{
+			program.addInitializer(i);
+		}
+	    if (errorFree) {
+			System.out.print(program.generateCode());
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
 		//printTree(program);
 
   }
+
+  private static boolean errorFree = true;
+
+  public static void reportError(Exception e, Token t) {
+		reportError(e.toString(), t);
+	}
+
+	public static void reportError(String m, Token t) {
+		errorFree = false;
+		System.out.println("Error on line " + t.beginLine + " column " + t.beginColumn);
+		System.out.println(m);
+	}
 
   public static void printTree(SimpleNode node)
   {
@@ -181,7 +224,7 @@ TOKEN :
 
 Program program() throws Exception : {
 	Program program = new Program();
-	List<Initializer> initList;
+	List<Initializer> initList = new ArrayList<Initializer>();
 	FunctionDefinition func;
 }
 {
@@ -193,13 +236,25 @@ Program program() throws Exception : {
 			}
 				| functionDeclaration() //not supported just yet...
 				| func = functionDefinition() {
-					program.addFunction(func);
+					pendingFunctionDefinitions.put(func.getDeclaration(), func);
+					//program.addFunction(func);
 				}
 			)*
   		{
-				int mainLabelNumber = functionTable.get("main").getValue();
+				ConstantExpression mainDec = functionTable.get("main");
+				if (mainDec == null) {
+					System.out.println("Missing main function");
+					System.exit(1);
+				}
+				if (pendingFunctionDefinitions.containsKey(mainDec)) {
+					includedFunctions.add(pendingFunctionDefinitions.remove(mainDec));
+				}
+				int mainLabelNumber = mainDec.getValue();
+				for (FunctionDefinition def : includedFunctions) {
+					program.addFunction(def);
+				}
 				program.setMainLabelNumber(mainLabelNumber);
-				
+
 				return program;
 			}
 }
@@ -247,7 +302,7 @@ List<Initializer> variableDeclarationList(Type baseType, boolean isStatic) : {
 	init=variableInitializer(baseType, isStatic) {
 		inits.add(init);
 	}
-	("," variableInitializer(baseType, isStatic) {
+	("," init=variableInitializer(baseType, isStatic) {
 		inits.add(init);
 	})*
 	{
@@ -259,12 +314,18 @@ Initializer variableInitializer(Type baseType, boolean isStatic) : {
 	Initializer init = null;
 	VariableExpression variable;
 	Expression value = null;
+	Token t = null;
 }
 {
-	                                                     //ternaryExpression, since we can't have a comma-separated or assignment expression
-	variable = suffixedVariable(baseType, isStatic) ("=" value=ternaryExpression())?
+	                                                               //ternaryExpression, since we can't have a comma-separated or assignment expression
+	variable = suffixedVariable(baseType, isStatic) ("=" {t=token;} value=ternaryExpression())?
 	{
-		return new Initializer(variable, value);
+		try {
+			return new Initializer(variable, value);
+		} catch(Exception e) {
+			reportError(e, t);
+			return new Initializer(variable, (Expression)null);
+		}
 	}
 }
 
@@ -281,6 +342,7 @@ VariableExpression suffixedVariable(Type baseType, boolean isStatic) : {
 	(pair=PrefixedVariable(baseType) "[" (arraySize = expression()) "]" {
 		arraySize = arraySize.collapse();
 		if (!(arraySize instanceof ConstantExpression)) {
+			System.out.println("Array size is not a constant!");
 			throw new NonConstantExpressionException(arraySize);
 		}
 		size = ((ConstantExpression) arraySize).getValue();
@@ -335,22 +397,42 @@ FunctionDefinition functionDefinition() : {
 	FunctionType type;
 	String name;
 	BlockStatement block;
-	variableTable.push(5);
+	variableTable.push();
+
+	try {
+		//this is the function's return address.
+		//stored under an empty identifier, so no variable can collide with it
+		//the value will be assigned automatically.
+		variableTable.add("", new PointerType(Type.charType), false);
+	} catch(Exception e) {
+		reportError("we should never be here 1", token);
+	}
 }
 {
 
-    (retType=Type())? name=Identifier()
+    (retType=Type())? name=Identifier(){if(name.equals("asm")){inAsmFunc = true;}else{inAsmFunc = false;}}
 
 		(("(" (param=functionDefinitionParameter(parameters.size()) {
 			parameters.add(param);
 		} ("," param=functionDefinitionParameter(parameters.size()) {
 			parameters.add(param);
-		})*)? ")" ) ) {
+		})*)? ("," "..." {parameters.add(null);})? ")" ) ) {
 			List<Type> paramTypes = new ArrayList<Type>();
+			boolean variadic = false;
 			for (VariableExpression p : parameters) {
+				if (p == null) {
+					variadic = true;
+					paramTypes.add(null);
+					break;
+				}
 				paramTypes.add(p.getType());
 			}
-			type = new FunctionType(retType, paramTypes);
+			if (!variadic) {
+				//we're calling the location of the return value "return"
+				variableTable.add("return", retType, true);
+			}
+
+			type = new FunctionType(retType, paramTypes, variadic);
 			ConstantExpression dec = functionTable.get(name);
 			if (dec != null) {
 				if (! dec.getType().equals(type)) {
@@ -362,7 +444,8 @@ FunctionDefinition functionDefinition() : {
 				functionTable.put(name, dec);
 			}
 		}
-        block = blockStatement(false)
+				//we provide no return label - this is a top-level block.
+        block = blockStatement(true, null)
 		{
 			variableTable.pop();
 			return new FunctionDefinition(dec, block);
@@ -387,58 +470,80 @@ VariableExpression functionDefinitionParameter(int paramNum): {
 	}
 }
 
-BlockStatement blockStatement(boolean needsPush) : {
+BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 	List<Initializer> initializers = new ArrayList<Initializer>();
 	List<Statement> statements = new ArrayList<Statement>();
 	List<Initializer> initList;
+	String newReturnLabel = label(nextLabelNumber());
 	Statement s;
+	if (isFunction) {
+		try {
+			initializers.add(new Initializer(variableTable.searchStack(""), (Expression) null));
+		} catch (Exception e) {
+			reportError("We should never be here 0", token);
+		}
+	}
 }{
 	{
-		if (needsPush) variableTable.push();
+		//functions have already pushed, and will pop after
+		if (!isFunction) variableTable.push();
 	}
 	"{" (initList=localVariableDeclaration() {
 		for (Initializer init : initList) {
 			initializers.add(init);
 		}
-	})* (s = statement() {
-		statements.add(s);		
+	})* (s = statement(newReturnLabel) {
+		statements.add(s);
 	})* "}"
 	{
 		//System.out.println(variableTable.peek().getStackOffset());
-		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalSize());
-		if (needsPush) variableTable.pop();
+		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalSize(), newReturnLabel, returnLabel);
+		if (!isFunction) {
+			variableTable.pop();
+		}
 		return bs;
 	}
 }
 
-Statement statement()  : {
-	Statement stat, stat2;
-	Expression exp;
+Statement statement(String returnLabel)  : {
+	Statement stat, stat2 = null;
+	Expression exp=null, exp2=null, exp3=null;
 }
 {
-		(";" {
+		";" {
 			return new EmptyStatement();
-		}) | (exp=expression() ";" {
+		}
+		| exp=expression() ";" {
 			return new ExpressionStatement(exp);
-		}) | (stat = blockStatement(true) {
+		}
+		| stat = blockStatement(false, returnLabel) {
 			return stat;
-		})
-    //TODO | ("if" "(" exp=expression() ")" stat=statement() ("else" stat2=statement())? ) {
-			//return new IfStatement(exp, stat, stat2);
-		//})
-    //TODO | "while" "(" expression() ")" Statement()
-    //TODO | "for" "(" (expression()";"| ";" ) (expression() ";" | ";" ) (expression() ")" | ")" ) Statement()
-    //TODO | "do" Statement() "while" "(" expression() ")" ";"
+		}
+    | "if" "(" exp=expression() ")" stat=statement(returnLabel) ("else" stat2=statement(returnLabel))?  {
+			return new IfStatement(exp, stat, stat2);
+		}
+    | "while" "(" exp=expression() ")" stat=statement(returnLabel) {
+			return new WhileStatement(exp, stat);
+		}
+    | "for" "(" (exp=expression()";"| ";" ) (exp2=expression() ";" | ";" ) (exp3=expression() ")" | ")" ) stat=statement(returnLabel) {
+			return new ForStatement(exp, exp2, exp3, stat);
+		}
+    | "do" stat=statement(returnLabel) "while" "(" exp=expression() ")" ";" {
+			return new DoWhileStatement(exp, stat);
+		}
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
      * make another production rule for a switch statement body that looks like a block statement with cases. */
     //TODO| "switch" "(" expression() ")" CaseBlock()
     //TODO| "break" ";"
     //TODO| "continue" ";"
-    //TODO| "return" (expression())? ";"
+    | "return" (exp=expression())? ";" {
+			return new ReturnStatement(exp, variableTable.searchStack("return"), returnLabel);
+
+		}
     //TODO| Identifier() ":" Statement()
     //TODO| "goto" Identifier() ";"
 }
-
+/*
 void CaseStatement() : {}
 {
 	(("case" expression() | "default") ":" (CaseStatement() | statement()))
@@ -448,7 +553,7 @@ void CaseBlock() : {}
 {
 	"{" (localVariableDeclaration())* (statement() | CaseStatement()) * "}"
 }
-
+*/
 /** Left-to-right*/
 Expression expression() : {
 	Expression l = null;
@@ -456,7 +561,7 @@ Expression expression() : {
 }
 {
     l = assignmentExpression() ("," r = assignmentExpression() {
-			//l = new CommaExpression(l, r);
+			l = new CommaExpression(l, r);
 		})*
     {
 			return l;
@@ -466,6 +571,12 @@ Expression expression() : {
 /** Right-to-left */
 Expression assignmentExpression() : {
 	Expression l = null, r = null;
+	Token lToken = null;
+	try {
+		lToken = getToken(1);
+	} catch(Exception e) {
+		reportError("Unexpected end of file.", token);
+	}
 }
 {
     (l = ternaryExpression()
@@ -476,13 +587,13 @@ Expression assignmentExpression() : {
 				r = new SubtractExpression(l, r);
 			}
 			| "*=" r = assignmentExpression() {
-				//r = new MultiplyExpression(l, r);
+				r = new MultiplyExpression(l, r);
 			}
 			| "/=" r = assignmentExpression() {
-				//r = new DivideExpression(l, r);
+				r = new DivideExpression(l, r);
 			}
 			| "%=" r = assignmentExpression() {
-				//r = new ModExpression(l, r);
+				r = new ModuloExpression(l, r);
 			}
 			| ">>=" r = assignmentExpression() {
 				//r = new RightShiftExpression(l, r);
@@ -504,14 +615,13 @@ Expression assignmentExpression() : {
 				if (r != null) {
 					if (l instanceof LValue)
 						try {
-							return new AssignmentExpression((LValue)l, r); 
+							return new AssignmentExpression((LValue)l, r);
 						} catch (TypeMismatchException e) {
-							throw new Error("type mismatch");
+							reportError(e, lToken);
 						}
-					else throw new Error(l + " is not an LValue");
-				} else {
-					return l;
+					else reportError("Left side of assignment must be an lvalue.", lToken);
 				}
+				return l;
 			}
 }
 
@@ -521,12 +631,15 @@ Expression ternaryExpression() : {
 {
     (l = orExpression() ("?" t = expression() ":" f = ternaryExpression() )?)
     {
-		/*
 		if (t != null && f != null)
 		{
-			return new TernaryExpression(l,t,f);
+			try {
+				return new TernaryExpression(l,t,f);
+			} catch (TypeMismatchException e) {
+				reportError(e, token);
+				return null;
+			}
 		}
-		*/
 		return l;
 	}
 }
@@ -538,9 +651,7 @@ Expression orExpression() : {
 }
 {
     l = andExpression() ("||" r = andExpression() {
-			/*
 			l = new OrExpression(l, r);
-			*/
 		})*
 	{
 		return l;
@@ -552,9 +663,7 @@ Expression andExpression() : {
 }
 {
     l = bitOrExpression() ("&&" r = bitOrExpression() {
-		/*
-		l = new AndExpression(l, r);
-		*/
+			l = new AndExpression(l, r);
 		})*
 	{
 		return l;
@@ -608,15 +717,15 @@ Expression equalityExpression() : {
 }
 {
     l = greaterThanExpression() ( "==" r = greaterThanExpression() {
-			/*
-			l = new EqualityExpression(l, r);
-			*/
+			try {
+			l = new EqualExpression(l, r);
+			} catch(TypeMismatchException e) {
+				reportError(e, token);
+			}
 
 		}
     | "!=" r = greaterThanExpression() {
-			/*
-			l = new InequalityExpression(l, r);
-			*/
+			l = new NotEqualExpression(l, r);
 		})*
 	{
 		return l;
@@ -628,14 +737,10 @@ Expression greaterThanExpression() : {
 }
 {
     l = lessThanExpression() ( ">" r = lessThanExpression() {
-			/*
 			l = new GreaterThanExpression(l, r);
-			*/
 		}
 		| ">=" r = lessThanExpression() {
-			/*
 			l = new GreaterThanOrEqualExpression(l, r);
-			*/
 		})*
 	{
 		return l;
@@ -647,14 +752,10 @@ Expression lessThanExpression() : {
 }
 {
     l = bitshiftExpression() ( "<" r = bitshiftExpression() {
-			/*
 			l = new LessThanExpression(l, r);
-			*/
 		}
 		| "<=" r = bitshiftExpression() {
-			/*
 			l = new LessThanOrEqualExpression(l, r);
-			*/
 		})*
 	{
 		return l;
@@ -700,19 +801,13 @@ Expression multiplicativeExpression()  : {
 }
 {
     (l = prefixExpression() ( "*" r = prefixExpression(){
-		/*
-			l = new MultiplicationExpression(l, r);
-		*/
-	}
+			l = new MultiplyExpression(l, r);
+		}
     | "/" r = prefixExpression(){
-		/*
 			l = new DivideExpression(l, r);
-		*/
-	}
+		}
     | "%" r = prefixExpression(){
-		/*
-			l = new ModExpression(l, r);
-		*/
+			l = new ModuloExpression(l, r);
 	} )*)
 	{
 		return l;
@@ -720,43 +815,49 @@ Expression multiplicativeExpression()  : {
 }
 
 Expression prefixExpression()  : {
-	Expression e;
+	Expression e = null;
 	Type t;
 }
 {
     // issue on the cast. It breaks if((x&y) == 1) {y++;} because it captures the second "(" and thinks type is next
     // TODO add casting back: "(" Type() ")"
-    (e = SuffixExpression()
+    (e = suffixExpression()
     | "++" e = prefixExpression()	{
-										// e = new PreIncrementExpression(e);
-									}
+			return new PreIncrementExpression((LValue)e);
+		}
     | "--" e = prefixExpression()	{
-										// e = new PreDecrementExpression(e);
-									}
+			return new PreDecrementExpression((LValue)e);
+		}
     | "+" e = prefixExpression()	{
 										// e = new PositiveExpression(e);
 									}
     | "-" e = prefixExpression()	{
-										// e = new NegativeExpression(e);
+										e = new NegExpression(e);
 									}
     | "!" e = prefixExpression()	{
-										// e = new NotExpression(e);
-									}
+			e = new NotExpression(e);
+		}
     | "~" e = prefixExpression()	{
 										// e = new BitNotExpression(e);
 									}
     | "*" e = prefixExpression()	{
-										e = new DereferenceExpression(e);
-									}
+			return new DereferenceExpression(e);
+		}
     | "&" e = prefixExpression()	{
-										e = new AddressOfExpression((LValue)e);
-									}
+			// &array_name == array_name
+			if (! (e instanceof ArrayNameExpression)) {
+				return new AddressOfExpression((LValue)e);
+			}
+		}
     | "sizeof" e = prefixExpression()	{
-											// e = new SizeOfExpression(e);
-										}
+			return new ConstantExpression(Type.intType, e.getType().sizeof());
+		}
+		| "sizeof" "(" t=Type() ")" {
+			return new ConstantExpression(Type.intType, t.sizeof());
+		}
     | "(" t = Type() ")" e = prefixExpression()	{
-													// e = new CastExpression(t,e);
-												}
+			return new CastExpression(t,e);
+		}
 	)
 	{
 		return e;
@@ -764,45 +865,65 @@ Expression prefixExpression()  : {
 
 }
 
-Expression SuffixExpression()  : {
+Expression suffixExpression()  : {
+	String s = "";
 	Expression e, inside;
 	List<Expression> arguments;
 }
 {
-    (e = AtomicExpression()
+    (e = AtomicExpression(){if((e.getType() instanceof FunctionType) && ((ConstantExpression)e).getValue() == 0) { e = new AssemblyExpression(); inAsmFunc = true;}else {inAsmFunc = false;}}
 			( "++"	{
-						// e = new PostIncrementExpression(e);
-					}
+				try {
+					e = new PostIncrementExpression((LValue)e);
+				} catch (Exception ex) {
+					reportError("Expression " + e + "is not an LValue", token);
+				}
+			}
 			| "--"	{
-						// e = new PostDecrementExpression(e);
-					}
-			| "(" arguments = expressionList() ")" {
-				e = new FunctionCallExpression(e,arguments);
+				try {
+					e = new PostDecrementExpression((LValue)e);
+				} catch (Exception ex) {
+					reportError("Expression " + e + "is not an LValue", token);
+				}
+			}
+			| "(" arguments = expressionList(e) ")" {
+				if (!(e instanceof AssemblyExpression)) {
+					e = new FunctionCallExpression(e,arguments);
+				}
 			}
 			| "[" inside = expression() "]" {
-												// e = new ArrayAccessExpression(e,inside);
-											} )*)
+				e = new SubscriptExpression(e, inside);
+			} )*)
 			{
 				return e;
 			}
 }
 
-List<Expression> expressionList() : {
+List<Expression> expressionList(Expression e) : {
 	List<Expression> list = new ArrayList<Expression>();
 	Expression exp;
 } {
-	exp=assignmentExpression() {
-		list.add(exp);	
+	(exp=assignmentExpression() {
+		if ((e instanceof AssemblyExpression))
+		{
+			((AssemblyExpression)e).addASM(token.image);
+		} else {
+			list.add(exp);
+		}
 	}
 	("," exp=assignmentExpression() {
-		list.add(exp);
-	})*
-	
+		if ((e instanceof AssemblyExpression))
+		{
+			((AssemblyExpression)e).addASM(token.image);
+		} else {
+			list.add(exp);
+		}
+	})*)?
+
 	{
-		System.out.println(exp);
 		return list;
 	}
-	
+
 }
 
 Expression AtomicExpression()  : {
@@ -816,10 +937,17 @@ Expression AtomicExpression()  : {
 		if (var == null){
 			ConstantExpression fun = functionTable.get(str);
 			if (fun == null) {
+				reportError("Did not find: " + str + " anywhere did you forget to declare it?", token);
 				return null;
 			} else {
+				if (pendingFunctionDefinitions.containsKey(fun)) {
+					//lazily add our function definition to the program
+					includedFunctions.add(pendingFunctionDefinitions.remove(fun));
+				}
 				return fun;
-			} 
+			}
+		} else if (var.getType() instanceof ArrayType) {
+			return new ArrayNameExpression(var);
 		} else {
 			return var;
 		}
@@ -829,12 +957,91 @@ Expression AtomicExpression()  : {
 		ce = new ConstantExpression(Type.intType, val);
 		e = ce;
 	}
-    | StringLiteral()
-    | str=CharacterConstant(){ //TODO - fix.
-		ce = new ConstantExpression(Type.charType, 0);
+    | str = StringLiteral() {
+		VariableExpression ve = variableTable.searchStack(str);
+		if (ve != null)
+		{
+			ArrayNameExpression ane = new ArrayNameExpression(ve);
+			return ane;
+		} else {
+			str = str.substring(1, str.length() - 1);
+			List<Expression> list = new ArrayList<Expression>();
+			List<Expression> rlist = new ArrayList<Expression>();
+			for(int i = 0; i < str.length(); i++)
+			{
+				if (str.charAt(i) == '\\')
+				{
+					if(i < str.length() - 1)
+					{
+						switch(str.charAt(i+1))
+						{
+							case 'n':
+								list.add(new ConstantExpression(Type.charType, '\n'));
+								break;
+							case '0':
+								list.add(new ConstantExpression(Type.charType, 0));
+								break;
+						}
+						i ++;
+					}
+				} else {
+					list.add(new ConstantExpression(Type.charType,("" + str.charAt(i)).toUpperCase().charAt(0)));
+				}
+			}
+			list.add(new ConstantExpression(Type.charType, 0));
+			for (int i = list.size()-1; i >= 0; i -- )
+			{
+				rlist.add(list.get(i));
+			}
+			// need the +1 for the \0 char
+			ve = variableTable.addStatic("\""+str+"\"", new ArrayType(rlist.size(), Type.charType));
+			ArrayNameExpression ane = new ArrayNameExpression(ve);
+			if (!inAsmFunc)
+			{
+				stringInits.add(new Initializer(ve, rlist));
+			}
+			return ane;
+		}
+		// check symtab for this string
+		// if it is Put that in arry name expr and ret that
+		// get list of const expr
+		// add to static symtab if not there
+		// var with arrtype len  = len of list
+		// arry name expr wrap the varexpr enter it key token text with quotes
+		// type = arr type
+		// add to private list initilzer for string
+		// end add to program b4 code gen
+		// return array name
+		//
+	}
+    | str=CharacterConstant() {
+			int val = 0;
+			//strip the quote characters
+			str = str.substring(1, str.length() - 1);
+			if (str.charAt(0) == '\\') {
+				if (str.length() != 2) {
+					//invalid char constant
+					return null;
+				}
+				switch(str.charAt(1)) {
+					case 'n':
+						val = '\n';
+						break;
+					case '0':
+						val = 0;
+						break;
+				}
+			} else {
+				if (str.length() != 1) {
+					//invalid char constant.
+					return null;
+				}
+				val = Character.toUpperCase(str.charAt(0));
+			}
+		ce = new ConstantExpression(Type.charType, val);
 		e = ce;
 	}
-    | "(" expression() ")")
+    | "(" e=expression() ")")
 	{
 
 		return e;
@@ -870,6 +1077,7 @@ String StringLiteral() : {}
 {
     <STRING_LIT>
 	{
+
 		return token.image;
 	}
 }
@@ -991,10 +1199,11 @@ void Not_Equals() : {}
 }
 
 JAVACODE
-String handleError(ParseException ex)
+String handleError(String message)
 {
+	ParseException ex = generateParseException();
 	Token token = ex.currentToken;
-	System.out.println(ex.getMessage());
+	System.out.println(ex.getMessage() + "\n" + message);
 
 	do {
 		token = getNextToken();

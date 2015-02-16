@@ -19,6 +19,12 @@ public class PreProcSymTab extends HashMap<String, String>
 	public PreProcSymTab()
 	{
 		super();
+		
+		// Add some defaults values used by Autocoder assembly directives
+		put("STACK", "400");
+		put("STACK_SIZE", "4500");
+		put("DATA", "5000");
+		put("CODE", "6000");
 	}
 	
 	@Override

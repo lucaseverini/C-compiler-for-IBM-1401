@@ -5,19 +5,21 @@ import retree.type.Type;
 public class VariableExpression extends LValue {
 	private int offset;
 	private boolean isStatic;
+	private String name;
 
-	public VariableExpression(Type type, int offset, boolean isStatic) {
+	public VariableExpression(Type type, int offset, boolean isStatic, String name) {
 		super(type);
 		this.offset = offset;
 		this.isStatic = isStatic;
+		this.name = name;
 	}
 
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
 			if (isStatic) {
-				return PUSH(offset + "");
+				return PUSH(getType().sizeof(), ADDR_LIT(offset));
 			} else {
-				return PUSH(OFF(offset));
+				return PUSH(getType().sizeof(), OFF(offset));
 			}
 		} else return "";
 	}
@@ -28,10 +30,10 @@ public class VariableExpression extends LValue {
 
 	public String generateAddress() {
 		if (isStatic) {
-			return PUSH(ADDR_CONST(offset));
+			return PUSH(3, ADDR_CONST(offset));
 		} else {
-			return PUSH(ADDR_CONST(offset)) +
-				INS("MA", "X3", STACK_REF(1));
+			return PUSH(3, ADDR_CONST(offset)) +
+				INS("MA", "X3", STACK_OFF(0));
 		}
 	}
 
@@ -42,14 +44,24 @@ public class VariableExpression extends LValue {
 			return OFF(offset);
 		}
 	}
-	
+
 	public String getWordMarkAddress() {
 		if (isStatic) {
-			return (offset-4) + "";
+			return (offset + 1 - getType().sizeof()) + "";
 		} else {
-			return OFF(offset - 4);
+			return OFF(offset + 1 - getType().sizeof());
 		}
-		
-		
+	}
+
+	public boolean isStatic() {
+		return isStatic;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+	
+	public String toString() {
+		return name;
 	}
 }

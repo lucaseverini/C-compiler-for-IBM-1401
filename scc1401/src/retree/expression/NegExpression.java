@@ -13,7 +13,7 @@ public class NegExpression extends Expression {
 		super(child.getType());
 		this.child = child;
 	}
-	
+
 	public Expression collapse() {
 		Expression collapsedChild = child.collapse();
 		if (collapsedChild instanceof ConstantExpression)
@@ -28,10 +28,16 @@ public class NegExpression extends Expression {
 			if (child.getType() instanceof PointerType) {
 				//todo
 			} else {
-				code += INS("ZS", STACK_REF(1));
+				code += INS("ZS", STACK_OFF(0));
+				code += SNIP("clean_number");
 			}
 		}
 		return code;
+	}
+
+	public String toString()
+	{
+		return "(" + "-" + child + ")";
 	}
 
 }

@@ -14,13 +14,18 @@ public class PosExpression extends Expression {
 		super(child.getType());
 		this.child = child;
 	}
-	
+
 	public Expression collapse() {
 		return child.collapse();
 	}
 
 	public String generateCode(boolean valueNeeded) {
 		return child.generateCode(valueNeeded);
+	}
+
+	public String toString()
+	{
+		return "(" + "+" + child + ")";
 	}
 
 }

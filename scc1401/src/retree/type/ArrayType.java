@@ -1,17 +1,12 @@
 package retree.type;
 public class ArrayType extends Type{
-	private int sizeOfArray;
+	private int numElements;
 	private Type arrayBaseType;
-	private int width;
 
-	public ArrayType(int size, Type baseType) {
-		super(size * baseType.getWidth());
-		sizeOfArray = size;
+	public ArrayType(int numElements, Type baseType) {
+		super(numElements * baseType.sizeof());
+		this.numElements = numElements;
 		arrayBaseType = baseType;
-	}
-
-	public int getSizeOfArray() {
-		return sizeOfArray;
 	}
 
 	public Type getArrayBaseType() {
@@ -20,6 +15,6 @@ public class ArrayType extends Type{
 	
 	public String toString() {
 		return arrayBaseType.toString() + 
-			" [" + sizeOfArray + "]";
+			" [" + numElements + "]";
 	}
 }

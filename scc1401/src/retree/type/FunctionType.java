@@ -5,11 +5,13 @@ public class FunctionType extends Type {
 
 	private List<Type> paramTypes;
 	private Type returnType;
+	private boolean variadic;
 
-	public FunctionType(Type returnType, List<Type> paramTypes) {
-		super(5); //really has no defined size, lets say 5 for simplicity...
+	public FunctionType(Type returnType, List<Type> paramTypes, boolean variadic) {
+		super(0); //has no defined size
 		this.returnType = returnType;
 		this.paramTypes = paramTypes;
+		this.variadic = variadic;
 	}
 
 	public List<Type> getParamTypes() {
@@ -19,7 +21,12 @@ public class FunctionType extends Type {
 	public Type getReturnType() {
 		return returnType;
 	}
-	
+
+	public boolean getVariadic()
+	{
+		return variadic;
+	}
+
 	public boolean Equals(Object other) {
 		if (!(other instanceof FunctionType)) return false;
 		FunctionType f = (FunctionType)other;
@@ -28,14 +35,15 @@ public class FunctionType extends Type {
 		for (int i = 0; i < paramTypes.size(); ++i) {
 			if (!f.getParamTypes().get(i).equals(paramTypes.get(i))) return false;
 		}
-		return true;
+		return variadic == f.variadic;
 	}
-	
+
 	public String toString() {
 		String str = returnType.toString() + " (";
 		for (Type paramType : paramTypes) {
 			str += paramType.toString() + ", ";
 		}
+		if (variadic) str += "...";
 		return str + ")";
 	}
 }

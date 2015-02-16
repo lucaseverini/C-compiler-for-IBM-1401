@@ -14,12 +14,19 @@
 JAVACC=$(HOME)/bin/javacc-6.0
 
 all:
+	mkdir -p build; \
+	mkdir -p build/temp; \
 	mkdir -p temp/compiler; \
 	mkdir -p temp/preprocessor; \
 	mkdir -p temp/wci/intermediate; \
 	mkdir -p temp/wci/util; \
+	rm -r netbeans; \
+	mkdir -p netbeans; \
 	cp -r src/* temp; \
 	make compile; \
+	cp -r snippets build; \
+	cp -r nonstdlib build; \
+	cp -r temp/* netbeans/; \
 	rm -r temp;
 
 javacc: jjtree
@@ -36,7 +43,7 @@ jjtree:
 	cd ../..;
 
 compile: javacc
-	javac -classpath temp temp/preprocessor/SmallCPP.java -d build; \
+	javac -classpath temp temp/preprocessor/SmallC_PreProcessor.java -d build; \
 	javac -classpath temp temp/retree/exceptions/*.java -d build; \
 	javac -classpath temp temp/retree/expression/*.java -d build; \
 	javac -classpath temp temp/retree/symtab/*.java -d build; \
@@ -45,3 +52,6 @@ compile: javacc
 	javac -classpath temp temp/retree/program/*.java -d build; \
 	javac -classpath temp temp/retree/statement/*.java -d build; \
 	javac -classpath temp temp/compiler/*.java -d build;
+
+lib:
+	cp -r nonstdlib build

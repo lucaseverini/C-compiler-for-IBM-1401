@@ -1,13 +1,14 @@
 /*
 	small_c_preprocessor.jj
 
-    Assignment #6 - CS153 - SJSU
-	November-8-2014
+	Small-C compiler for IBM 1401
+    Final Project - CS153 - SJSU
+	December-16-2014
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
-options 
+options
 {
 	STATIC = false;
 }
@@ -16,17 +17,22 @@ PARSER_BEGIN(SmallCPP)
 
 package preprocessor;
 
-import compiler.*;
 import java.io.*;
 import java.util.*;
+import java.nio.file.Paths;
+import preprocessor.SmallC_PreProcessor;
 
 public class SmallCPP
 {
 	static PreProcSymTab symTable = new PreProcSymTab();
 	static List<String> paths = new ArrayList<String>();
+	static String tmpDir = "temp/"; //System.getProperty("java.io.tmpdir");
 	static boolean ignore = false;
+	static boolean keepComments = false;
 
-	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable) throws Exception
+
+	static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable,
+														boolean isHeader, boolean comments) throws Exception
 	{
 		if(searchPaths != null)
 		{
@@ -38,22 +44,75 @@ public class SmallCPP
 			symTable = presetTable;
 		}
 
+		keepComments = comments;
+
 		boolean savedIgnore = ignore;
 		ignore = false;
 
-		String outFile = inFile + ".preproc";
+		File file = null;
+		String outFile = null;
 
-		File file = new File(inFile);
+		if (isHeader)
+		{
+			String fileName = Paths.get(inFile).getFileName().toString();
 
-		System.out.println("Preprocessing file " + inFile + " size:" + file.length());
+			for(String p : paths)
+			{
+				if(p.charAt(p.length() - 1) != File.separatorChar)
+				{
+					p = p.concat(File.separator);
+				}
 
-		Reader sr = new FileReader(file) 
+				file = new File(p + inFile);
+				if (file != null && file.exists())
+				{
+					inFile = p + inFile;
+					outFile = p + fileName + ".preproc";
+					if (SmallC_PreProcessor.printOutput)
+					{
+						System.out.println(outFile);
+					}
+					break;
+				}
+			}
+		}
+		else
+		{
+			outFile = inFile + ".preproc";
+
+			file = new File(inFile);
+		}
+
+		if (file == null || !file.exists())
+		{
+			if (isHeader)
+			{
+				// throw new Exception("No header file: " + inFile);
+
+				System.out.println("\n##### NO HEADER FILE " + inFile + " #####\n");
+				return null;
+			}
+			else
+			{
+				// throw new Exception("No source file: " + inFile);
+
+				System.out.println("\n##### NO SOURCE FILE " + inFile + " #####\n");
+				return null;
+			}
+		}
+		if (SmallC_PreProcessor.printOutput)
+		{
+			System.out.println();
+			System.out.println("##### PREPROCESSING FILE " + inFile + " size:" + file.length() + " #####");
+		}
+
+		Reader sr = new FileReader(file)
 		{
 			private int[] lookahead = {-1, -1};
 
-			public int read() throws IOException 
+			public int read() throws IOException
 			{
-				if (lookahead[0] >= 0) 
+				if (lookahead[0] >= 0)
 				{
 					int ch = lookahead[0];
 					lookahead[0] = lookahead[1];
@@ -61,60 +120,60 @@ public class SmallCPP
 					return ch;
 				}
 
-				int ch = super.read();	
+				int ch = super.read();
 				// possible line continuation
-				if (ch == '\\') 
+				if (ch == '\\')
 				{
 					lookahead[0] = super.read();
 					if (lookahead[0] == '\r')
 					{
 						lookahead[1] = super.read();
-						if (lookahead[1] != '\n') 
+						if (lookahead[1] != '\n')
 						{
 							return ch;
-						} 
+						}
 						else
 						{
 							lookahead[0] = '\n';
 						}
 					}
-					
+
 					if (lookahead[0] == '\n')
 					{
 						lookahead[0] = lookahead[1] = -1;
-						do 
+						do
 						{
 							ch = super.read();
-							if (ch < 0) 
+							if (ch < 0)
 							{
 								return ch;
 							}
-						} 
+						}
 						while(Character.isWhitespace((char) ch));
 
 						return ch;
 					}
-				} 
+				}
 				else if (ch == '\r')
 				{
 					lookahead[0] = super.read();
-					if (lookahead[0] == '\n') 
+					if (lookahead[0] == '\n')
 					{
 						lookahead[0] = lookahead[1] = -1;
 						return '\n';
 					}
 				}
-				
+
 				return ch;
 			}
 
 			public int read(char[] cbuf, int offset, int length) throws IOException
 			{
 				int read = 0;
-				while (read < length && offset + read < cbuf.length) 
+				while (read < length && offset + read < cbuf.length)
 				{
 					int ch = read();
-					if (ch < 0) 
+					if (ch < 0)
 					{
 						break;
 					}
@@ -122,7 +181,7 @@ public class SmallCPP
 					cbuf[offset + (read++)] = (char)ch;
 				}
 
-				if (read == 0 && read < length) 
+				if (read == 0 && read < length)
 				{
 					return -1;
 				}
@@ -133,20 +192,25 @@ public class SmallCPP
 
 		SmallCPP parser = new SmallCPP(sr);
 
+	    parser.setTabSize(1);
+
 		FileCopier copier = new FileCopier(inFile, outFile);
 
-        try 
+        try
 		{
             parser.Tokens(copier);
 
 			copier.copyUntilEnd();
-		
-			System.out.println("### File " + inFile + " preprocessed successfully");
+			if (SmallC_PreProcessor.printOutput)
+			{
+				System.out.println("### FILE " + inFile + " PREPROCESSED SUCCESSFULLY ###");
+				System.out.println();
+			}
         }
-        catch (ParseException ex) 
+        catch (ParseException ex)
 		{
- 			System.out.println("### Preprocessing error in file " + inFile);
- 
+ 			System.out.println("### PREPROCESSING ERROR IN FILE " + inFile + " ###");
+
 			ex.printStackTrace();
 		}
 
@@ -156,13 +220,32 @@ public class SmallCPP
 
 		return outFile;
 	}
+
+    // Setting the tab size makes the token locations more accurate.
+    public void setTabSize(int size)
+	{
+        jj_input_stream.setTabSize(size);
+    }
+
+    // return the current tab size that the parser is using
+    public int getTabSize()
+	{
+        return jj_input_stream.getTabSize();
+    }
 }
 
 PARSER_END(SmallCPP)
 
-TOKEN : 
+/*
+SKIP :
 {
-    <COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
+	<IGNORED: <COMMENTS>>
+}
+*/
+
+TOKEN :
+{
+  <COMMENTS: <COMMENT> | <COMMENT_BLOCK>>
   | <COMMENT: "//"(~["\n", "\r"])*>
   | <COMMENT_BLOCK: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "/">
   | <STRINGS: <STRING_1> | <STRING_2>>
@@ -182,12 +265,34 @@ TOKEN :
 						"?" | "<" | ">" | "." | "," | "'" | "\"" | "(" | ")" | "[" | "]" | "{" | "}" | "\\">
 }
 
-void Comment(StringBuffer buf) : {}
+void Comment(StringBuffer buf, FileCopier copier) : {}
 {
     <COMMENTS>
     {
-		// System.out.println("Comment:");
-		// System.out.println(token.image);
+		//System.out.println("Comment:");
+		//System.out.println(token.image);
+
+		if(!keepComments)
+		{
+	        if(!ignore)
+            {
+				int beginLine = token.beginLine;
+				int endLine = token.endLine;
+				int beginCol = token.beginColumn;
+				int endCol = token.endColumn;
+				String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
+				if (SmallC_PreProcessor.printOutput)
+				{
+					System.out.println("##### COMMENT REMOVED at " + position + " #####");
+				}
+
+				copier.jumpFromUntil(beginLine, beginCol, endLine, endCol);
+            }
+		}
+		else
+		{
+			buf.append("Type: Comment").append(", Value: ").append(token.image).append("\n");
+		}
     }
 }
 
@@ -233,18 +338,25 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				name = name.replaceAll("\"", "");
 				name = name.replaceAll("<", "");
 				name = name.replaceAll(">", "");
-
-				System.out.println("##### INCLUDE " + name + " at " + position + " #####");
-
+				if (SmallC_PreProcessor.printOutput)
+				{
+					System.out.println("##### INCLUDE " + name + " at " + position + " #####");
+				}
 				copier.copyUntilLine(beginLine - 1);
 				copier.jumpUntilLine(beginLine);
-				
+
 				try
 				{
-					String procFile = preprocessFile(name, paths, symTable);
-					copier.copyFile(procFile);
+					String procFile = preprocessFile(name, paths, symTable, true, keepComments);
+					if(procFile != null)
+					{
+						copier.copyFile(procFile);
+
+						File file = new File(procFile);
+						file.delete();
+					}
 				}
-				catch(Exception ex) 
+				catch(Exception ex)
 				{
 					ex.printStackTrace();
 				}
@@ -277,7 +389,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				ignore = !symTable.isDefined(name);
 				if(ignore)
 				{
-					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					if (SmallC_PreProcessor.printOutput)
+					{
+						System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					}
 				}
 
 				copier.copyUntilLine(beginLine - 1);
@@ -291,7 +406,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 				ignore = symTable.isDefined(name);
 				if(ignore)
 				{
-					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					if (SmallC_PreProcessor.printOutput)
+					{
+						System.out.println("##### BEGIN IGNORE at " + position + " #####");
+					}
 				}
 
 				copier.copyUntilLine(beginLine - 1);
@@ -303,7 +421,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			if(!ignore)
 			{
 				ignore = true;
-				System.out.println("##### BEGIN IGNORE at " + position + " #####");
+				if (SmallC_PreProcessor.printOutput)
+				{
+					System.out.println("##### BEGIN IGNORE at " + position + " #####");
+				}
 
 				copier.copyUntilLine(beginLine - 1);
 				copier.jumpUntilLine(beginLine);
@@ -311,7 +432,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			else
 			{
 				ignore = false;
-				System.out.println("##### END IGNORE at " + position + " #####");
+				if (SmallC_PreProcessor.printOutput)
+				{
+					System.out.println("##### END IGNORE at " + position + " #####");
+				}
 
 				copier.jumpUntilLine(beginLine);
 			}
@@ -321,7 +445,10 @@ void Statement(StringBuffer buf, FileCopier copier) : {}
 			if(ignore)
 			{
 				ignore = false;
-				System.out.println("##### END IGNORE at " + position + " #####");
+				if (SmallC_PreProcessor.printOutput)
+				{
+					System.out.println("##### END IGNORE at " + position + " #####");
+				}
 
 				copier.jumpUntilLine(beginLine);
 			}
@@ -353,7 +480,10 @@ void Identifier(StringBuffer buf, FileCopier copier) : {}
 			String value = symTable.getValue(token.image);
 			if(value != null)
 			{
-				System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
+				if (SmallC_PreProcessor.printOutput)
+				{
+					System.out.println("##### REPLACE \"" + token.image + "\" with \"" + value + "\" at " + position + " #####");
+				}
 
 				copier.copyUntilLineAndReplace(beginLine, token.image, value);
 			}
@@ -389,9 +519,9 @@ void Value(StringBuffer buf) : {}
 
 void Tokens(FileCopier copier) : { StringBuffer sb = new StringBuffer(); }
 {
-    (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb) | <SYMBOLS> | <WHITESPACE>)* <EOF>
-    
-	{ 
-		// System.out.println("### Parsed tokens:\n" + sb.toString()); 
+    (Statement(sb, copier) | Identifier(sb, copier) | String(sb) | Value(sb) | Asm_block(sb) | Comment(sb, copier) | <SYMBOLS> | <WHITESPACE>)* <EOF>
+
+	{
+		// System.out.println("### Parsed tokens:\n" + sb.toString());
 	}
 }

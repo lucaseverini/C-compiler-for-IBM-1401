@@ -11,7 +11,16 @@ public class ConstantExpression extends Expression{
 
 	public String generateCode(boolean valueNeeded) {
 		if (valueNeeded) {
-			return PUSH(CONST(val));
+			if (getType() instanceof PointerType) {
+				return PUSH(getType().sizeof(), ADDR_CONST(val));
+			} else if (getType().equals(Type.intType)) {
+				return PUSH(getType().sizeof(), NUM_CONST(val));
+			} else if (getType().equals(Type.charType)) {
+				return PUSH(getType().sizeof(), CHAR_CONST(val));
+			} else {
+				//oops
+				return null;
+			}
 		} else {
 			return "";
 		}
@@ -19,6 +28,21 @@ public class ConstantExpression extends Expression{
 
 	public int getValue() {
 		return val;
+	}
+	
+	public String toString() {
+		if (getType().equals(Type.intType)) return val + "";
+		if (getType().equals(Type.charType)) {
+			switch(val) {
+				case 0:
+					return "'\\0'";
+				case '\n':
+					return "'\\n'";
+				default:
+					return "'" + ((char)val) + "'";
+			}
+		}
+		else return "((" + getType() + ")" + val + ")";
 	}
 
 }

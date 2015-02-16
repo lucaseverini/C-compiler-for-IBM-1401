@@ -1,8 +1,10 @@
-int a = 5;
-int b;
-int c = 10;
+int fact(int n)
+{
+	if (n == 0) return 1;
+	return n * fact(n-1);
+}
 
-int main() {
-	int a = 5;
-	b = 7;
+int main()
+{
+	return fact(8);
 }

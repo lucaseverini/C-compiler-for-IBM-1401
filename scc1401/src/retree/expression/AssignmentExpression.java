@@ -24,16 +24,21 @@ public class AssignmentExpression extends Expression {
 	}
 
 	public String generateCode(boolean valueNeeded) {
-		String code = l.generateAddress() +
-			POP("X1") +
-			r.generateCode(true);
+		//no sequence point, so we can evaluate the right side first
+		String code = r.generateCode(true) +
+			l.generateAddress() +
+			POP(3, "X1");
 		if (valueNeeded) {
-			code += INS("MCW", STACK_REF(1), "0+X1");
+			code += INS("MCW", STACK_OFF(0), "0+X1");
 		} else {
-			code += POP("0+X1");
+			code += POP(l.getType().sizeof(), "0+X1");
 		}
 		return code;
 	}
 
+	public String toString()
+	{
+		return "(" + l + " = " + r + ")";
+	}
 
 }

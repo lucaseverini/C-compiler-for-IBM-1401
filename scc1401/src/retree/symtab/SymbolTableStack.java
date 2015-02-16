@@ -6,11 +6,19 @@ import retree.expression.*;
 import retree.type.*;
 
 public class SymbolTableStack {
-	
+
+	int staticOffset = 1000;
+
 	private ArrayList<SymTab> stack = new ArrayList<SymTab>();
 
 	public SymbolTableStack() {
-		stack.add(new SymTab(1000, true));
+		stack.add(new SymTab(staticOffset, true));
+	}
+
+	public SymbolTableStack(int moveStackDownBy)
+	{
+		staticOffset += moveStackDownBy;
+		stack.add(new SymTab(staticOffset, true));
 	}
 
 	public SymTab peek() {
@@ -29,7 +37,7 @@ public class SymbolTableStack {
 		}
 		return peek();
 	}
-	
+
 	public SymTab push(int spaceToReserve) {
 		if (peek().isStatic()) {
 			stack.add(new SymTab(0, spaceToReserve, false));
@@ -49,11 +57,11 @@ public class SymbolTableStack {
 		}
 		return null;
 	}
-	
+
 	public VariableExpression searchTop(String identifier) {
 		return peek().get(identifier);
 	}
-	
+
 	public VariableExpression add(String identifier, Type type, boolean isParam) throws Exception{
 		SymTab table = peek();
 		if (table.get(identifier) != null) {
@@ -62,7 +70,7 @@ public class SymbolTableStack {
 			return table.put(identifier, type, isParam);
 		}
 	}
-	
+
 	public VariableExpression addStatic(String identifier, Type type) throws Exception{
 		SymTab table = getStaticSymTab();
 		if (table.get(identifier) != null) {

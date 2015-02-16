@@ -11,13 +11,19 @@ public class FunctionDefinition {
 		this.block = block;
 	}
 	
+	public ConstantExpression getDeclaration() {
+		return declaration;
+	}
+	
 	//As per our calling conventions, the caller is responsible for pushing
 	//the new stack frame down.  We are simply responsible for our return
 	//address.
 	public String generateCode() {
-		return LBL_INS(label(declaration.getValue()), "SBR", "0+X3") +
+		return LBL_INS(label(declaration.getValue()), "SBR", "3+X3") +
+			//INS("SW", "1+X3") +
 			block.generateCode() +
-			INS("B", "0+X3");
+			INS("MCW", "3+X3", "X1") + 
+			INS("B", "0+X1");
 	}
 
 }

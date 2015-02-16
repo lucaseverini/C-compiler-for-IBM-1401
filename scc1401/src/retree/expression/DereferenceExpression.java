@@ -32,17 +32,25 @@ public class DereferenceExpression extends LValue {
 	}
 
 	public String generateCode(boolean valueNeeded) {
-		if (!valueNeeded) {
-			return child.generateCode(false);
-		} else {
-			return child.generateCode(true) + 
-				POP("X1") +
-				PUSH("0+X1");
+		try {
+			if (!valueNeeded) {
+				return child.generateCode(false);
+			} else {
+				return child.generateCode(true) +
+					POP(3,"X1") +
+					PUSH(getReferenceType(child).sizeof(), "0+X1");
+			}
+		} catch(TypeMismatchException e) {
+			return null;
 		}
 	}
-	
+
 	public String generateAddress() {
 		return child.generateCode(true);
+	}
+
+	public String toString() {
+		return "( " + "*" + child +" )";
 	}
 
 }
