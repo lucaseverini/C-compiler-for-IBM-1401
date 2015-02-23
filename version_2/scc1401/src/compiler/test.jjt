@@ -1,0 +1,59 @@
+/*
+	test.jjt
+
+    Assignment #6 - CS153 - SJSU
+	November-8-2014
+
+	By Sean Papay, Matt Pleva, Luca Severini
+*/
+
+options {
+    JJTREE_OUTPUT_DIRECTORY="src";
+}
+
+PARSER_BEGIN(Calculator)
+import java.io.*;
+
+public class Calculator
+{
+  public static void main(String[] args)
+  {
+    Reader sr = new StringReader(args[0]);
+    Calculator calc = new Calculator(sr);
+
+    try {
+      SimpleNode node = calc.Expression();
+      node.dump("");
+    }
+    catch (ParseException ex) {
+      ex.printStackTrace();
+    }
+  }
+}
+PARSER_END(Calculator)
+
+SKIP : {
+  " "
+}
+TOKEN : {
+  <DIGITS : (["0"-"9"])+> | <PLUS : "+">
+}
+
+SimpleNode Expression() : {}
+{
+  Operator()
+  {return jjtThis;}
+}
+
+void Operator() #void : {Token t;}
+{
+  Operand()
+  (
+    "+" Operand() #add(2)
+  )*
+}
+
+void Operand() : {Token t;}
+{
+  t=<DIGITS>
+}
