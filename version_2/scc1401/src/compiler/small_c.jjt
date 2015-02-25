@@ -39,19 +39,19 @@ public class SmallCC
 	private static HashMap<ConstantExpression, FunctionDefinition> pendingFunctionDefinitions;
 	private static HashSet<FunctionDefinition> includedFunctions;
 	public static HashMap<String, String> labelTable;
-	public static List<Pair<String, String>> arrMemberLabelTable; 
+	public static List<Pair<String, String>> arrMemberLabelTable;
 
 	public static String autocoderFile = null;
 	public static String compilationTime = null;
 
 	public static boolean inAsmFunc = false;
-	
+
 	public static int stackMem = 400;
 	public static int codeMem = 3000;
 	public static int dataMem = 2000;
 
   	private static int labelNumber = 0;
-  	public static int nextLabelNumber() 
+  	public static int nextLabelNumber()
   	{
 		return labelNumber++;
 	}
@@ -74,12 +74,24 @@ public class SmallCC
 	public static String getLabelForArrayMember(String var)
 	{
 		String label = label(nextLabelNumber());
-	
+
 		@SuppressWarnings("unchecked")
-		Pair<String, String> p = new Pair(label, var);		
+		Pair<String, String> p = new Pair(label, var);
 		arrMemberLabelTable.add(p);
-	
+
 		return label;
+	}
+
+	public static String getFunctionNameFromExpression(ConstantExpression c)
+	{
+		for (Map.Entry<String,ConstantExpression> entry : FunctionTable.entrySet()) {
+  			String key = entry.getKey();
+  			ConstantExpression value = entry.getValue();
+			if (value == c)
+			{
+				return key;
+			}
+		}
 	}
 
 	public static void main(String args[]) throws Exception
@@ -99,7 +111,7 @@ public class SmallCC
 	{
 		SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y HH:mm:ss");
 		compilationTime = sdf.format(Calendar.getInstance().getTime());
-	
+
 		if(stackLoc > 0 && stackLoc < 16000)
 		{
 			stackMem = stackLoc;
@@ -128,15 +140,15 @@ public class SmallCC
 		File inFile = new File(inputFile);
 		Reader sr = new FileReader(inFile);
 
-		stringInits = new ArrayList<>();
-		functionTable = new HashMap<>();
+		stringInits = new ArrayList<String>();
+		functionTable = new HashMap<String, ConstantExpression>();
 		variableTable = new SymbolTableStack(dataMem);
-		pendingFunctionDefinitions = new HashMap<>();
-		includedFunctions = new HashSet<>();
-		labelTable = new HashMap<>();
-		arrMemberLabelTable = new ArrayList<>();
+		pendingFunctionDefinitions = new HashMap<ConstantExpression, FunctionDefinition>();
+		includedFunctions = new HashSet<FunctionDefinitio>();
+		labelTable = new HashMap<String, String>();
+		arrMemberLabelTable = new ArrayList<Pair<String, String>>();
 
-		ArrayList<Type> tmp = new ArrayList<>();
+		ArrayList<Type> tmp = new ArrayList<Type>();
 		tmp.add(new PointerType(Type.charType));
 		tmp.add(null);
 
@@ -144,7 +156,7 @@ public class SmallCC
 		functionTable.put("asm", new ConstantExpression(new FunctionType(Type.intType, tmp, true), asmFuncNumber));
 
 		SmallCC parser = new SmallCC(sr);
-		try 
+		try
 		{
 			Program program = parser.program();
 			if(program != null)
@@ -154,7 +166,7 @@ public class SmallCC
 					program.addInitializer(i);
 				}
 
-				if (errorFree) 
+				if (errorFree)
 				{
 					String code = program.generateCode();
 
@@ -175,8 +187,8 @@ public class SmallCC
 			{
 				errorFree = false;
 			}
-		} 
-		catch (Exception e) 
+		}
+		catch (Exception e)
 		{
 			e.printStackTrace();
 			errorFree = false;
@@ -187,7 +199,7 @@ public class SmallCC
 
 		return(errorFree ? 0 : 1);
   	}
-  
+
   	private static boolean errorFree = true;
 
   	public static void reportError(Exception e, Token t)
@@ -195,7 +207,7 @@ public class SmallCC
 		reportError(e.toString(), t);
 	}
 
-	public static void reportError(String m, Token t) 
+	public static void reportError(String m, Token t)
 	{
 		errorFree = false;
 		System.out.println("Error on line " + t.beginLine + " column " + t.beginColumn);
@@ -211,7 +223,7 @@ public class SmallCC
 
 	public static void printTree(SimpleNode node, int level)
 	{
-		for(int i = 0; i < level; ++i) 
+		for(int i = 0; i < level; ++i)
 		{
 			System.out.print("    ");
 		}
@@ -224,9 +236,9 @@ public class SmallCC
 		System.out.println(begin);
 
 		// System.out.println(kind);
-		//if(kind == 49 || kind == 50 || kind == 51 || kind == 52 || kind == 15) 
+		//if(kind == 49 || kind == 50 || kind == 51 || kind == 52 || kind == 15)
 		//{
-			//for(int i = 0; i < level; ++i) 
+			//for(int i = 0; i < level; ++i)
 			//{
 			//	System.out.print("    ");
 			//}
@@ -235,7 +247,7 @@ public class SmallCC
 		//}
 
 		int numChildren = node.jjtGetNumChildren();
-		for(int i = 0; i < numChildren; ++i) 
+		for(int i = 0; i < numChildren; ++i)
 		{
 			printTree((SimpleNode) node.jjtGetChild(i), level + 1);
 		}
