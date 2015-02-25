@@ -1,42 +1,53 @@
 package retree.expression;
 
+import compiler.SmallCC;
 import retree.exceptions.*;
 import java.util.*;
 import retree.type.*;
 import retree.program.*;
 import static retree.RetreeUtils.*;
+import wci.intermediate.SymTabEntry;
 
-public class FunctionCallExpression extends Expression {
-	private ConstantExpression function;
-	private List<Expression> arguments;
+public class FunctionCallExpression extends Expression 
+{
+	private final ConstantExpression function;
+	private final List<Expression> arguments;
 
-	public FunctionCallExpression(Expression function, List<Expression> arguments) throws Exception{
+	public FunctionCallExpression(Expression function, List<Expression> arguments) throws Exception
+	{
 		super(((FunctionType)function.getType()).getReturnType());
+		
 		List<Type> paramTypes = ((FunctionType)function.getType()).getParamTypes();
-		if (!((FunctionType)function.getType()).getVariadic()) {
-			if (arguments.size() != paramTypes.size()) {
-				throw new Exception("Arity Mismatch");
+		if (!((FunctionType)function.getType()).getVariadic()) 
+		{
+			if (arguments.size() != paramTypes.size()) 
+			{
+				throw new Exception("Parity Mismatch");
 			}
-			for (int i = 0; i < arguments.size(); ++i) {
-				if (!arguments.get(i).getType().equals(paramTypes.get(i))) {
+			for (int i = 0; i < arguments.size(); ++i) 
+			{
+				if (!arguments.get(i).getType().equals(paramTypes.get(i))) 
+				{
 					throw new TypeMismatchException(this, paramTypes.get(i), arguments.get(i).getType());
 				}
 			}
 		}
+		
 		this.function = (ConstantExpression) function;
 		this.arguments = arguments;
 	}
 
 	public String generateCode(boolean valueNeeded) 
 	{
-		String code = COM("FunctionCallExpr(" + function.toString() + ")");
+		String code = COM("FunctionCallExpr " + this.toString());
 
 		FunctionType functionType = (FunctionType)function.getType();
 		//first, push room for our return address to the stack.
 		code += PUSH(functionType.getReturnType().sizeof());
 		int i = arguments.size();
 		//push all our parameters in reverse order
-		while (i --> 0) {
+		while (i --> 0) 
+		{
 			code += arguments.get(i).generateCode(true);
 		}
 		//make a new frame
@@ -48,23 +59,37 @@ public class FunctionCallExpression extends Expression {
 		//restore our frame
 		code += POP(3, "X3");
 		//pop off all the arguments
-		for (Expression e: arguments) {
+		for (Expression e: arguments) 
+		{
 			code += POP(e.getType().sizeof());
 		}
 		//now our return address should be at the top of the stack.
 		//if we don't want a value, pop it
-		if (!valueNeeded) {
+		if (!valueNeeded) 
+		{
 			code += POP(functionType.getReturnType().sizeof());
 		}
+		
 		return code;
 	}
 
-	public String toString() {
+	public String toString()
+	{
 		String s = "";
-		for(Expression e : arguments)
+		
+		String name = SmallCC.getFunctionNameFromExpression(function);
+		
+		Iterator<Expression> iter = arguments.iterator();
+		while(iter.hasNext())
 		{
-			s += (" " + e.toString());
+			s += iter.next();
+			
+			if(iter.hasNext())
+			{
+				s = s + ", ";
+			}
 		}
-		return "(" + function.getValue() + "(" + s + ")" + ")";
+		
+		return name + "(" + s + ")";
 	}
 }

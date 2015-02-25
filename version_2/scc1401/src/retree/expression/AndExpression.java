@@ -1,40 +1,55 @@
 package retree.expression;
+
 import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.type.*;
 import compiler.SmallCC;
 
-public class AndExpression extends Expression {
+public class AndExpression extends Expression 
+{
     private Expression l, r;
 
-    public AndExpression(Expression l, Expression r) throws TypeMismatchException {
+    public AndExpression(Expression l, Expression r) throws TypeMismatchException 
+	{
         super(Type.intType);
-        if (! l.getType().equals(r.getType())) {
+		
+        if (! l.getType().equals(r.getType())) 
+		{
             throw new TypeMismatchException(r, l.getType(), r.getType());
         }
+		
         this.l = l;
         this.r = r;
     }
 
-    public Expression collapse() {
-        try {
+    public Expression collapse()
+	{
+        try 
+		{
             Expression l2 = l.collapse();
             Expression r2 = r.collapse();
-            if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) {
+			
+            if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression)
+			{
                 return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() == ((ConstantExpression)r2).getValue() ? 0 : 1);
             }
+			
             return new AndExpression(l2, r2);
-        } catch (TypeMismatchException e) {
+        } 
+		catch (TypeMismatchException e) 
+		{
             //should never happen
             return null;
         }
     }
 
-    public String generateCode(boolean valueNeeded) {
+    public String generateCode(boolean valueNeeded) 
+	{
         String labelZero = label(SmallCC.nextLabelNumber());
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("AndExpression(" + l + ":" + r + ")") + PUSH(5,NUM_CONST(1, false));
+        String code = COM("AndExpression " + this.toString()); 
+		code += PUSH(5, NUM_CONST(1, false));
         code += l.generateCode(true);
         code += INS("MCS",STACK_OFF(0),STACK_OFF(0));
         code += POP(l.getType().sizeof());
@@ -50,8 +65,8 @@ public class AndExpression extends Expression {
         return code;
     }
 
-    public String toString() {
+    public String toString() 
+	{
         return "(" + l +" && "+ r + ")";
     }
-
 }

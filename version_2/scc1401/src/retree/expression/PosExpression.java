@@ -1,4 +1,5 @@
 package retree.expression;
+
 import retree.exceptions.TypeMismatchException;
 import static retree.RetreeUtils.*;
 import retree.expression.Expression;
@@ -6,27 +7,30 @@ import retree.expression.LValue;
 import retree.type.PointerType;
 import retree.type.Type;
 
-//a unary plus sign -- acts as an identity function
-public class PosExpression extends Expression {
-	private Expression child;
+// a unary plus sign -- acts as an identity function
+public class PosExpression extends Expression 
+{
+	private final Expression child;
 
-	public PosExpression(Expression child) {
+	public PosExpression(Expression child) 
+	{
 		super(child.getType());
 		this.child = child;
 	}
 
-	public Expression collapse() {
+	public Expression collapse() 
+	{
 		return child.collapse();
 	}
 
 	public String generateCode(boolean valueNeeded) 
 	{
-		return COM("PosExpression(" + child + ")") + child.generateCode(valueNeeded);
+		return COM("PosExpression " + this.toString())
+					+ child.generateCode(valueNeeded);
 	}
 
 	public String toString()
 	{
 		return "(" + "+" + child + ")";
 	}
-
 }

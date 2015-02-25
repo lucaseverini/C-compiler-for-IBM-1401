@@ -29,7 +29,7 @@ public class NotExpression extends Expression
         } 
 		catch (TypeMismatchException e)
 		{
-            //should never happen
+            // should never happen
             return null;
         }
     }
@@ -38,7 +38,7 @@ public class NotExpression extends Expression
 	{
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("NotExpression(" + l + ")") + PUSH(5,NUM_CONST(0, false));
+        String code = COM("NotExpression " + this.toString()) + PUSH(5,NUM_CONST(0, false));
         code += l.generateCode(true);
         code += INS("MCS",STACK_OFF(0),STACK_OFF(0));
         code += POP(l.getType().sizeof());

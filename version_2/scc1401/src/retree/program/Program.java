@@ -5,26 +5,30 @@ import static retree.RetreeUtils.*;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Program {
-	private List<Initializer> initializers;
-	private List<FunctionDefinition> functions;
+public class Program 
+{
+	private final List<Initializer> initializers;
+	private final List<FunctionDefinition> functions;
 	private int mainLabelNumber = -1;
 
-
-	public Program() {
+	public Program() 
+	{
 		initializers = new ArrayList<Initializer>();
 		functions = new ArrayList<FunctionDefinition>();
 	}
 
-	public void addInitializer(Initializer init) {
+	public void addInitializer(Initializer init) 
+	{
 		initializers.add(init);
 	}
 
-	public void addFunction(FunctionDefinition func) {
+	public void addFunction(FunctionDefinition func) 
+	{
 		functions.add(func);
 	}
 
-	public void setMainLabelNumber(int mainLabelNumber) {
+	public void setMainLabelNumber(int mainLabelNumber) 
+	{
 		this.mainLabelNumber = mainLabelNumber;
 	}
 

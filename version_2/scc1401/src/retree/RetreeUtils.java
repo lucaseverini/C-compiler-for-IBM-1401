@@ -139,7 +139,7 @@ public class RetreeUtils
 	public static String PUSH(int size, String a) 
 	{
 		// remember we need to set the word mark for the stack
-		return COM("Push(" + a + ":" + size + ")") +
+		return COM("Push (" + a + ":" + size + ")") +
 			   INS("MA", ADDR_CONST(size, false), "X2") +
 			   INS("LCA", a, "0+X2");
 	}
@@ -147,20 +147,20 @@ public class RetreeUtils
 	public static String PUSH(int size) 
 	{
 		// remember we need to set the word mark for the stack
-		return COM("Push(" + size + ")") + 
+		return COM("Push (" + size + ")") + 
 			   INS("MA", ADDR_CONST(size, false), "X2");
 	}
 
 	public static String POP(int size, String location)
 	{
-		return COM("Pop(" + location + ":" + size + ")") +
+		return COM("Pop (" + location + ":" + size + ")") +
 			   INS("LCA", "0+X2", location) +
 			   INS("MA", ADDR_CONST(-size, false), "X2");
 	}
 
 	public static String POP(int size) 
 	{
-		return COM("Pop(" + size + ")") + 
+		return COM("Pop (" + size + ")") + 
 			   INS("MA", ADDR_CONST(-size, false), "X2");
 	}
 

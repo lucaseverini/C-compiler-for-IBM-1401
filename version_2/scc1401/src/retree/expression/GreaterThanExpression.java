@@ -43,7 +43,7 @@ public class GreaterThanExpression extends Expression
 	{
 		if (valueNeeded) 
 		{
-			String code = COM("GreaterThanExpression(" + l + ":" + r + ")") +
+			String code = COM("GreaterThanExpression " + this.toString()) +
 			l.generateCode(valueNeeded) + SNIP("clean_number") + r.generateCode(valueNeeded) + SNIP("clean_number");
 			
 			String labelLessThan = label(SmallCC.nextLabelNumber());

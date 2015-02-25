@@ -64,7 +64,20 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
 		return label;
   }
 
-  public static void main(String args[]) throws Exception
+	public static String getFunctionNameFromExpression(ConstantExpression c)
+	{
+		for (Map.Entry<String,ConstantExpression> entry : functionTable.entrySet())
+		{
+			if (entry.getValue() == c)
+			{
+				return entry.getKey();
+			}
+		}
+		
+		return "UNNAMED FUNCTION";
+	}
+
+	public static void main(String args[]) throws Exception
   {
         if(args.length == 0)
         {
@@ -79,7 +92,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
 
   public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
   {
-    SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y HH:mm:ss");
+    SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
 	compilationTime = sdf.format(Calendar.getInstance().getTime());
 	
 	if(stackLoc > 0 && stackLoc < 16000)

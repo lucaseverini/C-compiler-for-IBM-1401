@@ -43,7 +43,7 @@ public class LessThanOrEqualExpression extends Expression
 	{
 		if (valueNeeded) 
 		{
-			String code = COM("LessThanOrEqualExpression(" + l + ":" + r + ")") +
+			String code = COM("LessThanOrEqualExpression " + this.toString()) +
 			l.generateCode(valueNeeded) + SNIP("clean_number") + r.generateCode(valueNeeded) + SNIP("clean_number");
 
 			String labelLessThan = label(SmallCC.nextLabelNumber());

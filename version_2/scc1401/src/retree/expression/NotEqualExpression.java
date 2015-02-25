@@ -47,7 +47,8 @@ public class NotEqualExpression extends Expression
 	{
 		String labelEqual = label(SmallCC.nextLabelNumber());
 		String labelEnd = label(SmallCC.nextLabelNumber());
-		String code = COM("NotEqualExpression(" + l + ":" + r + ")") + l.generateCode(valueNeeded);
+		String code = COM("NotEqualExpression " + this.toString());
+		code += l.generateCode(valueNeeded);
 		
 		if (valueNeeded && l.getType().equals(Type.intType)) 
 		{
@@ -73,8 +74,8 @@ public class NotEqualExpression extends Expression
 			code += INS("B", labelEnd);
 			code += LBL_INS(labelEqual, "MCW", NUM_CONST(0, false), STACK_OFF(0));
 			code += LBL_INS(labelEnd, "NOP");
-
 		}
+		
 		return code;
 	}
 

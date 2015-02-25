@@ -1,19 +1,19 @@
 package retree.expression;
 
-public class CommaExpression extends Expression {
+public class CommaExpression extends Expression 
+{
+	private final Expression l, r;
 	
-	private Expression l, r;
-	
-	public CommaExpression(Expression l, Expression r) {
+	public CommaExpression(Expression l, Expression r)
+	{
 		super(r.getType());
+		
 		this.l = l;
 		this.r = r;
 	}
 	
-	
-	public String generateCode(boolean valueNeeded) {
+	public String generateCode(boolean valueNeeded) 
+	{
 		return l.generateCode(false) + r.generateCode(valueNeeded);
 	}
-
-
 }

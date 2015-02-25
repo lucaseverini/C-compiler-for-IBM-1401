@@ -8,7 +8,7 @@ import java.util.*;
 
 public class Initializer 
 {
-	private VariableExpression variable;
+	private final VariableExpression variable;
 	private ConstantExpression value;
 	// private boolean isStatic; // unused
 	private boolean isArrayMember;

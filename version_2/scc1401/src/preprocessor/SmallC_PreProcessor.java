@@ -21,7 +21,7 @@ public class SmallC_PreProcessor
 	static List<String> paths = new ArrayList<>();
 	static List<String> files = new ArrayList<>();
 	static String outputFile = null;
-	static boolean verbose = false;
+	static int verbose = 0;
 	static boolean keepComments = false;
 	static boolean printOutput = false;
 	static boolean keepPreprocessedFile = false;
@@ -32,7 +32,7 @@ public class SmallC_PreProcessor
 		
 		parseArguments(args);
 		
-		if (verbose || printOutput)
+		if (verbose != 0 || printOutput)
 		{
 			System.out.println("Small-C Cross-Compiler for IBM1401");
 			System.out.println("Version 1.0.1 - February 22 2015");
@@ -41,7 +41,7 @@ public class SmallC_PreProcessor
 
 		for(String file : files)
 		{
-			if (verbose || printOutput)
+			if (verbose != 0 || printOutput)
 			{
 				System.out.println("");
 			}
@@ -58,7 +58,7 @@ public class SmallC_PreProcessor
 				{
 					System.out.println("Preprocessed file: " + preprocFile);
 					
-					if(verbose)
+					if(verbose != 0)
 					{
 						System.out.println("Preprocessor symbol table:\n" + symTable);
 					}
@@ -132,8 +132,17 @@ public class SmallC_PreProcessor
 		{
 			switch(s)
 			{
+				case "-v0":
+					verbose = 0;
+					break;
+
 				case "-v":
-					verbose = true;
+				case "-v1":
+					verbose = 1;
+					break;
+
+				case "-v2":
+					verbose = 2;
 					break;
 
 				case "-k":

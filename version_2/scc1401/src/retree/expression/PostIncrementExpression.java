@@ -28,7 +28,8 @@ public class PostIncrementExpression extends Expression
 
 	public String generateCode(boolean valueNeeded) 
 	{
-		String code = COM("PostIncrement("+l+")") + l.generateAddress();
+		String code = COM("PostIncrement "+ this.toString());
+		code += l.generateAddress();
 		
 		// String code = l.generateCode(valueNeeded);
 		code += POP(3, "X1");

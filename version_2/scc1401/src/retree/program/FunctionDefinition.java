@@ -1,17 +1,24 @@
 package retree.program;
+
+import compiler.SmallCC;
+import java.util.Iterator;
 import static retree.RetreeUtils.*;
 import retree.statement.*;
 import retree.expression.*;
 
-public class FunctionDefinition {
+public class FunctionDefinition 
+{
 	private ConstantExpression declaration;
 	private BlockStatement block;
-	public FunctionDefinition(ConstantExpression declaration, BlockStatement block) {
+	
+	public FunctionDefinition(ConstantExpression declaration, BlockStatement block) 
+	{
 		this.declaration = declaration;
 		this.block = block;
 	}
 
-	public ConstantExpression getDeclaration() {
+	public ConstantExpression getDeclaration() 
+	{
 		return declaration;
 	}
 
@@ -20,16 +27,38 @@ public class FunctionDefinition {
 	//address.
 	public String generateCode()
 	{
-		// add in function name get here
-		return COM("FunctionDefinition(" + SmallCC.getFunctionNameFromExpression(declaration) + ")") +
-			LBL_INS(label(declaration.getValue()), "SBR", "3+X3") + // Luca: This seems to have problems without SW
+		String code = "\n" + 
+			COM("**********************************************************************") +
+			COM("FunctionDefinition(" + SmallCC.getFunctionNameFromExpression(declaration) + ")") +
+			COM("**********************************************************************") +
+			LBL_INS(label(declaration.getValue()), "SBR", "3+X3") +
 			INS("SW", "1+X3") +
 			INS("CW", "2+X3") +
 			INS("CW", "3+X3") +
 			block.generateCode() +
-
 			INS("LCA", "3+X3", "X1") +
 			INS("B", "0+X1");
+		
+		return code;
 	}
 
+	public String toString()
+	{
+		String s = "";
+		
+		String name = SmallCC.getFunctionNameFromExpression(declaration);
+/*		
+		Iterator<Expression> iter = arguments.iterator();
+		while(iter.hasNext())
+		{
+			s += iter.next();
+			
+			if(iter.hasNext())
+			{
+				s = s + ", ";
+			}
+		}
+*/		
+		return " " + name + "(" + s + ")" + " ";
+	}
 }

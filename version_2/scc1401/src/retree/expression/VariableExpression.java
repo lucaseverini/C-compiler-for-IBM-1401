@@ -5,9 +5,9 @@ import retree.type.Type;
 
 public class VariableExpression extends LValue 
 {
-	private int offset;
-	private boolean isStatic;
-	private String name;
+	private final int offset;
+	private final boolean isStatic;
+	private final String name;
 
 	public VariableExpression(Type type, int offset, boolean isStatic, String name)
 	{
@@ -23,15 +23,19 @@ public class VariableExpression extends LValue
 		{
 			if (isStatic)
 			{
-				return COM("VariableExpression(" + name + ":" + offset + ":" + isStatic + ")") 
-					   + PUSH(getType().sizeof(), ADDR_LIT(offset));
+				return COM("StaticVariableExpression (" + name + " : " + ADDR_LIT(offset) + ")") 
+							+ PUSH(getType().sizeof(), ADDR_LIT(offset));
 			} 
 			else
 			{
-				return COM("VariableExpression(" + name + ":" + offset + ":" + isStatic + ")") 
-					   + PUSH(getType().sizeof(), OFF(offset));
+				return COM("VariableExpression (" + name + " : " + OFF(offset) + ")") 
+							+ PUSH(getType().sizeof(), OFF(offset));
 			}
-		} else return "";
+		} 
+		else
+		{
+			return "";
+		}
 	}
 
 	public LValue collapse() 

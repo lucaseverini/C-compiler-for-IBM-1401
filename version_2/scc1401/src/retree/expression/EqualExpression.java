@@ -47,7 +47,9 @@ public class EqualExpression extends Expression
 	{
 		String labelEqual = label(SmallCC.nextLabelNumber());
 		String labelEnd = label(SmallCC.nextLabelNumber());	
-		String code = COM("EqualExpression(" + l + ":" + r + ")") + l.generateCode(valueNeeded);
+		
+		String code = COM("EqualExpression " + this.toString());
+		code += l.generateCode(valueNeeded);
 		
 		if (valueNeeded && l.getType().equals(Type.intType))
 		{

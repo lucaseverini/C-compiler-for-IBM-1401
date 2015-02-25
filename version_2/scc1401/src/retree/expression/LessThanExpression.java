@@ -47,7 +47,7 @@ public class LessThanExpression extends Expression
 		//l = B, r = A
 		if (valueNeeded) 
 		{
-			String code = COM("LessThanExpression(" + l + ":" + r + ")") +
+			String code = COM("LessThanExpression " + this.toString()) +
 			l.generateCode(valueNeeded) + SNIP("clean_number") + r.generateCode(valueNeeded) + SNIP("clean_number");
 			
 			String labelLessThan = label(SmallCC.nextLabelNumber());

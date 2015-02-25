@@ -28,7 +28,8 @@ public class PreIncrementExpression extends Expression
 
 	public String generateCode(boolean valueNeeded)
 	{
-		String code = COM("PreIncrement("+l+")") + l.generateAddress();
+		String code = COM("PreIncrement("+ this.toString()); 
+		code += l.generateAddress();
 		// String code = l.generateCode(valueNeeded);
 		
 		code += POP(3, "X1");

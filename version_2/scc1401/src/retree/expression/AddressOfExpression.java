@@ -1,12 +1,16 @@
 package retree.expression;
+
 import static retree.RetreeUtils.*;
 import retree.expression.LValue;
 import retree.expression.Expression;
 import retree.type.PointerType;
-public class AddressOfExpression extends Expression {
-	private LValue child;
 
-	public AddressOfExpression(LValue child) {
+public class AddressOfExpression extends Expression
+{
+	private final LValue child;
+
+	public AddressOfExpression(LValue child) 
+	{
 		super(new PointerType(child.getType()));
 		this.child = child;
 	}
@@ -15,15 +19,16 @@ public class AddressOfExpression extends Expression {
 	{
 		if (valueNeeded) 
 		{
-			return COM("AddressOfExpression(" + child + ")") + child.generateAddress();
+			return COM("AddressOfExpression " + this.toString()) + child.generateAddress();
 		} 
 		else 
 		{
-			return COM("AddressOfExpression(" + child + ")") + child.generateCode(false);
+			return COM("AddressOfExpression " + this.toString()) + child.generateCode(false);
 		}
 	}
 
-	public Expression collapse() {
+	public Expression collapse() 
+	{
 		return new AddressOfExpression(child.collapse());
 	}
 
@@ -31,5 +36,4 @@ public class AddressOfExpression extends Expression {
 	{
 		return "( &" + child + " )";
 	}
-
 }

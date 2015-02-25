@@ -4,37 +4,50 @@ import retree.exceptions.TypeMismatchException;
 import compiler.SmallCC;
 import static retree.RetreeUtils.*;
 
-
-public class TernaryExpression extends Expression {
+public class TernaryExpression extends Expression
+{
 	private Expression condition, positive, negative;
 
-
-	public TernaryExpression(Expression condition, Expression positive, Expression negative) throws TypeMismatchException {
+	public TernaryExpression(Expression condition, Expression positive, Expression negative) throws TypeMismatchException 
+	{
 		super(positive.getType());
-		if (!positive.getType().equals(negative.getType())) throw new TypeMismatchException(negative, positive.getType(), negative.getType());
+		
+		if (!positive.getType().equals(negative.getType()))
+		{
+			throw new TypeMismatchException(negative, positive.getType(), negative.getType());
+		}
+		
 		this.condition = condition;
 		this.positive = positive;
 		this.negative = negative;
 	}
 	
 	
-	public Expression collapse() {
+	public Expression collapse() 
+	{
 		Expression c2 = condition.collapse();
-		if (c2 instanceof ConstantExpression) {
+		
+		if (c2 instanceof ConstantExpression) 
+		{
 			ConstantExpression c = (ConstantExpression)c2;
 			return (c.getValue() == 0) ? negative.collapse() : positive.collapse();
 		}
-		try {
+		
+		try 
+		{
 			return new TernaryExpression(c2, positive.collapse(), negative.collapse());
-		} catch(TypeMismatchException e) {
+		} 
+		catch(TypeMismatchException e)
+		{
 			return null;
 		}
 	}
 	
-	public String generateCode(boolean valueNeeded) {
+	public String generateCode(boolean valueNeeded) 
+	{
 		String negLabel = label(SmallCC.nextLabelNumber());
 		String endLabel = label(SmallCC.nextLabelNumber());
-		String code = COM("TernaryExpression(" + condition + ":" + positive + ":" + negative + ")") +
+		String code = COM("TernaryExpression " + this.toString()) +
 		condition.generateCode(true);
 		code += INS("MCS", STACK_OFF(0), STACK_OFF(0));
 		code += POP(condition.getType().sizeof());
@@ -44,7 +57,12 @@ public class TernaryExpression extends Expression {
 		code += LBL_INS(negLabel, "NOP");
 		code += negative.generateCode(valueNeeded);
 		code += LBL_INS(endLabel, "NOP");
-		return code;
 		
+		return code;
+	}
+
+	public String toString()
+	{
+		return "(" + condition + " ? " + positive + " : " + negative + ")";
 	}
 }

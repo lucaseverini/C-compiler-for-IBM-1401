@@ -46,7 +46,8 @@ public class OrExpression extends Expression
         String labelSecond = label(SmallCC.nextLabelNumber());
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("OrExpression(" + l + ":" + r + ")") + PUSH(5,NUM_CONST(0, false));
+        String code = COM("OrExpression " + this.toString());
+		code += PUSH(5, NUM_CONST(0, false));
         code += l.generateCode(true);
         code += INS("MCS",STACK_OFF(0),STACK_OFF(0));
         code += POP(l.getType().sizeof());

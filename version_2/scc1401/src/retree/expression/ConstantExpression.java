@@ -19,15 +19,21 @@ public class ConstantExpression extends Expression
 		{
 			if (getType() instanceof PointerType) 
 			{
-				return COM("ConstantExpression(" + val + ")") + PUSH(getType().sizeof(), ADDR_CONST(val, false));
+				String cons = ADDR_CONST(val, false);
+				return COM("ConstantExpression (" + this.toString() + " : " + cons + ")") 
+					   + PUSH(getType().sizeof(), cons);
 			} 
 			else if (getType().equals(Type.intType)) 
 			{
-				return COM("ConstantExpression(" + val + ")") + PUSH(getType().sizeof(), NUM_CONST(val, false));
+				String cons = NUM_CONST(val, false);
+				return COM("ConstantExpression (" + this.toString() + " : " + cons + ")") 
+					   + PUSH(getType().sizeof(), cons);
 			} 
 			else if (getType().equals(Type.charType)) 
 			{
-				return COM("ConstantExpression(" + val + ")") + PUSH(getType().sizeof(), CHAR_CONST(val, false));
+				String cons = CHAR_CONST(val, false);
+				return COM("ConstantExpression (" + this.toString() + " : " + cons + ")") 
+					   + PUSH(getType().sizeof(), CHAR_CONST(val, false));
 			} 
 			else 
 			{
@@ -50,7 +56,7 @@ public class ConstantExpression extends Expression
 	{
 		if (getType().equals(Type.intType)) 
 		{
-			return val + "";
+			return Integer.toString(val);
 		}
 		
 		if (getType().equals(Type.charType)) 
@@ -69,7 +75,7 @@ public class ConstantExpression extends Expression
 		}
 		else 
 		{
-			return "(" + val + ")";
+			return Integer.toString(val);
 		}
 	}
 }

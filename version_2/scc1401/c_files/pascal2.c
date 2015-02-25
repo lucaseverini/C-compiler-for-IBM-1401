@@ -37,6 +37,11 @@ int main()
 	int y[ITERATIONS + 1];
 	int i;
 	
+	do {
+		i = 1;
+	}
+	while(i != 1);
+	
 	for(i = 0; i <= ITERATIONS; i++)
 	{
 		x[i] = i == 1 ? 1 : 0;

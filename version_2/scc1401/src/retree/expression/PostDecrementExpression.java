@@ -30,14 +30,15 @@ public class PostDecrementExpression extends Expression
 	@Override
 	public String generateCode(boolean valueNeeded)
 	{
-		String code = COM("PostDecrement("+l+")") + l.generateAddress();
-		
+		String code = COM("PostDecrement "+ this.toString());
+		code += l.generateAddress();		
 		code += POP(3, "X1");
 		
 		if (valueNeeded)
 		{
 			code += PUSH(l.getType().sizeof(), "0+X1");
 		}
+		
 		if (getType() instanceof PointerType) 
 		{
 			PointerType pt = (PointerType) getType();

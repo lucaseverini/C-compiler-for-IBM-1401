@@ -49,7 +49,7 @@ public class GreaterThanOrEqualExpression extends Expression
 			String lCode = l.generateCode(valueNeeded);
 			String rCode = r.generateCode(valueNeeded);
 
-			String code = COM("GreaterThanOrEqualExpression(" + l + ":" + r + ")") +
+			String code = COM("GreaterThanOrEqualExpression(" + this.toString()) +
 			lCode + SNIP("clean_number") + rCode + SNIP("clean_number");
 
 			String labelLessThan = label(SmallCC.nextLabelNumber());

@@ -1,4 +1,5 @@
 package retree.type;
+
 public class Type 
 {
 	public static final Type intType = new Type(5) 

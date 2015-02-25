@@ -13,10 +13,10 @@ public class SmallCPP implements SmallCPPConstants {
         static String tmpDir = "temp/"; //System.getProperty("java.io.tmpdir");
         static boolean ignore = false;
         static boolean keepComments = false;
-        static boolean verbose = false;
+        static int verbose = 0;
 
         static String preprocessFile(String inFile, List<String> searchPaths, PreProcSymTab presetTable,
-                                                                                   boolean isHeader, boolean comments, boolean verbose_) throws Exception
+                                                                                   boolean isHeader, boolean comments, int verbose_) throws Exception
         {
                 if(searchPaths != null)
                 {
@@ -54,7 +54,7 @@ public class SmallCPP implements SmallCPPConstants {
                                         inFile = p + inFile;
                                         outFile = p + fileName + ".preproc";
 										
-                                        if (verbose)
+                                        if (verbose > 0)
                                         {
     										System.out.println("Preprocessed file: " + outFile);
                                         }
@@ -75,7 +75,7 @@ public class SmallCPP implements SmallCPPConstants {
                         {
                                 // throw new Exception("No header file: " + inFile);
 
-								if(verbose)
+								if(verbose > 1)
 								{
 									System.out.println("\u005cn##### NO HEADER FILE " + inFile + " #####\u005cn");
 								}
@@ -86,7 +86,7 @@ public class SmallCPP implements SmallCPPConstants {
                         {
                                 // throw new Exception("No source file: " + inFile);
 
- 								if(verbose)
+ 								if(verbose > 1)
 								{
 									System.out.println("\u005cn##### NO SOURCE FILE " + inFile + " #####\u005cn");
 								}
@@ -94,7 +94,7 @@ public class SmallCPP implements SmallCPPConstants {
                                 return null;
                         }
                 }
-                if (verbose)
+                if (verbose > 1)
                 {
                         System.out.println();
                         System.out.println("##### PREPROCESSING FILE " + inFile + " size:" + file.length() + " #####");
@@ -196,7 +196,7 @@ public class SmallCPP implements SmallCPPConstants {
 
                         copier.copyUntilEnd();
 						
-                        if (verbose)
+                        if (verbose > 1)
                         {
                                 System.out.println("### FILE " + inFile + " PREPROCESSED SUCCESSFULLY ###");
                                 System.out.println();
@@ -204,7 +204,7 @@ public class SmallCPP implements SmallCPPConstants {
         }
         catch (ParseException ex)
                 {
-						if(verbose)
+						if(verbose > 1)
 						{
 							System.out.println("### PREPROCESSING ERROR IN FILE " + inFile + " ###");
 						}
@@ -246,7 +246,7 @@ public class SmallCPP implements SmallCPPConstants {
                                 int endCol = token.endColumn;
                                 String position = String.format("%d:%d - %d:%d", beginLine, beginCol, endLine, endCol);
 								
-                                if (verbose)
+                                if (verbose > 1)
                                 {
                                         System.out.println("##### COMMENT REMOVED at " + position + " #####");
                                 }
@@ -301,7 +301,7 @@ int beginLine = token.beginLine;
                                 name = name.replaceAll("<", "");
                                 name = name.replaceAll(">", "");
 								
-                                if (verbose)
+                                if (verbose > 1)
                                 {
                                         System.out.println("##### INCLUDE " + name + " at " + position + " #####");
                                 }
@@ -353,7 +353,7 @@ int beginLine = token.beginLine;
                                 ignore = !symTable.isDefined(name);
                                 if(ignore)
                                 {
-                                        if (verbose)
+                                        if (verbose > 1)
                                         {
                                                 System.out.println("##### BEGIN IGNORE at " + position + " #####");
                                         }
@@ -370,7 +370,7 @@ int beginLine = token.beginLine;
                                 ignore = symTable.isDefined(name);
                                 if(ignore)
                                 {
-                                        if (verbose)
+                                        if (verbose > 1)
                                         {
                                                 System.out.println("##### BEGIN IGNORE at " + position + " #####");
                                         }
@@ -386,7 +386,7 @@ int beginLine = token.beginLine;
                         {
                                 ignore = true;
 								
-                                if (verbose)
+                                if (verbose > 1)
                                 {
                                         System.out.println("##### BEGIN IGNORE at " + position + " #####");
                                 }
@@ -398,7 +398,7 @@ int beginLine = token.beginLine;
                         {
                                 ignore = false;
 								
-                                if (verbose)
+                                if (verbose > 1)
                                 {
                                         System.out.println("##### END IGNORE at " + position + " #####");
                                 }
@@ -412,7 +412,7 @@ int beginLine = token.beginLine;
                         {
                                 ignore = false;
 								
-                                if (verbose)
+                                if (verbose > 1)
                                 {
                                         System.out.println("##### END IGNORE at " + position + " #####");
                                 }
@@ -444,7 +444,7 @@ int beginLine = token.beginLine;
                         String value = symTable.getValue(token.image);
                         if(value != null)
                         {
-                                if (verbose)
+                                if (verbose > 1)
                                 {
                                         System.out.println("##### REPLACE \u005c"" + token.image + "\u005c" with \u005c"" + value + "\u005c" at " + position + " #####");
                                 }
