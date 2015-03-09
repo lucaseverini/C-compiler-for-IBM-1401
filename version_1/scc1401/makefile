@@ -29,7 +29,7 @@ all:
 	cp -r snippets build; \
 	cp -r nonstdlib build; \
 	
-	# cp -r temp/* netbeans/; \
+	# cp -r temp/* netbeans/; \	
 	
 	rm -r temp;
 

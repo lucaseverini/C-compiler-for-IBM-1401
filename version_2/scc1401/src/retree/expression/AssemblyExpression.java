@@ -1,18 +1,31 @@
+/*
+	AssemblyExpression.java
+
+    Small-C compiler - SJSU
+	March-1-2015
+
+	By Sean Papay, Matt Pleva, Luca Severini
+*/
+
 package retree.expression;
+
 import java.util.*;
 import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.type.*;
 
-public class AssemblyExpression extends Expression {
+public class AssemblyExpression extends Expression
+{
 	private String asmInstructions = "";
 	private String args = "";
 	
-	public AssemblyExpression() {
+	public AssemblyExpression() 
+	{
 		super(Type.intType);
 	}
 	
-	public Expression collapse() {
+	public Expression collapse() 
+	{
 		return this;
 	}
 
@@ -23,9 +36,12 @@ public class AssemblyExpression extends Expression {
 			if (args.equals(""))
 			{
 				args += s;
-			} else {
+			} 
+			else
+			{
 				args += "," + s;
 			}
+			
 			s = s.substring(1,s.length()-1);
 			Scanner sc = new Scanner(s);
 			if (sc.hasNext())
@@ -38,10 +54,13 @@ public class AssemblyExpression extends Expression {
 					if(tmp.contains(","))
 					{
 						String[] parts = tmp.split(",");
-						for (String tmp1 : parts) {
+						for (String tmp1 : parts) 
+						{
 							instructionPartsList.add(tmp1);
 						}
-					} else {
+					}
+					else 
+					{
 						instructionPartsList.add(tmp);
 					}
 				}
@@ -53,13 +72,14 @@ public class AssemblyExpression extends Expression {
 		}
 	}
 	
-	public String generateCode(boolean valueNeeded) {
+	public String generateCode(boolean valueNeeded) 
+	{
 		return COM("Start asm block") + asmInstructions + COM("End asm block");
 	}
 	
-	public String toString() {
+	public String toString() 
+	{
 		return "asm(" + args + ")";
 	}
-
 }
 

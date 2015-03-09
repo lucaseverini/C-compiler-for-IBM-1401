@@ -7,7 +7,7 @@
      * Now zero out the top of the stack
                LCA  @00000@,0+X2
      * Now copy back, shifted over 2 digits
-               MCW  3+X2,0+X2
+               LCA  3+X2,0+X2
      * Now zero out the zone bits on the stack
                MZ   @0@,0+X2
                MZ   @0@,15999+X2

@@ -8,7 +8,7 @@
      PUCPOS    DCW  000                * char position in punch area
      PUNSIZ    DCW  @080@              * Size of punch area
      PRTSIZ    DCW  @132@              * Size of print area
-     EOS       DCW  @'@                * End Of String char
+     EOS       DCW  @'@                * End Of String char (string terminator)
      EOL       DCW  @;@                * End Of Line char
 
                ORG  87
@@ -19,6 +19,13 @@
      X3        DSA  0                  * INDEX REGISTER 3
      
      * I need a single digit flag - should I replace this with a DA?
-     RF        EQU  340
+     RF        EQU  150
+
+               ORG  3000
+  
+     START     NOP
      
      ****************************************************************  
+     
+               SBR  X2, 400            * SET THE STACK
+               MCW  X2, X3

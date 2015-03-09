@@ -2056,40 +2056,66 @@ if (jjtc000) {
         jjtree.openNodeScope(jjtn000);Expression e = null;
         ConstantExpression ce = null;
         String str = "";
-    try {
-      if (jj_2_104(99999)) {
+    try 
+	{
+      if (jj_2_104(99999)) 
+	  {
         str = Identifier();
-VariableExpression var = variableTable.searchStack(str);
-                if (var == null){
+		VariableExpression var = variableTable.searchStack(str);
+                if (var == null)
+				{
                         ConstantExpression fun = functionTable.get(str);
-                        if (fun == null) {
+                        if (fun == null) 
+						{
                                 reportError("Did not find: " + str + " anywhere did you forget to declare it?", token);
                                 {if ("" != null) return null;}
-                        } else {
-                                if (pendingFunctionDefinitions.containsKey(fun)) {
+                        } 
+						else
+						{
+                                if (pendingFunctionDefinitions.containsKey(fun)) 
+								{
                                         //lazily add our function definition to the program
                                         includedFunctions.add(pendingFunctionDefinitions.remove(fun));
                                 }
                                 {if ("" != null) return fun;}
                         }
-                } else if (var.getType() instanceof ArrayType) {
+                } 
+				else if (var.getType() instanceof ArrayType) 
+				{
                         {if ("" != null) return new ArrayNameExpression(var);}
-                } else {
+                } 
+				else 
+				{
                         {if ("" != null) return var;}
                 }
-      } else if (jj_2_105(99999)) {
+      } 
+	  else if (jj_2_105(99999)) 
+	  {
         str = Number();
-int val = Integer.parseInt(str);
-                ce = new ConstantExpression(Type.intType, val);
-                e = ce;
-      } else if (jj_2_106(99999)) {
-        str = StringLiteral();
-VariableExpression ve = variableTable.searchStack(str);
+		int val = Integer.parseInt(str);
+        ce = new ConstantExpression(Type.intType, val);
+        e = ce;
+      } 
+	  else if (jj_2_106(99999))
+	  {
+			// TO BE FIXED:
+			// Arrays initilized with same value (for string literals) point to the same location
+			// Example: char *x = "aaaa", *y = "aaaa"; point to the same memory location so if x[1]
+			// is changed the same value is found in y[1]
+
+			str = StringLiteral();
+				
+				VariableExpression ve = variableTable.searchStack(str);
                 if (ve != null)
                 {
                         ArrayNameExpression ane = new ArrayNameExpression(ve);
-                        {if ("" != null) return ane;}
-                } else {
+                        {
+							if ("" != null) 
+								return ane;
+						}
+                } 
+				else 
+				{
                         str = str.substring(1, str.length() - 1);
                         List<Expression> list = new ArrayList<Expression>();
                         List<Expression> rlist = new ArrayList<Expression>();
@@ -2110,7 +2136,9 @@ VariableExpression ve = variableTable.searchStack(str);
                                                 }
                                                 i ++;
                                         }
-                                } else {
+                                } 
+								else 
+								{
                                         list.add(new ConstantExpression(Type.charType,("" + str.charAt(i)).toUpperCase().charAt(0)));
                                 }
                         }
@@ -2126,7 +2154,10 @@ VariableExpression ve = variableTable.searchStack(str);
                         {
                                 stringInits.add(new Initializer(ve, rlist));
                         }
-                        {if ("" != null) return ane;}
+                        {
+							if ("" != null) 
+								return ane;
+						}
                 }
                 // check symtab for this string
                 // if it is Put that in arry name expr and ret that
@@ -2140,9 +2171,11 @@ VariableExpression ve = variableTable.searchStack(str);
                 // return array name
                 //
 
-      } else if (jj_2_107(99999)) {
-        str = CharacterConstant();
-int val = 0;
+      } 
+	  else if (jj_2_107(99999))
+	  {
+			str = CharacterConstant();
+			int val = 0;
                         //strip the quote characters
                         str = str.substring(1, str.length() - 1);
                         if (str.charAt(0) == '\u005c\u005c') {

@@ -4,7 +4,7 @@
 #
 #	Small-C compiler
 #   CS153 Final project - SJSU
-#	November-8-2014
+#	Mar-1-2015
 #
 #	By Sean Papay, Matt Pleva, Luca Severini
 #
@@ -21,17 +21,12 @@ all:
 	mkdir -p temp/wci/intermediate; \
 	mkdir -p temp/wci/util; \
 	
-	# rm -r netbeans; \
-	# mkdir -p netbeans; \
-	
 	cp -r src/* temp; \
 	make compile; \
 	cp -r snippets build; \
 	cp -r nonstdlib build; \
 	
-	# cp -r temp/* netbeans/; \
-	
-	rm -r temp;
+	#rm -r temp;
 
 javacc: jjtree
 	cd temp/preprocessor; \

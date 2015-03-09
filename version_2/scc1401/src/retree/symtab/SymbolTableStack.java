@@ -1,3 +1,12 @@
+/*
+	SymbolTableStack.java
+
+    Small-C compiler - SJSU
+	March-1-2015
+
+	By Sean Papay, Matt Pleva, Luca Severini
+*/
+
 package retree.symtab;
 
 import compiler.SmallCC;

@@ -1,17 +1,17 @@
 /*
-	small_c.jj
+	small_c.jjt
 
     Small-C compiler - SJSU
-	November-18-2014
+	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
 options
 {
-	DEBUG_PARSER=false;	// true;
-	LOOKAHEAD=99999;
-  	// NODE_CLASS="MyNode";
+	DEBUG_PARSER = false;
+	LOOKAHEAD = 99999;
+  	// NODE_CLASS = "MyNode";
 }
 
 PARSER_BEGIN(SmallCC)
@@ -31,7 +31,7 @@ import static retree.RetreeUtils.*;
 
 public class SmallCC
 {
-	protected static JJTSmallCCState jjtree = new JJTSmallCCState(); // used during tree build
+	// protected static JJTSmallCCState jjtree = new JJTSmallCCState(); // used during tree build
 	private static List<Initializer> stringInits;
 	public static SymbolTableStack variableTable;
 	public static HashMap<String, ConstantExpression> functionTable;
@@ -84,14 +84,15 @@ public class SmallCC
 
 	public static String getFunctionNameFromExpression(ConstantExpression c)
 	{
-		for (Map.Entry<String,ConstantExpression> entry : FunctionTable.entrySet()) {
-  			String key = entry.getKey();
-  			ConstantExpression value = entry.getValue();
-			if (value == c)
+		for (Map.Entry<String,ConstantExpression> entry : functionTable.entrySet())
+		{
+			if (entry.getValue() == c)
 			{
-				return key;
+				return entry.getKey();
 			}
 		}
+		
+		return "UNNAMED FUNCTION";
 	}
 
 	public static void main(String args[]) throws Exception
@@ -109,7 +110,7 @@ public class SmallCC
 
 	public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
 	{
-		SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y HH:mm:ss");
+    	SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
 		compilationTime = sdf.format(Calendar.getInstance().getTime());
 
 		if(stackLoc > 0 && stackLoc < 16000)
@@ -140,11 +141,11 @@ public class SmallCC
 		File inFile = new File(inputFile);
 		Reader sr = new FileReader(inFile);
 
-		stringInits = new ArrayList<String>();
+		stringInits = new ArrayList<Initializer>();
 		functionTable = new HashMap<String, ConstantExpression>();
 		variableTable = new SymbolTableStack(dataMem);
 		pendingFunctionDefinitions = new HashMap<ConstantExpression, FunctionDefinition>();
-		includedFunctions = new HashSet<FunctionDefinitio>();
+		includedFunctions = new HashSet<FunctionDefinition>();
 		labelTable = new HashMap<String, String>();
 		arrMemberLabelTable = new ArrayList<Pair<String, String>>();
 
@@ -260,6 +261,7 @@ public class SmallCC
 		String end = String.format("</%s>", node.toString());
 		System.out.println(end);
 	}
+}
 
 PARSER_END(SmallCC)
 
@@ -356,7 +358,7 @@ Program program() throws Exception : {
 				ConstantExpression mainDec = functionTable.get("main");
 				if (mainDec == null) {
 					System.out.println("Missing main function");
-					System.exit(1);
+					return null;
 				}
 				if (pendingFunctionDefinitions.containsKey(mainDec)) {
 					includedFunctions.add(pendingFunctionDefinitions.remove(mainDec));
@@ -433,10 +435,10 @@ Initializer variableInitializer(Type baseType, boolean isStatic) : {
 	variable = suffixedVariable(baseType, isStatic) ("=" {t=token;} value=ternaryExpression())?
 	{
 		try {
-			return new Initializer(variable, value);
+			return new Initializer(variable, value, false);
 		} catch(Exception e) {
 			reportError(e, t);
-			return new Initializer(variable, (Expression)null);
+			return new Initializer(variable, (Expression)null, false);
 		}
 	}
 }
@@ -590,7 +592,7 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 	Statement s;
 	if (isFunction) {
 		try {
-			initializers.add(new Initializer(variableTable.searchStack(""), (Expression) null));
+			initializers.add(new Initializer(variableTable.searchStack(""), (Expression) null, false));
 		} catch (Exception e) {
 			reportError("We should never be here 0", token);
 		}
@@ -1046,36 +1048,55 @@ Expression AtomicExpression()  : {
 {
    (str = Identifier() {
 		VariableExpression var = variableTable.searchStack(str);
-		if (var == null){
+		if (var == null)
+		{
 			ConstantExpression fun = functionTable.get(str);
-			if (fun == null) {
+			if (fun == null) 
+			{
 				reportError("Did not find: " + str + " anywhere did you forget to declare it?", token);
 				return null;
-			} else {
-				if (pendingFunctionDefinitions.containsKey(fun)) {
+			} 
+			else 
+			{
+				if (pendingFunctionDefinitions.containsKey(fun)) 
+				{
 					//lazily add our function definition to the program
 					includedFunctions.add(pendingFunctionDefinitions.remove(fun));
 				}
 				return fun;
 			}
-		} else if (var.getType() instanceof ArrayType) {
+		} 
+		else if (var.getType() instanceof ArrayType) 
+		{
 			return new ArrayNameExpression(var);
-		} else {
+		} 
+		else 
+		{
 			return var;
 		}
 	}
-    | str=Number(){
+	
+    | str = Number(){
 		int val = Integer.parseInt(str);
 		ce = new ConstantExpression(Type.intType, val);
 		e = ce;
 	}
+	
     | str = StringLiteral() {
+    
+		// TO BE FIXED:
+		// Arrays initilized with same value (for string literals) point to the same location
+		// Example: char *x = "aaaa", *y = "aaaa"; point to the same memory location so if x[1]
+		// is changed the same value is found in y[1]
+    	
 		VariableExpression ve = variableTable.searchStack(str);
 		if (ve != null)
 		{
 			ArrayNameExpression ane = new ArrayNameExpression(ve);
 			return ane;
-		} else {
+		} 
+		else 
+		{
 			str = str.substring(1, str.length() - 1);
 			List<Expression> list = new ArrayList<Expression>();
 			List<Expression> rlist = new ArrayList<Expression>();
@@ -1096,11 +1117,14 @@ Expression AtomicExpression()  : {
 						}
 						i ++;
 					}
-				} else {
+				} 
+				else
+				 {
 					list.add(new ConstantExpression(Type.charType,("" + str.charAt(i)).toUpperCase().charAt(0)));
 				}
 			}
 			list.add(new ConstantExpression(Type.charType, 0));
+			
 			for (int i = list.size()-1; i >= 0; i -- )
 			{
 				rlist.add(list.get(i));
@@ -1126,16 +1150,20 @@ Expression AtomicExpression()  : {
 		// return array name
 		//
 	}
+	
     | str=CharacterConstant() {
 			int val = 0;
 			//strip the quote characters
 			str = str.substring(1, str.length() - 1);
-			if (str.charAt(0) == '\\') {
-				if (str.length() != 2) {
+			if (str.charAt(0) == '\\') 
+			{
+				if (str.length() != 2) 
+				{
 					//invalid char constant
 					return null;
 				}
-				switch(str.charAt(1)) {
+				switch(str.charAt(1)) 
+				{
 					case 'n':
 						val = '\n';
 						break;
@@ -1143,8 +1171,11 @@ Expression AtomicExpression()  : {
 						val = 0;
 						break;
 				}
-			} else {
-				if (str.length() != 1) {
+			} 
+			else 
+			{
+				if (str.length() != 1) 
+				{
 					//invalid char constant.
 					return null;
 				}
@@ -1153,9 +1184,9 @@ Expression AtomicExpression()  : {
 		ce = new ConstantExpression(Type.charType, val);
 		e = ce;
 	}
+	
     | "(" e=expression() ")")
 	{
-
 		return e;
 	}
 }
@@ -1189,7 +1220,6 @@ String StringLiteral() : {}
 {
     <STRING_LIT>
 	{
-
 		return token.image;
 	}
 }
