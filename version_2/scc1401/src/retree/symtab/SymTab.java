@@ -15,7 +15,7 @@ import retree.type.Type;
 
 public class SymTab 
 {
-	private final HashMap<String,VariableExpression> table = new HashMap<String,VariableExpression>();
+	private final HashMap<String, VariableExpression> table = new HashMap<String, VariableExpression>();
 	private int topOffset, localOffset;
 	private int paramOffset;
 	private boolean isStatic = false;

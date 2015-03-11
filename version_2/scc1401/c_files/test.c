@@ -1,7 +1,7 @@
 // test.c
 
-#define DATA 5000
-#define CODE 5500
+#define DATA 4000
+#define CODE 4500
 #define STACK 400
 
 #ifdef IBM1401
@@ -44,6 +44,9 @@ int main ()
  	printf("c2:%d\n", (int)c2);
   	
  	c[3] = 'B';
+
+ 	printf("c:%s\n", c);
+ 	printf("c:%d\n", (int)c);
 
  	printf("c2:%s\n", c2);
  	printf("c2:%d\n", (int)c2);

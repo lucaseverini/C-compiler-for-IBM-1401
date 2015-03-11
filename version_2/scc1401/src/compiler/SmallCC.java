@@ -16,6 +16,7 @@ import static retree.RetreeUtils.*;
 public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCConstants {/*@bgen(jjtree)*/
   protected static JJTSmallCCState jjtree = new JJTSmallCCState();// used during tree build
   private static List<Initializer> stringInits;
+  private static int stringLiteralIdx;
   public static SymbolTableStack variableTable;
   public static HashMap<String, ConstantExpression> functionTable;
   //when a function is defined, we stage it here.  Only when it is called do we add it to our program.
@@ -28,9 +29,11 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
   public static String compilationTime = null;
   
   public static boolean inAsmFunc = false;
+  
   public static int stackMem = 400;
   public static int codeMem = 3000;
   public static int dataMem = 2000;
+  public static boolean reuseStringLiterals = false;
 
   private static int labelNumber = 0;
   public static int nextLabelNumber() 
@@ -119,11 +122,17 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
 	{
 		autocoderFile = "";
 	}
+	
+	System.out.println("Stack: " + stackMem);
+	System.out.println("Code: " + codeMem);
+	System.out.println("Data: " + dataMem);
+	System.out.println("Reuse String Constants: " + (reuseStringLiterals ? "YES" : "NO"));
 
 	File inFile = new File(inputFile);
     Reader sr = new FileReader(inFile);
 	
 	stringInits = new ArrayList<>();
+	stringLiteralIdx = 0;
 	functionTable = new HashMap<>();
 	variableTable = new SymbolTableStack(dataMem);
 	pendingFunctionDefinitions = new HashMap<>();
@@ -2098,12 +2107,10 @@ if (jjtc000) {
       } 
 	  else if (jj_2_106(99999))
 	  {
-			// TO BE FIXED:
-			// Arrays initilized with same value (for string literals) point to the same location
-			// Example: char *x = "aaaa", *y = "aaaa"; point to the same memory location so if x[1]
-			// is changed the same value is found in y[1]
-
 			str = StringLiteral();
+			
+			// Use the string value as identifier if string constants can be reused otherwise define an unique identifier 
+			String identif = reuseStringLiterals ? str : "STR_LIT_" + Integer.toString(++stringLiteralIdx);
 				
 				VariableExpression ve = variableTable.searchStack(str);
                 if (ve != null)
@@ -2117,6 +2124,7 @@ if (jjtc000) {
 				else 
 				{
                         str = str.substring(1, str.length() - 1);
+						
                         List<Expression> list = new ArrayList<Expression>();
                         List<Expression> rlist = new ArrayList<Expression>();
                         for(int i = 0; i < str.length(); i++)
@@ -2143,12 +2151,14 @@ if (jjtc000) {
                                 }
                         }
                         list.add(new ConstantExpression(Type.charType, 0));
-                        for (int i = list.size()-1; i >= 0; i -- )
+                        for (int i = list.size()-1; i >= 0; i--)
                         {
                                 rlist.add(list.get(i));
                         }
-                        // need the +1 for the \0 char
-                        ve = variableTable.addStatic("\u005c""+str+"\u005c"", new ArrayType(rlist.size(), Type.charType));
+                        // need the +1 for the '\0' char
+						
+                        ve = variableTable.addStatic(identif, new ArrayType(rlist.size(), Type.charType));
+						
                         ArrayNameExpression ane = new ArrayNameExpression(ve);
                         if (!inAsmFunc)
                         {
