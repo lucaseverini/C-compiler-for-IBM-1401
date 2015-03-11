@@ -1,7 +1,7 @@
 // test.c
 
-#define DATA 4000
-#define CODE 4500
+#define DATA 800
+#define CODE 1000
 #define STACK 400
 
 #ifdef IBM1401
@@ -10,63 +10,21 @@
 	#include <stdio.h>
 #endif
 
-int func (int a2, int b2)
-{
- 	int d;
- 	int f = 111;
- 	
- 	d = a2 + b2;
- 	
- 	printf("d:%d\n", d);
- 	printf("f:%d\n", f);
- 	
-	return 0;
-}
-
-int x = 111;
-char *c = "AAAAAAAA";
-char *c2 = "AAAAAAAA";
+int x0 = 100;
+char *c0 = "AAAAAAAA";
+char *c1 = "BBBBBBBB";
 
 int main ()
 {
-	char *c3 = "AAAAAAAA";
-	int a = 1;
-	int b = 1;
-	int e = 111;
-
- 	printf("c3:%s\n", c3);
- 	printf("c3:%d\n", (int)c3);
-
- 	printf("c:%s\n", c);
- 	printf("c:%d\n", (int)c);
-
- 	printf("c2:%s\n", c2);
- 	printf("c2:%d\n", (int)c2);
-  	
- 	c[3] = 'B';
-
- 	printf("c:%s\n", c);
- 	printf("c:%d\n", (int)c);
-
- 	printf("c2:%s\n", c2);
- 	printf("c2:%d\n", (int)c2);
-
- 	printf("c3:%s\n", c3);
- 	printf("c3:%d\n", (int)c3);
+	char *c2 = "CCCCCCCC";
+	int x2 = 200;
 	
- 	printf("x:%d\n", x);
- 	printf("e:%d\n", e);
- 	x = 222;
- 	printf("e:%d\n", e);
- 	printf("x:%d\n", x);
- 	
- 	printf("a:%d b:%d\n", a, b);
- 	a = 2;
- 	printf("a:%d b:%d\n", a, b);
- 	b = 3;
- 	printf("a:%d b:%d\n", a, b);
-	
-	func(a, b);
+ 	printf("x0:%d\n", x0);
+ 	printf("c0:%s\n", c0);
+ 	printf("c1:%s\n", c1);
+
+ 	printf("x2:%d\n", x2);
+ 	printf("c2:%s\n", c2);
 	
 	printf("\nDone.\n");
 }
