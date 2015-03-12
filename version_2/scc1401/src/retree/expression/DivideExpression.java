@@ -58,7 +58,7 @@ public class DivideExpression extends Expression
 		if (valueNeeded) 
 		{
 			code += SNIP("SNIP_DIV");
-			code += INS("MCW", STACK_OFF(0), STACK_OFF(-Type.intType.sizeof()));
+			code += INS(null, null, "MCW", STACK_OFF(0), STACK_OFF(-Type.intType.sizeof()));
 			code += POP(Type.intType.sizeof());
 		}
 		

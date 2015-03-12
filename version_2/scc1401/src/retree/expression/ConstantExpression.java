@@ -46,7 +46,7 @@ public class ConstantExpression extends Expression
 			} 
 			else 
 			{
-				//oops
+				// oops!
 				return null;
 			}
 		} 

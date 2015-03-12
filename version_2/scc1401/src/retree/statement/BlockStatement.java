@@ -19,15 +19,7 @@ public class BlockStatement implements Statement
 	private final List<Statement> statements;
 	private final int stackOffset;
 	private final String returnLabel, parentReturnLabel;
-	
-	/*
-	public BlockStatement(List<Initializer> initializers, List<Statement> statements, int stackOffset) {
-		this.initializers = initializers;
-		this.statements = statements;
-		this.stackOffset = stackOffset;
-	}
-	*/	
-	
+		
 	public BlockStatement(List<Initializer> initializers, List<Statement> statements, int stackOffset, String returnLabel, String parentReturnLabel)
 	{
 		this.initializers = initializers;
@@ -41,7 +33,7 @@ public class BlockStatement implements Statement
 	{
 		String code = "\n";
 		
-		code += COM("***********************");
+		code += COM("***************************************");
 		code += COM("BeginBlock " + this.toString());
 		
 		for (Initializer i : initializers) 
@@ -51,7 +43,7 @@ public class BlockStatement implements Statement
 		
 		if (stackOffset > 0) 
 		{
-			code += INS("MA", ADDR_CONST(stackOffset, false), "X2");
+			code += INS(null, null, "MA", ADDR_CONST(stackOffset, false), "X2");
 		}
 		
 		for (Statement s : statements) 
@@ -62,12 +54,12 @@ public class BlockStatement implements Statement
 		// if we call return from the function, we jump here
 		if (returnLabel != null) 
 		{
-			code += LBL_INS(returnLabel, "NOP");
+			code += INS("Return", returnLabel, "NOP");
 		}
 		
 		if (stackOffset > 0)
 		{
-			code += INS("MA", ADDR_CONST(-stackOffset, false), "X2");
+			code += INS(null, null, "MA", ADDR_CONST(-stackOffset, false), "X2");
 		}
 		
 		for (Initializer i : initializers)
@@ -75,19 +67,19 @@ public class BlockStatement implements Statement
 			code += i.freeCode();
 		}
 		
-		//if we were returning, and there are more blocks to escape, keep going up
+		// if we were returning, and there are more blocks to escape, keep going up
 		if (parentReturnLabel != null) 
 		{
-			code += INS("BCE", parentReturnLabel, "RF", "R");
+			code += INS("Jump back to caller", null, "BCE", parentReturnLabel, "RF", "R");
 		} 
 		else 
 		{
 			// if we reached the top, clear our return flag
-			code += INS("MCW", "@ @", "RF");
+			code += INS("Clear the Return Flag", null, "MCW", "@ @", "RF");
 		}
 		
 		code += COM("EndBlock " + this.toString());
-		code += COM("***********************");
+		code += COM("***************************************");
 		code += "\n";
 		
 		return code;
@@ -95,6 +87,6 @@ public class BlockStatement implements Statement
 
     public String toString()
     {
-        return "(" + returnLabel + ":" + parentReturnLabel + ")";
+        return "[Block " + returnLabel + ":" + parentReturnLabel + "]";
     }
 }

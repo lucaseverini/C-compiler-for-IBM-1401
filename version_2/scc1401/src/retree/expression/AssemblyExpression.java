@@ -47,7 +47,9 @@ public class AssemblyExpression extends Expression
 			if (sc.hasNext())
 			{
 				String op = sc.next();
+				
 				ArrayList<String> instructionPartsList = new ArrayList<String>();
+				
 				while(sc.hasNext())
 				{
 					String tmp = sc.next();
@@ -64,10 +66,13 @@ public class AssemblyExpression extends Expression
 						instructionPartsList.add(tmp);
 					}
 				}
+				
 				sc.close();
+				
 				int len = instructionPartsList.toArray().length;
 				String[] instrParts = new String[len];
-				asmInstructions += INS(op,instructionPartsList.toArray(instrParts));
+				
+				asmInstructions += INS(null, null, op, instructionPartsList.toArray(instrParts));
 			}
 		}
 	}

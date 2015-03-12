@@ -57,8 +57,8 @@ public class Program
 		code += SET_CODE();
 		code += SET_STACK();
 	
-		code += INS("B", label(mainLabelNumber));
-		code += INS("H");
+		code += INS("Jump to function main", null, "B", label(mainLabelNumber));
+		code += INS("Program executed.", null, "H");
 
 		for (FunctionDefinition func : functions) 
 		{
@@ -67,7 +67,7 @@ public class Program
 		
 		code += FOOTER();
 		
-		code += INS("END", "START");
+		code += INS("End of program code.", null, "END", "START");
 		
 		return code ;
 	}

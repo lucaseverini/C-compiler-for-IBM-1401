@@ -37,37 +37,23 @@ public class FunctionDefinition
 	public String generateCode() throws Exception
 	{
 		String code = "\n" + 
-			COM("**********************************************************************") +
+			COM("********************************************************************************") +
 			COM("FunctionDefinition(" + SmallCC.getFunctionNameFromExpression(declaration) + ")") +
-			COM("**********************************************************************") +
-			LBL_INS(label(declaration.getValue()), "SBR", "3+X3") +
-			INS("SW", "1+X3") +
-			INS("CW", "2+X3") +
-			INS("CW", "3+X3") +
+			COM("********************************************************************************") +
+			INS(null, label(declaration.getValue()), "SBR", "3+X3") +
+			INS(null, null, "SW", "1+X3") +
+			INS(null, null, "CW", "2+X3") +
+			INS(null, null, "CW", "3+X3") +
 			block.generateCode() +
-			INS("LCA", "3+X3", "X1") +
-			INS("B", "0+X1");
+			INS(null, null, "LCA", "3+X3", "X1") +
+			INS("Jump back to caller", null, "B", "0+X1");
 		
 		return code;
 	}
 
 	public String toString()
 	{
-		String s = "";
-		
 		String name = SmallCC.getFunctionNameFromExpression(declaration);
-/*		
-		Iterator<Expression> iter = arguments.iterator();
-		while(iter.hasNext())
-		{
-			s += iter.next();
-			
-			if(iter.hasNext())
-			{
-				s = s + ", ";
-			}
-		}
-*/		
-		return " " + name + "(" + s + ")" + " ";
+		return name;
 	}
 }

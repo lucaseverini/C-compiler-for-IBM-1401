@@ -53,18 +53,24 @@ public class LessThanOrEqualExpression extends Expression
 		if (valueNeeded) 
 		{
 			String code = COM("LessThanOrEqualExpression " + this.toString()) +
-			l.generateCode(valueNeeded) + SNIP("clean_number") + r.generateCode(valueNeeded) + SNIP("clean_number");
+							l.generateCode(valueNeeded) + SNIP("clean_number") + 
+							r.generateCode(valueNeeded) + SNIP("clean_number");
 
 			String labelLessThan = label(SmallCC.nextLabelNumber());
 			String labelEnd = label(SmallCC.nextLabelNumber());
 
-			code += INS("C", STACK_OFF(0), STACK_OFF(-5));
+			// ###############
+			// ## WARNING!! ##
+			// ###############
+			// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
+			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-5));			
 			code += POP(5);
-			code += INS("MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += INS("BH", labelLessThan);
-			code += INS("B", labelEnd);
-			code += LBL_INS(labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-			code += LBL_INS(labelEnd, "NOP");
+			
+			code += INS(null, null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+			code += INS("Jump if less or equal", null, "BH", labelLessThan);
+			code += INS("Jump to End", null, "B", labelEnd);
+			code += INS("Less or equal", labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+			code += INS("End", labelEnd, "NOP");
 
 			return code;
 		} 

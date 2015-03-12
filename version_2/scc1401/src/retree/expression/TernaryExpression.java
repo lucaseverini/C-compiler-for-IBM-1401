@@ -56,16 +56,18 @@ public class TernaryExpression extends Expression
 	{
 		String negLabel = label(SmallCC.nextLabelNumber());
 		String endLabel = label(SmallCC.nextLabelNumber());
+		
 		String code = COM("TernaryExpression " + this.toString()) +
-		condition.generateCode(true);
-		code += INS("MCS", STACK_OFF(0), STACK_OFF(0));
+						condition.generateCode(true);
+		
+		code += INS(null, null, "MCS", STACK_OFF(0), STACK_OFF(0));
 		code += POP(condition.getType().sizeof());
-		code += INS("BCE", negLabel, STACK_OFF(condition.getType().sizeof()), " ");
+		code += INS("Jump if false", null, "BCE", negLabel, STACK_OFF(condition.getType().sizeof()), " ");
 		code += positive.generateCode(valueNeeded);
-		code += INS("B", endLabel);
-		code += LBL_INS(negLabel, "NOP");
+		code += INS("Jump to end", null, "B", endLabel);
+		code += INS("Come here if False", negLabel, "NOP");
 		code += negative.generateCode(valueNeeded);
-		code += LBL_INS(endLabel, "NOP");
+		code += INS("End", endLabel, "NOP");
 		
 		return code;
 	}

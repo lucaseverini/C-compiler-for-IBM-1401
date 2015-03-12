@@ -15,4 +15,9 @@ public class EmptyStatement implements Statement
 	{
 		return "";
 	}
+	
+	public String toString()
+    {
+        return "[]";
+    }
 }

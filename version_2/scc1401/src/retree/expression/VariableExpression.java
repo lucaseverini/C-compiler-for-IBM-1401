@@ -63,7 +63,8 @@ public class VariableExpression extends LValue
 		} 
 		else 
 		{
-			code = PUSH(3, ADDR_CONST(offset, false)) + INS("MA", "X3", STACK_OFF(0));
+			code = PUSH(3, ADDR_CONST(offset, false));
+			code += INS(null, null, "MA", "X3", STACK_OFF(0));
 		}
 		
 		return code;

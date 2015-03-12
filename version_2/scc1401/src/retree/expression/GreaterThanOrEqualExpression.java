@@ -63,16 +63,20 @@ public class GreaterThanOrEqualExpression extends Expression
 
 			String labelLessThan = label(SmallCC.nextLabelNumber());
 			String labelEnd = label(SmallCC.nextLabelNumber());
-			code += INS("C", STACK_OFF(0), STACK_OFF(-5));
 
+			// ###############
+			// ## WARNING!! ##
+			// ###############
+			// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
+			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-5));
 			code += POP(5);
 			// code += POP(getType().sizeof());
 
-			code += INS("MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += INS("BL", labelLessThan);
-			code += INS("B", labelEnd);
-			code += LBL_INS(labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-			code += LBL_INS(labelEnd, "NOP");
+			code += INS(null, null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+			code += INS("Jump if greater or equal", null, "BL", labelLessThan);
+			code += INS("Jump to End", null, "B", labelEnd);
+			code += INS("GreaterOrEqual", labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+			code += INS("End", labelEnd, "NOP");
 
 			return code;
 		} 

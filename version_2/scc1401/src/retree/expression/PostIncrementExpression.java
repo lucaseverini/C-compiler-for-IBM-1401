@@ -20,6 +20,7 @@ public class PostIncrementExpression extends Expression
 	public PostIncrementExpression(LValue l) throws TypeMismatchException 
 	{
 		super(l.getType());
+		
 		this.l = l;
 	}
 
@@ -51,11 +52,11 @@ public class PostIncrementExpression extends Expression
 		if (getType() instanceof PointerType)
 		{
 			PointerType pt = (PointerType) getType();
-			code += INS("MA", ADDR_CONST(pt.getType().sizeof(), false), "0+X1");
+			code += INS(null, null, "MA", ADDR_CONST(pt.getType().sizeof(), false), "0+X1");
 		} 
 		else 
 		{
-			code += INS("A", NUM_CONST(1, false), "0+X1");
+			code += INS(null, null, "A", NUM_CONST(1, false), "0+X1");
 		}
 		
 		return code;

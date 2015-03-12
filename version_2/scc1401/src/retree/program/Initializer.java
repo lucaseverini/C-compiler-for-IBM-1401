@@ -99,8 +99,8 @@ public class Initializer
 				{
 					firstElement = false;
 					
-					code += INS("");
-					code += INS("ORG", Integer.toString(init.getVariable().getOffset() - (init.getSize() - 1)));
+					code += "\n";
+					code += INS(null, null, "ORG", Integer.toString(init.getVariable().getOffset() - (init.getSize() - 1)));
 				}
 				
 				code += init.generateCode();
@@ -108,6 +108,7 @@ public class Initializer
 		} 
 		else 
 		{
+			// In case we want to set the workmark at the right position but is not really necessary
 			// code += INS("SW", variable.getWordMarkAddress());
 		}
 		
@@ -122,15 +123,15 @@ public class Initializer
 			{			
 				if(!isArrayMember)
 				{
-					code += INS("");
-					code += INS("ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+					code += "\n";
+					code += INS(null, null, "ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
 				}
 				
-				code += INS("DCW", "@" + ADDR_COD(value.getValue()) + "@");
+				code += INS(null, null, "DCW", "@" + ADDR_COD(value.getValue()) + "@");
 			}
 			else
 			{
-				code += INS("LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				code += INS(null, null, "LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
 		} 
 		else if (value.getType().equals(Type.intType))
@@ -139,15 +140,15 @@ public class Initializer
 			{			
 				if(!isArrayMember)
 				{
-					code += INS("");
-					code += INS("ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+					code += "\n";
+					code += INS(null, null, "ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
 				}
 				
-				code += INS("DCW", "@" + COD(value.getValue()) + "@");
+				code += INS(null, null, "DCW", "@" + COD(value.getValue()) + "@");
 			}
 			else
 			{
-				code += INS("LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				code += INS(null, null, "LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
 		}
 		else if (value.getType().equals(Type.charType))
@@ -156,15 +157,15 @@ public class Initializer
 			{			
 				if(!isArrayMember)
 				{
-					code += INS("");
-					code += INS("ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+					code += "\n";
+					code += INS(null, null, "ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
 				}
 				
-				code += INS("DCW", "@" + CHAR_COD(value.getValue()) + "@");
+				code += INS(null, null, "DCW", "@" + CHAR_COD(value.getValue()) + "@");
 			}
 			else
 			{
-				code += INS("LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				code += INS(null, null, "LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
 		} 
 		else 

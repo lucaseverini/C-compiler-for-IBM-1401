@@ -21,10 +21,14 @@ public class RetreeUtils
 	private static final HashMap<String, String> snippetLabels = new HashMap<>();
 	private static final HashMap<String, String> snippetCode = new HashMap<>();
 
-	public static String LBL_INS(String label, String operation, String ... args) 
+	public static String INS(String comment, String label, String operation, String ... args) 
 	{
 		String line = "     ";
-		line += label;
+		
+		if(label != null && !label.isEmpty())
+		{
+			line += label;
+		}
 		
 		while(line.length() < 15) 
 		{
@@ -47,18 +51,33 @@ public class RetreeUtils
 			
 			line += args[i];
 		}
-		
-		return line + "\n";
-	}
 
-	public static String INS(String operation, String ... args)
-	{
-		return LBL_INS("", operation, args);
+		if(comment != null && !comment.isEmpty())
+		{
+			while (line.length() < 39)
+			{
+				line += " ";
+			}
+			
+			if(comment.charAt(0) != '*')
+			{
+				comment = "* " + comment;
+			}
+
+			line += comment;
+		}
+
+		return line + "\n";
 	}
 
 	public static String COM(String comment) 
 	{
-		return "     * " + comment + "\n";
+		if(comment.charAt(0) != '*')
+		{
+			comment = "* " + comment;
+		}
+
+		return "     " + comment + "\n";
 	}
 
 	public static String NUM_CONST(int val, boolean arrayMember) 
@@ -164,28 +183,28 @@ public class RetreeUtils
 	{
 		// remember we need to set the word mark for the stack
 		return COM("Push (" + a + ":" + size + ")") +
-			   INS("MA", ADDR_CONST(size, false), "X2") +
-			   INS("LCA", a, "0+X2");
+			   INS(null, null, "MA", ADDR_CONST(size, false), "X2") +
+			   INS(null, null, "LCA", a, "0+X2");
 	}
 
 	public static String PUSH(int size) 
 	{
 		// remember we need to set the word mark for the stack
 		return COM("Push (" + size + ")") + 
-			   INS("MA", ADDR_CONST(size, false), "X2");
+			   INS(null, null, "MA", ADDR_CONST(size, false), "X2");
 	}
 
 	public static String POP(int size, String location)
 	{
 		return COM("Pop (" + location + ":" + size + ")") +
-			   INS("LCA", "0+X2", location) +
-			   INS("MA", ADDR_CONST(-size, false), "X2");
+			   INS(null, null, "LCA", "0+X2", location) +
+			   INS(null, null, "MA", ADDR_CONST(-size, false), "X2");
 	}
 
 	public static String POP(int size) 
 	{
 		return COM("Pop (" + size + ")") + 
-			   INS("MA", ADDR_CONST(-size, false), "X2");
+			   INS(null, null, "MA", ADDR_CONST(-size, false), "X2");
 	}
 
 	//returns an address at the frame pointer + offset
@@ -299,7 +318,7 @@ public class RetreeUtils
 		
 		label = snippetLabels.get(snippetName);
 		
-		return INS("B", label);
+		return INS("Jump to snippet " + snippetName, null, "B", label);
 	}
 
 	// this must be called AFTER everything else, including FOOTER.
@@ -326,8 +345,8 @@ public class RetreeUtils
 		String code = "";
 		
 		code += COM("SET THE STACK POINTER");
-		code += INS("SBR", "X2", Integer.toString(SmallCC.stackMem));
-		code += INS("MCW", "X2", "X3");
+		code += INS(null, null, "SBR", "X2", Integer.toString(SmallCC.stackMem));
+		code += INS(null, null, "MCW", "X2", "X3");
 		code += "\n";
 		
 		return code;
@@ -338,8 +357,8 @@ public class RetreeUtils
 		String code = "";
 		
 		code += COM("SET THE START POSITION OF CODE");
-		code += INS("ORG", Integer.toString(SmallCC.codeMem));
-		code += LBL_INS("START", "NOP");
+		code += INS(null, null, "ORG", Integer.toString(SmallCC.codeMem));
+		code += INS(null, "START", "NOP");
 		code += "\n";
 		
 		return code;

@@ -24,4 +24,9 @@ public class ExpressionStatement implements Statement
 	{
 		return exp.generateCode(false);
 	}
+
+	public String toString()
+    {
+       return exp.toString();
+    }
 }

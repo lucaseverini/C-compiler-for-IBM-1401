@@ -49,31 +49,38 @@ public class FunctionCallExpression extends Expression
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = COM("FunctionCallExpr " + this.toString());
-
+		
+		// First, push room for our return address to the stack.
 		FunctionType functionType = (FunctionType)function.getType();
-		//first, push room for our return address to the stack.
 		code += PUSH(functionType.getReturnType().sizeof());
+		
+		// Push all our parameters in reverse order
 		int i = arguments.size();
-		//push all our parameters in reverse order
 		while (i --> 0) 
 		{
 			code += arguments.get(i).generateCode(true);
 		}
-		//make a new frame
+		
+		// Make a new frame
 		code += PUSH(3, "X3");
-		code += INS("MCW", "X2", "X3");
-		//branch
-		code += INS("B", label(function.getValue()));
-		//AFTER THE CALL:
-		//restore our frame
+		code += INS(null, null, "MCW", "X2", "X3");
+		
+		// Branch
+		String name = SmallCC.getFunctionNameFromExpression(function);
+		code += INS("Jump to function " + name, null, "B", label(function.getValue()));
+		
+		// AFTER THE CALL:
+		// Restore our frame
 		code += POP(3, "X3");
-		//pop off all the arguments
+		
+		// Pop off all the arguments
 		for (Expression e: arguments) 
 		{
 			code += POP(e.getType().sizeof());
 		}
-		//now our return address should be at the top of the stack.
-		//if we don't want a value, pop it
+		
+		// Now our return address should be at the top of the stack.
+		// If we don't want a value, pop it
 		if (!valueNeeded) 
 		{
 			code += POP(functionType.getReturnType().sizeof());

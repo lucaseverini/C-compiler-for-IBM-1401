@@ -47,7 +47,7 @@ public class AndExpression extends Expression
         } 
 		catch (TypeMismatchException e) 
 		{
-            //should never happen
+            // should never happen
             return null;
         }
     }
@@ -60,16 +60,16 @@ public class AndExpression extends Expression
         String code = COM("AndExpression " + this.toString()); 
 		code += PUSH(5, NUM_CONST(1, false));
         code += l.generateCode(true);
-        code += INS("MCS",STACK_OFF(0),STACK_OFF(0));
+        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
         code += POP(l.getType().sizeof());
-        code += INS("BCE",labelZero, STACK_OFF(l.getType().sizeof())," ");
+        code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(l.getType().sizeof())," ");
         code += r.generateCode(true);
-        code += INS("MCS",STACK_OFF(0),STACK_OFF(0));
+        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
         code += POP(r.getType().sizeof());
-        code += INS("BCE",labelZero, STACK_OFF(r.getType().sizeof())," ");
-        code += INS("B",labelEnd);
-        code += LBL_INS(labelZero, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-        code += LBL_INS(labelEnd,"NOP");
+        code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(r.getType().sizeof())," ");
+        code += INS("Jump to End", null, "B", labelEnd);
+        code += INS("Zero", labelZero, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+        code += INS("End", labelEnd, "NOP");
 
         return code;
     }

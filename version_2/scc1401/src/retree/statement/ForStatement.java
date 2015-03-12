@@ -10,15 +10,13 @@
 package retree.statement;
 
 import compiler.SmallCC;
-
 import retree.expression.Expression;
 import static retree.RetreeUtils.*;
 
 public class ForStatement implements Statement
 {
 	private Expression init = null, condition = null, post = null;
-	private final Statement body;
-	
+	private final Statement body;	
 	private final String topLabel;
 	private final String bottomLabel;
 	private final String continueLabel;
@@ -51,40 +49,42 @@ public class ForStatement implements Statement
 	{
 		int size = condition.getType().sizeof();	
 
-		String code = COM("ForStatement " + this.toString());
+		String code = COM("For " + this.toString());
 
 		if (init!= null) 
 		{
 			code += init.generateCode(false);
 		}
 		
-		code += LBL_INS(topLabel, "NOP");
+		code += INS("Top of the loop", topLabel, "NOP");
 		
 		if (condition != null) 
 		{
 			code += condition.generateCode(true);
-			code += INS("MCS", STACK_OFF(0), STACK_OFF(0));
+			code += INS(null, null, "MCS", STACK_OFF(0), STACK_OFF(0));
 			code += POP(size);
-			code += INS("BCE", bottomLabel, STACK_OFF(size), " ");
+			code += INS("Jump to bottom", null, "BCE", bottomLabel, STACK_OFF(size), " ");
 		}
 		
 		code += body.generateCode();
-		code += LBL_INS(continueLabel, "NOP");
+		code += INS("Continue of the loop", continueLabel, "NOP");
 		
 		if (post != null) 
 		{
 			code += post.generateCode(false);
 		}
 		
-		code += INS("B", topLabel);
-		code += LBL_INS(bottomLabel, "NOP");
+		code += INS("Jump to top", null, "B", topLabel);
+		code += INS("Bottom of the loop", bottomLabel, "NOP");
 		
 		return code;
 	}
 	
     public String toString()
     {
-		return "(" + init + "; " + condition + "; " + post + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + " continue:" + continueLabel + ")";
+		return "[for (" + init + "; " + condition + "; " + post + ") " +
+				body + " top:" + topLabel + " bottom:" + bottomLabel + 
+				" continue:" + continueLabel + "]";
 	}
 }
 

@@ -45,7 +45,7 @@ public class ArrayNameExpression extends Expression
 		{
 			code = code + COM("ArrayNameExpresssion(" + array + ":" + arrayType + ")");
 			code = code + PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof(), false));
-			code = code + INS("MA", "X3", STACK_OFF(0));
+			code = code + INS(null, null, "MA", "X3", STACK_OFF(0));
 		}
 		
 		return code;

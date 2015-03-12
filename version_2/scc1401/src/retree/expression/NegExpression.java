@@ -23,6 +23,7 @@ public class NegExpression extends Expression
 	public NegExpression(Expression child) 
 	{
 		super(child.getType());
+		
 		this.child = child;
 	}
 
@@ -49,11 +50,11 @@ public class NegExpression extends Expression
 			if (child.getType() instanceof PointerType) 
 			{
 				COM("// Check for PointerType");
-				INS("H");
+				INS(null, null, "H");
 			}
 			else 
 			{
-				code += INS("ZS", STACK_OFF(0));
+				code += INS(null, null, "ZS", STACK_OFF(0));
 				code += SNIP("clean_number");
 			}
 		}

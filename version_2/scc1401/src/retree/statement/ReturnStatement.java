@@ -29,6 +29,7 @@ public class ReturnStatement implements Statement
 	public String generateCode() 
 	{
 		String code = "";
+		
 		if (exp != null && returnLocation != null)
 		{
 			int offset = returnLocation.getOffset();
@@ -36,11 +37,10 @@ public class ReturnStatement implements Statement
 			code += POP(exp.getType().sizeof(), OFF(offset));
 		}
 		
-		code += COM("set the return flag, so we know do deallocate our stack");
-		code += INS("MCW", "@R@", "RF");
+		code += COM("Set the return flag, so we know do deallocate our stack");
+		code += INS(null, null, "MCW", "@R@", "RF");
 		
-		code += COM("and branch");
-		code += INS("B", returnLabel);
+		code += INS("Jump back to caller", null, "B", returnLabel);
 		
 		return code;
 	}

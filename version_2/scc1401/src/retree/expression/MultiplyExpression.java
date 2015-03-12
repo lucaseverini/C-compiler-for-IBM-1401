@@ -83,16 +83,23 @@ public class MultiplyExpression extends Expression
 	public String generateCode(boolean valueNeeded) 
 	{
 		int size = r.getType().sizeof();
+		
 		String code = COM("Multiplication " + this.toString());
 		code += l.generateCode(valueNeeded) + r.generateCode(valueNeeded);	
 		
 		if (valueNeeded) 
 		{
-			code += INS("M", STACK_OFF(-size), STACK_OFF(size+1));
-			//this puts the product at size + 1 bits above the stack
-			code += INS("SW", STACK_OFF(2));
-			code += INS("LCA", STACK_OFF(size+1), STACK_OFF(-size));
-			// code += INS("CW", STACK_OFF(2));
+			code += INS(null, null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
+			
+			// this puts the product at size + 1 bits above the stack
+			// ###############
+			// ## WARNING!! ##
+			// ###############
+			// DO WE NEED THIS SW ??
+			code += INS(null, null, "SW", STACK_OFF(2));
+			
+			code += INS(null, null, "LCA", STACK_OFF(size + 1), STACK_OFF(-size));
+			
 			code += POP(size);
 		}
 		

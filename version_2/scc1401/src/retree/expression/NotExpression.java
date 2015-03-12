@@ -21,6 +21,7 @@ public class NotExpression extends Expression
     public NotExpression(Expression l) throws TypeMismatchException
 	{
         super(Type.intType);
+		
         this.l = l;
     }
 
@@ -29,6 +30,7 @@ public class NotExpression extends Expression
         try 
 		{
             Expression l2 = l.collapse();
+			
             if (l2 instanceof ConstantExpression) 
 			{
                 return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() == 0 ? 1 : 0);
@@ -49,11 +51,12 @@ public class NotExpression extends Expression
 
         String code = COM("NotExpression " + this.toString()) + PUSH(5,NUM_CONST(0, false));
         code += l.generateCode(true);
-        code += INS("MCS",STACK_OFF(0),STACK_OFF(0));
+		
+        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
         code += POP(l.getType().sizeof());
-        code += INS("BCE",labelEnd, STACK_OFF(l.getType().sizeof())," ");
-        code += INS("MCW", NUM_CONST(0, false), STACK_OFF(0));
-        code += LBL_INS(labelEnd, "NOP");
+        code += INS(null, null, "BCE", labelEnd, STACK_OFF(l.getType().sizeof()), " ");
+        code += INS(null, null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+        code += INS(null, labelEnd, "NOP");
 		
         return code;
     }

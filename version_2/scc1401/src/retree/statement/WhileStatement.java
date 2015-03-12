@@ -34,27 +34,27 @@ public class WhileStatement implements Statement
 
 	public String generateCode() throws Exception 
 	{		
-		String code = COM("WhileStatement " + this.toString());
+		String code = COM("While " + this.toString());
 
-		code += LBL_INS(topLabel, "NOP");
+		code += INS("Top of the loop", topLabel, "NOP");
 		
 		code += condition.generateCode(true);
 		
-		code += INS("MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+		code += INS(null, null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
 		code += POP(size);
-		code += INS("BCE", bottomLabel, STACK_OFF(size), " ");
+		code += INS("Jump to bottom", null, "BCE", bottomLabel, STACK_OFF(size), " ");
 
 		code += body.generateCode();
 		
-		code += INS("B", topLabel);
-		code += LBL_INS(bottomLabel, "NOP");
+		code += INS("Jump to top", null, "B", topLabel);
+		code += INS("Bottom of the loop", bottomLabel, "NOP");
 		
 		return code;
 	}
 
     public String toString()
     {
-		return "(" + condition + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + ")";
+		return "[while (" + condition + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + "]";
 	}
 }
 

@@ -10,7 +10,6 @@
 package retree.statement;
 
 import compiler.SmallCC;
-
 import retree.expression.Expression;
 import static retree.RetreeUtils.*;
 
@@ -44,26 +43,26 @@ public class IfStatement implements Statement
 
 	public String generateCode() throws Exception 
 	{		
-		String code = COM("IfStatement " + this.toString());
+		String code = COM("If " + this.toString());
 		
 		code += condition.generateCode(true);
 		
-		code += INS("MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+		code += INS(null, null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
 		code += POP(size);
-		code += INS("BCE", falseLabel, STACK_OFF(size), " ");
+		code += INS("Jump when False", null, "BCE", falseLabel, STACK_OFF(size), " ");
 		
 		code += ifClause.generateCode();
 		
 		if (elseClause != null) 
 		{
-			code += INS("B", trueLabel);
-			code += LBL_INS(falseLabel, "NOP");
+			code += INS("Jump when true", null, "B", trueLabel);
+			code += INS("Executed when False", falseLabel, "NOP");
 			code += elseClause.generateCode();
-			code += LBL_INS(trueLabel, "NOP");
+			code += INS("Executed when True", trueLabel, "NOP");
 		} 
 		else 
 		{
-			code += LBL_INS(falseLabel, "NOP");
+			code += INS("Executed when False", falseLabel, "NOP");
 		}
 		
 		return code;
@@ -71,8 +70,7 @@ public class IfStatement implements Statement
 
     public String toString()
     {
-        return "if(" + condition + " then " + ifClause + (elseClause != null ? (" else " + elseClause) : "") + ")";
-        // return "if(" + condition + " then " + trueLabel + (elseClause != null ? (" else " + falseLabel) : "") + ")";
+        return "[if (" + condition + " then " + ifClause + (elseClause != null ? (" else " + elseClause) : "") + "]";
     }
 }
 

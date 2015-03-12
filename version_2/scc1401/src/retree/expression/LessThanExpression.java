@@ -20,10 +20,12 @@ public class LessThanExpression extends Expression
     public LessThanExpression(Expression l, Expression r) 
 	{
         super(Type.intType);
-        /*
-        if (! l.getType().equals(r.getType())) {
+/*
+        if (! l.getType().equals(r.getType())) 
+		{
             throw new TypeMismatchException(r, l.getType(), r.getType());
-        }*/
+        }
+*/
         if (! l.getType().equals(Type.intType)) 
 		{
 			l = new CastExpression(Type.intType, l);
@@ -57,18 +59,24 @@ public class LessThanExpression extends Expression
 		if (valueNeeded) 
 		{
 			String code = COM("LessThanExpression " + this.toString()) +
-			l.generateCode(valueNeeded) + SNIP("clean_number") + r.generateCode(valueNeeded) + SNIP("clean_number");
+								l.generateCode(valueNeeded) + SNIP("clean_number") + 
+								r.generateCode(valueNeeded) + SNIP("clean_number");
 			
 			String labelLessThan = label(SmallCC.nextLabelNumber());
 			String labelEnd = label(SmallCC.nextLabelNumber());
-			
-			code += INS("C", STACK_OFF(0), STACK_OFF(-5));
+						
+			// ###############
+			// ## WARNING!! ##
+			// ###############
+			// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
+			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-5));
 			code += POP(5);
-			code += INS("MCW", NUM_CONST(0, false), STACK_OFF(0));
-			code += INS("BL", labelLessThan);
-			code += INS("B", labelEnd);
-			code += LBL_INS(labelLessThan, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += LBL_INS(labelEnd, "NOP");
+			
+			code += INS(null, null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+			code += INS("Jump if less", null, "BL", labelLessThan);
+			code += INS("Jump to End", null, "B", labelEnd);
+			code += INS("Less", labelLessThan, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+			code += INS("End", labelEnd, "NOP");
 			
 			return code;
 		}
@@ -76,23 +84,7 @@ public class LessThanExpression extends Expression
 		{
 			return l.generateCode(false) + r.generateCode(false);
 		}
-	} /*
-        String labelEqual = label(SmallCC.nextLabelNumber());
-        String labelEnd = label(SmallCC.nextLabelNumber());
-        String code = l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
-        if (valueNeeded) {
-            code += INS("CMPB", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
-            code += POP(1);
-            code += INS("BCE", labelEqual, STACK_OFF(1), "1");
-            code += PUSH(Type.intType.sizeof(), NUM_CONST(0));
-            code += INS("B", labelEnd);
-            code += LBL_INS(labelEqual, "NOP");
-            code += PUSH(Type.intType.sizeof(), NUM_CONST(1));
-            code += LBL_INS(labelEnd, "NOP");
-
-        }
-        return code;
-    }*/
+	} 
 
     public String toString()
     {

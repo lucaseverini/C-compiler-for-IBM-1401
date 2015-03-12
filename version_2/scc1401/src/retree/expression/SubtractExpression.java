@@ -99,9 +99,10 @@ public class SubtractExpression extends Expression
 	{
 		String code = COM("Subtraction " + this.toString()) +
 		l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+		
 		if (valueNeeded) 
 		{
-			code += INS("S", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
+			code += INS(null, null, "S", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
 			code += POP(r.getType().sizeof());
 		}
 		

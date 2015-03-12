@@ -76,15 +76,14 @@ public class EqualExpression extends Expression
 		{
 			int size = l.getType().sizeof();
 
-			code += INS("C", STACK_OFF(0), STACK_OFF(-size));
+			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-size));
 			code += POP(size) + POP(size);
 			code += PUSH(Type.intType.sizeof(), NUM_CONST(0, false));
 
-			code += INS("BE", labelEqual);
-			code += INS("B", labelEnd);
-			code += LBL_INS(labelEqual, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += LBL_INS(labelEnd, "NOP");
-
+			code += INS("Jump if equal", null, "BE", labelEqual);
+			code += INS("Jump to End", null, "B", labelEnd);
+			code += INS("Equal", labelEqual, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+			code += INS("End", labelEnd, "NOP");
 		}
 		
 		return code;
