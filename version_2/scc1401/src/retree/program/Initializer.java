@@ -48,7 +48,7 @@ public class Initializer
 			this.subInitializers = new ArrayList<>();
 			
 			ArrayType at = (ArrayType) variable.getType();
-			for (int i = 0, index=0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++)
+			for (int i = 0, index = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++)
 			{
 				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic(), variable + "[" + index + "]");
 				Initializer subInitializer = new Initializer(subVar, (Expression)null, true);
@@ -82,15 +82,28 @@ public class Initializer
 		}
 	}
 
-	public String generateCode() 
+	public String generateCode() throws Exception
 	{
 		String code = "";
-		
+				
 		if (subInitializers != null) 
 		{
-			for (Initializer i : subInitializers)
+			Boolean firstElement = true;
+			
+			ListIterator<Initializer> iter = subInitializers.listIterator(subInitializers.size());
+			while(iter.hasPrevious()) 
 			{
-				code += i.generateCode();
+				Initializer init = iter.previous();
+				
+				if(firstElement && init.value != null)
+				{
+					firstElement = false;
+					
+					code += INS("");
+					code += INS("ORG", Integer.toString(init.getVariable().getOffset() - (init.getSize() - 1)));
+				}
+				
+				code += init.generateCode();
 			}
 		} 
 		else 
@@ -105,21 +118,61 @@ public class Initializer
 		
 		if (value.getType() instanceof PointerType) 
 		{
-			return code + INS("LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+			if(variable.isStatic())
+			{			
+				if(!isArrayMember)
+				{
+					code += INS("");
+					code += INS("ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+				}
+				
+				code += INS("DCW", "@" + ADDR_COD(value.getValue()) + "@");
+			}
+			else
+			{
+				code += INS("LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+			}
 		} 
 		else if (value.getType().equals(Type.intType))
 		{
-			return code + INS("LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
+			if(variable.isStatic())
+			{			
+				if(!isArrayMember)
+				{
+					code += INS("");
+					code += INS("ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+				}
+				
+				code += INS("DCW", "@" + COD(value.getValue()) + "@");
+			}
+			else
+			{
+				code += INS("LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
+			}
 		}
 		else if (value.getType().equals(Type.charType))
 		{
-			return code + INS("LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+			if(variable.isStatic())
+			{			
+				if(!isArrayMember)
+				{
+					code += INS("");
+					code += INS("ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+				}
+				
+				code += INS("DCW", "@" + CHAR_COD(value.getValue()) + "@");
+			}
+			else
+			{
+				code += INS("LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+			}
 		} 
 		else 
 		{
-			//oops
 			return null;
 		}
+		
+		return code;
 	}
 
 	// this generates code that occurs when the initialized variable goes out of scope
@@ -135,11 +188,32 @@ public class Initializer
 				code += i.freeCode();
 			}
 		} 
-		else 
-		{
-			// code += INS("CW", variable.getWordMarkAddress());
-		}
 		
 		return code;
+	}
+	
+	public VariableExpression getVariable()
+	{
+		return variable;
+	}
+	
+	public int getSize() throws Exception
+	{
+		if (value.getType() instanceof PointerType) 
+		{
+			return 3;
+		}
+		else if (value.getType().equals(Type.intType))
+		{
+			return 5;
+		}
+		else if (value.getType().equals(Type.charType))
+		{
+			return 1;
+		}
+		else
+		{
+			throw new Exception("Invalid Initializer type");
+		}
 	}
 }

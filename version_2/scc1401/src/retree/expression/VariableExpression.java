@@ -21,6 +21,7 @@ public class VariableExpression extends LValue
 	public VariableExpression(Type type, int offset, boolean isStatic, String name)
 	{
 		super(type);
+		
 		this.offset = offset;
 		this.isStatic = isStatic;
 		this.name = name;
@@ -28,23 +29,23 @@ public class VariableExpression extends LValue
 
 	public String generateCode(boolean valueNeeded)
 	{
+		String code = "";
+		
 		if (valueNeeded) 
 		{
 			if (isStatic)
 			{
-				return COM("StaticVariableExpression (" + name + " : " + ADDR_LIT(offset) + ")") 
-							+ PUSH(getType().sizeof(), ADDR_LIT(offset));
+				code = COM("StaticVariableExpression (" + name + " : " + ADDR_LIT(offset) + ")"); 
+				code += PUSH(getType().sizeof(), ADDR_LIT(offset));
 			} 
 			else
 			{
-				return COM("VariableExpression (" + name + " : " + OFF(offset) + ")") 
-							+ PUSH(getType().sizeof(), OFF(offset));
+				code = COM("VariableExpression (" + name + " : " + OFF(offset) + ")"); 
+				code += PUSH(getType().sizeof(), OFF(offset));
 			}
 		} 
-		else
-		{
-			return "";
-		}
+		
+		return code;
 	}
 
 	public LValue collapse() 
@@ -54,38 +55,50 @@ public class VariableExpression extends LValue
 
 	public String generateAddress() 
 	{
+		String code = "";
+		
 		if (isStatic) 
 		{
-			return PUSH(3, ADDR_CONST(offset, false));
+			code = PUSH(3, ADDR_CONST(offset, false));
 		} 
 		else 
 		{
-			return PUSH(3, ADDR_CONST(offset, false)) + INS("MA", "X3", STACK_OFF(0));
+			code = PUSH(3, ADDR_CONST(offset, false)) + INS("MA", "X3", STACK_OFF(0));
 		}
+		
+		return code;
 	}
 
 	public String getAddress() 
 	{
+		String code = "";
+		
 		if (isStatic) 
 		{
-			return offset + "";
+			code = offset + "";
 		} 
 		else 
 		{
-			return OFF(offset);
+			code =  OFF(offset);
 		}
+		
+		return code;
 	}
 
 	public String getWordMarkAddress() 
 	{
+		String code = "";
+
 		if (isStatic) 
 		{
-			return (offset + 1 - getType().sizeof()) + "";
+			code = (offset + 1 - getType().sizeof()) + "";
 		} 
 		else 
 		{
-			return OFF(offset + 1 - getType().sizeof());
+			code = OFF(offset + 1 - getType().sizeof());
 		}
+		
+		return code;
 	}
 
 	public boolean isStatic() 

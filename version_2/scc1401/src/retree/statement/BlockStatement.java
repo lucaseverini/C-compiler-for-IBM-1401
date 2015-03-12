@@ -37,7 +37,7 @@ public class BlockStatement implements Statement
 		this.parentReturnLabel = parentReturnLabel;
 	}
 	
-	public String generateCode() 
+	public String generateCode() throws Exception
 	{
 		String code = "\n";
 		

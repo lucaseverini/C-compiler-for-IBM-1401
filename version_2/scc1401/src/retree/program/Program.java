@@ -46,18 +46,18 @@ public class Program
 	{
 		if (mainLabelNumber < 0) 
 		{
-			//error
+			return null;
 		}
 		
 		String code = "";
 		
-		for (Initializer init : initializers) 
-		{
-			code += init.generateCode();
-		}
-
+		code += HEADER();
+		
+		code += SET_VARDATA(initializers);
+		code += SET_CODE();
+		code += SET_STACK();
+	
 		code += INS("B", label(mainLabelNumber));
-
 		code += INS("H");
 
 		for (FunctionDefinition func : functions) 
@@ -67,6 +67,8 @@ public class Program
 		
 		code += FOOTER();
 		
-		return HEADER() + code + INS("END", "START");
+		code += INS("END", "START");
+		
+		return code ;
 	}
 }
