@@ -47,7 +47,7 @@ public class ForStatement implements Statement
 		continueLabel = label(SmallCC.nextLabelNumber());
 	}
 
-	public String generateCode() 
+	public String generateCode() throws Exception
 	{
 		int size = condition.getType().sizeof();	
 

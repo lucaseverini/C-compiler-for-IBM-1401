@@ -32,7 +32,7 @@ public class DoWhileStatement implements Statement
 		this.bottomLabel = label(SmallCC.nextLabelNumber());
 	}
 
-	public String generateCode() 
+	public String generateCode() throws Exception
 	{		
 		String code = COM("DoWhileStatement " + toString());
 		code += LBL_INS(topLabel, "NOP");

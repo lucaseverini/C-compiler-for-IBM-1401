@@ -42,7 +42,7 @@ public class IfStatement implements Statement
 		}
 	}
 
-	public String generateCode() 
+	public String generateCode() throws Exception 
 	{		
 		String code = COM("IfStatement " + this.toString());
 		

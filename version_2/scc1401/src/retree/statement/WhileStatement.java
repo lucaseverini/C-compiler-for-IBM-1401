@@ -32,7 +32,7 @@ public class WhileStatement implements Statement
 		this.size = condition.getType().sizeof();
 	}
 
-	public String generateCode() 
+	public String generateCode() throws Exception 
 	{		
 		String code = COM("WhileStatement " + this.toString());
 

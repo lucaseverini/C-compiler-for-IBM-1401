@@ -42,7 +42,7 @@ public class Program
 	}
 
 	// TODO - call main
-	public String generateCode() 
+	public String generateCode() throws Exception
 	{
 		if (mainLabelNumber < 0) 
 		{

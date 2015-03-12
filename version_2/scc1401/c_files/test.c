@@ -1,7 +1,7 @@
 // test.c
 
 #define DATA 600
-#define CODE 4000
+#define CODE 2000
 #define STACK 400
 
 #ifdef IBM1401

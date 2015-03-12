@@ -34,7 +34,7 @@ public class FunctionDefinition
 	//As per our calling conventions, the caller is responsible for pushing
 	//the new stack frame down.  We are simply responsible for our return
 	//address.
-	public String generateCode()
+	public String generateCode() throws Exception
 	{
 		String code = "\n" + 
 			COM("**********************************************************************") +
