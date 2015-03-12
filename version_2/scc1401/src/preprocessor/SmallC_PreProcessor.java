@@ -35,8 +35,13 @@ public class SmallC_PreProcessor
 		if (verbose != 0 || printOutput)
 		{
 			System.out.println("Small-C Cross-Compiler for IBM1401");
-			System.out.println("Version 1.0.1 - February 22 2015");
+			System.out.println("Version 1.0 - March 12 2015");
 			System.out.println("Working Directory: " + System.getProperty("user.dir"));
+		}
+		
+		if(files.size() == 0)
+		{
+			System.out.println("no input");
 		}
 
 		for(String file : files)

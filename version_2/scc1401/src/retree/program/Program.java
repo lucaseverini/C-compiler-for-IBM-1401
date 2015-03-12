@@ -58,7 +58,7 @@ public class Program
 		code += SET_STACK();
 	
 		code += INS("Jump to function main", null, "B", label(mainLabelNumber));
-		code += INS("Program executed.", null, "H");
+		code += INS("Program executed. System halted.", null, "H");
 
 		for (FunctionDefinition func : functions) 
 		{
