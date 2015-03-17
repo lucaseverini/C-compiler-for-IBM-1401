@@ -16,14 +16,17 @@ public class VariableExpression extends LValue
 {
 	private final int offset;
 	private final boolean isStatic;
+	private final boolean isParam;
 	private final String name;
+	public boolean inAsm = false;
 
-	public VariableExpression(Type type, int offset, boolean isStatic, String name)
+	public VariableExpression(Type type, int offset, boolean isStatic, boolean isParam, String name)
 	{
 		super(type);
 		
 		this.offset = offset;
 		this.isStatic = isStatic;
+		this.isParam = isParam;
 		this.name = name;
 	}
 
@@ -35,15 +38,28 @@ public class VariableExpression extends LValue
 		{
 			if (isStatic)
 			{
-				code = COM("StaticVariableExpression (" + name + " : " + ADDR_LIT(offset) + ")"); 
-				code += PUSH(getType().sizeof(), ADDR_LIT(offset));
+				int addr = offset + getType().getSize() - 1;
+				code += COM("Static Variable (" + name + " : " + ADDR_LIT(addr) + ")"); 
+				code += PUSH(getType().sizeof(), ADDR_LIT(addr));
 			} 
 			else
 			{
-				code = COM("VariableExpression (" + name + " : " + OFF(offset) + ")"); 
-				code += PUSH(getType().sizeof(), OFF(offset));
+				if (isParam)
+				{
+					int off = offset;
+					code += COM("Parameter Variable (" + name + " : " + OFF(off) + ")"); 
+					code += PUSH(getType().sizeof(), OFF(off));
+				}
+				else
+				{
+					int off = offset + getType().getSize();
+					code += COM("Local Variable (" + name + " : " + OFF(off) + ")"); 
+					code += PUSH(getType().sizeof(), OFF(off));
+				}
 			}
 		} 
+		
+		// System.out.println("CODE: " + name + (isStatic ? " static " : "") + " : " + offset + " : " + code);
 		
 		return code;
 	}
@@ -59,14 +75,27 @@ public class VariableExpression extends LValue
 		
 		if (isStatic) 
 		{
-			code = PUSH(3, ADDR_CONST(offset, false));
+			int addr = offset + getType().getSize() - 1;
+			code += PUSH(3, ADDR_CONST(addr, false));
 		} 
 		else 
 		{
-			code = PUSH(3, ADDR_CONST(offset, false));
-			code += INS(null, null, "MA", "X3", STACK_OFF(0));
+			if (isParam)
+			{
+				int addr = offset;
+				code += PUSH(3, ADDR_CONST(addr, false));
+				code += INS(null, null, "MA", "X3", STACK_OFF(0));
+			}
+			else
+			{	
+				int addr = offset + getType().getSize();
+				code += PUSH(3, ADDR_CONST(addr, false));
+				code += INS(null, null, "MA", "X3", STACK_OFF(0));
+			}
 		}
 		
+		// System.out.println("ADDRESS: " + name + (isStatic ? " static " : "") + " : " + offset + " : " + code);
+
 		return code;
 	}
 
@@ -76,12 +105,22 @@ public class VariableExpression extends LValue
 		
 		if (isStatic) 
 		{
-			code = offset + "";
+			code += (offset + getType().getSize() - 1);
 		} 
 		else 
 		{
-			code =  OFF(offset);
+			if (isParam)
+			{
+				code += OFF(offset);
+			}
+			else
+			{
+				int off = (offset + getType().getSize());
+				code += OFF(off);
+			}
 		}
+		
+		// System.out.println("ADDRESS-2: " + name + (isStatic ? " static " : "") + " : " + offset + " : " + code);
 		
 		return code;
 	}
@@ -92,11 +131,18 @@ public class VariableExpression extends LValue
 
 		if (isStatic) 
 		{
-			code = (offset + 1 - getType().sizeof()) + "";
+			code += (offset + 1);
 		} 
 		else 
 		{
-			code = OFF(offset + 1 - getType().sizeof());
+			if (isParam)
+			{
+				code = OFF(offset + 1 - getType().sizeof());
+			}
+			else
+			{
+				code += OFF(offset + 1);
+			}
 		}
 		
 		return code;
@@ -105,6 +151,11 @@ public class VariableExpression extends LValue
 	public boolean isStatic() 
 	{
 		return isStatic;
+	}
+
+	public boolean isParameter() 
+	{
+		return isParam;
 	}
 
 	public int getOffset() 

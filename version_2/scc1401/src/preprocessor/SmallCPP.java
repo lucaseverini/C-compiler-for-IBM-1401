@@ -7,10 +7,11 @@ import java.util.*;
 import java.nio.file.Paths;
 import preprocessor.SmallC_PreProcessor;
 
-public class SmallCPP implements SmallCPPConstants {
+public class SmallCPP implements SmallCPPConstants 
+{
         static PreProcSymTab symTable = new PreProcSymTab();
         static List<String> paths = new ArrayList<String>();
-        static String tmpDir = "temp/"; //System.getProperty("java.io.tmpdir");
+        static String tmpDir = System.getProperty("java.io.tmpdir");
         static boolean ignore = false;
         static boolean keepComments = false;
         static int verbose = 0;
@@ -94,6 +95,7 @@ public class SmallCPP implements SmallCPPConstants {
                                 return null;
                         }
                 }
+                
                 if (verbose > 1)
                 {
                         System.out.println();

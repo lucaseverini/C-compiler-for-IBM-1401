@@ -52,11 +52,11 @@ public class PostDecrementExpression extends Expression
 		if (getType() instanceof PointerType) 
 		{
 			PointerType pt = (PointerType) getType();
-			code += INS(null, null, "MA", ADDR_CONST(-pt.getType().sizeof(), false), "0+X1");
+			code += INS("PostDecrement pointer pointed by X1", null, "MA", ADDR_CONST(-pt.getType().sizeof(), false), "0+X1");
 		} 
 		else 
 		{
-			code += INS(null, null, "S", NUM_CONST(1, false), "0+X1");
+			code += INS("PostDecrement variable pointed by X1", null, "S", NUM_CONST(1, false), "0+X1");
 		}
 		
 		return code;

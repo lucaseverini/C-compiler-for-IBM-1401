@@ -57,19 +57,19 @@ public class AndExpression extends Expression
         String labelZero = label(SmallCC.nextLabelNumber());
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("AndExpression " + this.toString()); 
+        String code = COM("And " + this.toString()); 
 		code += PUSH(5, NUM_CONST(1, false));
         code += l.generateCode(true);
-        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
+        code += INS("Clear WM", null, "MCS", STACK_OFF(0),STACK_OFF(0));
         code += POP(l.getType().sizeof());
         code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(l.getType().sizeof())," ");
         code += r.generateCode(true);
-        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
+        code += INS("Clear WM", null, "MCS", STACK_OFF(0),STACK_OFF(0));
         code += POP(r.getType().sizeof());
         code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(r.getType().sizeof())," ");
         code += INS("Jump to End", null, "B", labelEnd);
         code += INS("Zero", labelZero, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-        code += INS("End", labelEnd, "NOP");
+        code += INS("End of And", labelEnd, "NOP");
 
         return code;
     }

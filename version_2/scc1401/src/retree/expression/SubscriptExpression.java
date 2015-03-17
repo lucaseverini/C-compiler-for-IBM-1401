@@ -76,7 +76,7 @@ public class SubscriptExpression extends LValue
 
     public String generateCode(boolean valueNeeded)
 	{
-        String code = COM("SubScriptEpression " + this.toString());
+        String code = COM("SubScript " + this.toString());
 		
         if (valueNeeded) 
 		{

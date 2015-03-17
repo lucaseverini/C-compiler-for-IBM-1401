@@ -97,12 +97,12 @@ public class SubtractExpression extends Expression
 	
 	public String generateCode(boolean valueNeeded) 
 	{
-		String code = COM("Subtraction " + this.toString()) +
+		String code = COM("Subtract " + this.toString()) +
 		l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
 		
 		if (valueNeeded) 
 		{
-			code += INS(null, null, "S", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
+			code += INS("Subtract", null, "S", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
 			code += POP(r.getType().sizeof());
 		}
 		

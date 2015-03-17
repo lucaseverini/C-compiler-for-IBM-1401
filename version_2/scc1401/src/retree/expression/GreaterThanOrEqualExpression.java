@@ -58,7 +58,7 @@ public class GreaterThanOrEqualExpression extends Expression
 			String lCode = l.generateCode(valueNeeded);
 			String rCode = r.generateCode(valueNeeded);
 
-			String code = COM("GreaterThanOrEqualExpression(" + this.toString()) +
+			String code = COM("GreaterOrEqual (>=) (" + this.toString()) +
 			lCode + SNIP("clean_number") + rCode + SNIP("clean_number");
 
 			String labelLessThan = label(SmallCC.nextLabelNumber());
@@ -68,15 +68,15 @@ public class GreaterThanOrEqualExpression extends Expression
 			// ## WARNING!! ##
 			// ###############
 			// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
-			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-5));
+			code += INS("Compare", null, "C", STACK_OFF(0), STACK_OFF(-5));
 			code += POP(5);
 			// code += POP(getType().sizeof());
 
-			code += INS(null, null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+			code += INS("Set stack location to 1", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
 			code += INS("Jump if greater or equal", null, "BL", labelLessThan);
 			code += INS("Jump to End", null, "B", labelEnd);
-			code += INS("GreaterOrEqual", labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-			code += INS("End", labelEnd, "NOP");
+			code += INS("GreaterOrEqual: Set stack location to 0", labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+			code += INS("End of GreaterOrEqual", labelEnd, "NOP");
 
 			return code;
 		} 

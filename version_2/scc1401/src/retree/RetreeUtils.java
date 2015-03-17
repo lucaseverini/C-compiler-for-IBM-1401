@@ -10,7 +10,6 @@
 package retree;
 
 import compiler.*;
-
 import java.util.*;
 import java.util.regex.*;
 import java.io.*;
@@ -20,6 +19,9 @@ public class RetreeUtils
 {
 	private static final HashMap<String, String> snippetLabels = new HashMap<>();
 	private static final HashMap<String, String> snippetCode = new HashMap<>();
+	private static int staticInitializersSize = 0;
+	private static int inlineCommentStart = 40;
+	private static Boolean noComments = false;
 
 	public static String INS(String comment, String label, String operation, String ... args) 
 	{
@@ -52,12 +54,15 @@ public class RetreeUtils
 			line += args[i];
 		}
 
-		if(comment != null && !comment.isEmpty())
+		if(!noComments && comment != null && !comment.isEmpty())
 		{
-			while (line.length() < 39)
+			while (line.length() < inlineCommentStart - 1)
 			{
 				line += " ";
 			}
+			
+			// Remove any '@' from the inline comment because it can be considered part of the instruction...
+			comment = comment.replace("@", "");
 			
 			if(comment.charAt(0) != '*')
 			{
@@ -72,11 +77,16 @@ public class RetreeUtils
 
 	public static String COM(String comment) 
 	{
+		if(noComments)
+		{
+			return "";
+		}
+		
 		if(comment.charAt(0) != '*')
 		{
 			comment = "* " + comment;
 		}
-
+			
 		return "     " + comment + "\n";
 	}
 
@@ -154,15 +164,13 @@ public class RetreeUtils
 			"!", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
 			 "?", "A", "B", "C", "D", "E", "F", "G", "H", "I"};
 
-		addr = (16000 - (-addr) % 16000) % 16000; // addr :=  addr mod 16000
+		addr = (16000 - (-addr) % 16000) % 16000; // addr = addr % 16000
 		
 		int lastDigitSet = 10 * (addr / 4000);
 		int firstDigitSet = 10 * ((addr%4000) / 1000);
 		int decPart = addr % 1000;
 		
 		return digits[decPart/100 + firstDigitSet] + digits[(decPart/10) % 10] + digits[decPart % 10 + lastDigitSet];
-
-		// return digits[(addr  4000) / 100] + (addr / 10) % 10 + digits[10 * lastDigitSet + addr%10];
 	}
 
 	public static String CHAR_COD(int val)
@@ -179,32 +187,66 @@ public class RetreeUtils
 		return "" + Character.toUpperCase((char)val);
 	}
 
-	public static String PUSH(int size, String a) 
+	public static String PUSH(int size, String location) 
 	{
-		// remember we need to set the word mark for the stack
-		return COM("Push (" + a + ":" + size + ")") +
-			   INS(null, null, "MA", ADDR_CONST(size, false), "X2") +
-			   INS(null, null, "LCA", a, "0+X2");
+		String code = "";
+		String locValue;
+		
+		if(location.charAt(0) == 'L')
+		{
+			locValue = SmallCC.getVariableLabelValue(location);
+		}
+		else
+		{
+			locValue = location;
+		}
+		
+		code += COM("Push (" + location + ":" + size + ")");
+		code += INS("Add " + size + " to X2", null, "MA", ADDR_CONST(size, false), "X2");
+		code += INS("Load data at " + locValue + " to X2", null, "LCA", location, "0+X2");
+		
+		return code;
 	}
 
 	public static String PUSH(int size) 
 	{
-		// remember we need to set the word mark for the stack
-		return COM("Push (" + size + ")") + 
-			   INS(null, null, "MA", ADDR_CONST(size, false), "X2");
+		String code = "";
+
+		code += COM("Push (" + size + ")"); 
+		code += INS("Add " + size + " to X2", null, "MA", ADDR_CONST(size, false), "X2");
+		
+		return code;
 	}
 
 	public static String POP(int size, String location)
 	{
-		return COM("Pop (" + location + ":" + size + ")") +
-			   INS(null, null, "LCA", "0+X2", location) +
-			   INS(null, null, "MA", ADDR_CONST(-size, false), "X2");
+		String code = "";
+		String locValue;
+
+		if(location.charAt(0) == 'L')
+		{
+			locValue = SmallCC.getVariableLabelValue(location);
+		}
+		else
+		{
+			locValue = location;
+		}
+
+		code += COM("Pop (" + location + ":" + size + ")");
+		code += INS("Load data at X2 to " + locValue, null, "LCA", "0+X2", location);
+		code += INS("Add " + -size + " to X2", null, "MA", ADDR_CONST(-size, false), "X2");
+
+		return code;
 	}
 
 	public static String POP(int size) 
 	{
-		return COM("Pop (" + size + ")") + 
-			   INS(null, null, "MA", ADDR_CONST(-size, false), "X2");
+		String code = "";
+
+		code += COM("Pop (" + size + ")");
+		code += INS("Add " + -size + " to X2", null, "MA", ADDR_CONST(-size, false), "X2");
+
+		return code;
 	}
 
 	//returns an address at the frame pointer + offset
@@ -232,10 +274,25 @@ public class RetreeUtils
 		
 		for(Map.Entry pair : SmallCC.labelTable.entrySet()) 
 		{
-			code = code + ("     " + pair.getValue() + "    DCW  " + pair.getKey() + "\n");
+			String label = "" + pair.getValue();
+			String value = "" + pair.getKey();
+			
+			String comm = "";
+			if(value.length() == 5)
+			{
+				comm = "Pointer " + value;
+			}
+			else
+			{
+				comm = "Value " + value;
+			}
+			
+			code += INS(comm, label, "DCW", value);
+			
+			// code = code + ("     " + pair.getValue() + "    DCW  " + pair.getKey() + "\n");
 		}
 
-		code = code + "\n";	
+		code += "\n";	
 		
 		return code;
 	}
@@ -307,6 +364,7 @@ public class RetreeUtils
 	public static String SNIP(String snippetName)
 	{
 		String label;
+		
 		if (!snippetLabels.containsKey(snippetName)) 
 		{
 			String s = loadSnippet(snippetName);
@@ -344,9 +402,11 @@ public class RetreeUtils
 	{
 		String code = "";
 		
-		code += COM("SET THE STACK POINTER");
-		code += INS(null, null, "SBR", "X2", Integer.toString(SmallCC.stackMem));
-		code += INS(null, null, "MCW", "X2", "X3");
+		code += COM("SET THE STACK POINTER (STACK GROWS UPWARD)");
+		
+		// The stack pointer must point to last used location or the previous one
+		code += INS("X2 is the stack pointer", null, "SBR", "X2", Integer.toString(SmallCC.stackMem - 1));
+		code += INS("Copy X2 to X3", null, "MCW", "X2", "X3");
 		code += "\n";
 		
 		return code;
@@ -357,8 +417,17 @@ public class RetreeUtils
 		String code = "";
 		
 		code += COM("SET THE START POSITION OF CODE");
-		code += INS(null, null, "ORG", Integer.toString(SmallCC.codeMem));
-		code += INS(null, "START", "NOP");
+		
+		if(SmallCC.codeMem == 0)
+		{
+			code += INS(null, null, "ORG", Integer.toString(SmallCC.dataMem + staticInitializersSize));
+		}
+		else
+		{
+			code += INS(null, null, "ORG", Integer.toString(SmallCC.codeMem));
+		}
+		
+		code += INS("Program starts here", "START", "NOP");
 		code += "\n";
 		
 		return code;
@@ -368,8 +437,11 @@ public class RetreeUtils
 	{
 		String code = "";
 		
-		code += COM("SET THE START POSITION OF VARIABLES' DATA");
+		code += COM("SET THE START POSITION OF VARIABLES INITIALIZATION DATA");
 		
+		staticInitializersSize = 0;
+		
+		// Sort initializers by ascending memory location...
 		int count = initializers.size();
 		for (int idx = 0; idx < count - 1; idx++) 
 		{
@@ -393,6 +465,8 @@ public class RetreeUtils
 		for (Initializer init : initializers) 
 		{
 			code += init.generateCode();
+			
+			staticInitializersSize += init.getInitializerSize();
 		}
 		
 		code += "\n";

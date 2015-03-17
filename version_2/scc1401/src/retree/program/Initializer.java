@@ -19,20 +19,21 @@ public class Initializer
 {
 	private final VariableExpression variable;
 	private ConstantExpression value;
-	// private boolean isStatic; // unused
 	private boolean isArrayMember;
-	// these are used for array types
+	// Used for array types
 	private List<Initializer> subInitializers = null;
+	private int initializerSize = 0;
 	
-	public Initializer(VariableExpression variable, Expression value, boolean arrayMember) throws NonConstantExpressionException 
+	public Initializer(VariableExpression variable, Expression value, boolean arrayMember) throws Exception, NonConstantExpressionException 
 	{
 		this.variable = variable;
 		this.value = null;
 		this.isArrayMember = arrayMember;
-		
+				
 		if (value != null) 
 		{
 			value = value.collapse();
+			
 			if (value instanceof ConstantExpression)
 			{
 				this.value = (ConstantExpression) value;
@@ -50,10 +51,17 @@ public class Initializer
 			ArrayType at = (ArrayType) variable.getType();
 			for (int i = 0, index = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++)
 			{
-				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic(), variable + "[" + index + "]");
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, 
+												variable.isStatic(), variable.isParameter(), variable + "[" + index + "]");
 				Initializer subInitializer = new Initializer(subVar, (Expression)null, true);
 				subInitializers.add(subInitializer);
+				
+				initializerSize += subInitializer.getInitializerSize();
 			}
+		}
+		else
+		{
+			initializerSize = getVariable().getType().getSize();
 		}
 	}
 
@@ -69,11 +77,14 @@ public class Initializer
 			ArrayType at = (ArrayType) variable.getType();
 			for (int i = 0, index = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++)
 			{
-				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, variable.isStatic(), variable + "[" + index + "]");
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() + i, 
+														variable.isStatic(), variable.isParameter(), variable + "[" + index + "]");
 				Expression tmp = l.get(i / at.getArrayBaseType().sizeof());
 				tmp = tmp.collapse();
 				Initializer subInitializer = new Initializer(subVar, tmp, true);
 				subInitializers.add(subInitializer);
+				
+				initializerSize += subInitializer.getInitializerSize();
 			}
 		}
 		else
@@ -85,30 +96,26 @@ public class Initializer
 	public String generateCode() throws Exception
 	{
 		String code = "";
-				
+
 		if (subInitializers != null) 
 		{
-			Boolean firstElement = true;
+			// ORG directive only for initialization data of static variables
+			if(variable.isStatic())
+			{			
+				code += "\n";
+				code += INS(null, null, "ORG", Integer.toString(subInitializers.get(0).getVariable().getOffset()));
+			}
 			
 			ListIterator<Initializer> iter = subInitializers.listIterator(subInitializers.size());
 			while(iter.hasPrevious()) 
 			{
-				Initializer init = iter.previous();
-				
-				if(firstElement && init.value != null)
-				{
-					firstElement = false;
-					
-					code += "\n";
-					code += INS(null, null, "ORG", Integer.toString(init.getVariable().getOffset() - (init.getSize() - 1)));
-				}
-				
+				Initializer init = iter.previous();				
 				code += init.generateCode();
 			}
 		} 
 		else 
 		{
-			// In case we want to set the workmark at the right position but is not really necessary
+			// In case we want to set a default value and/or the wordmark at the right position but is not really necessary
 			// code += INS("SW", variable.getWordMarkAddress());
 		}
 		
@@ -124,14 +131,15 @@ public class Initializer
 				if(!isArrayMember)
 				{
 					code += "\n";
-					code += INS(null, null, "ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+					code += INS(null, null, "ORG", Integer.toString(variable.getOffset()));
 				}
 				
 				code += INS(null, null, "DCW", "@" + ADDR_COD(value.getValue()) + "@");
 			}
 			else
 			{
-				code += INS(null, null, "LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				String comm = "" + value.getValue();
+				code += INS(comm, null, "LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
 		} 
 		else if (value.getType().equals(Type.intType))
@@ -141,14 +149,15 @@ public class Initializer
 				if(!isArrayMember)
 				{
 					code += "\n";
-					code += INS(null, null, "ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+					code += INS(null, null, "ORG", Integer.toString(variable.getOffset()));
 				}
 				
 				code += INS(null, null, "DCW", "@" + COD(value.getValue()) + "@");
 			}
 			else
 			{
-				code += INS(null, null, "LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				String comm = "" + value.getValue();
+				code += INS(comm, null, "LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
 		}
 		else if (value.getType().equals(Type.charType))
@@ -158,14 +167,15 @@ public class Initializer
 				if(!isArrayMember)
 				{
 					code += "\n";
-					code += INS(null, null, "ORG", Integer.toString(variable.getOffset() - (this.getSize() - 1)));
+					code += INS(null, null, "ORG", Integer.toString(variable.getOffset()));
 				}
 				
 				code += INS(null, null, "DCW", "@" + CHAR_COD(value.getValue()) + "@");
 			}
 			else
 			{
-				code += INS(null, null, "LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				String comm = "" + value.getValue();
+				code += INS(comm, null, "LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
 		} 
 		else 
@@ -177,7 +187,6 @@ public class Initializer
 	}
 
 	// this generates code that occurs when the initialized variable goes out of scope
-	// mainly just clears the word marker
 	public String freeCode() 
 	{
 		String code = "";
@@ -198,9 +207,18 @@ public class Initializer
 		return variable;
 	}
 	
+	public int getInitializerSize()
+	{
+		return initializerSize;
+	}
+	
 	public int getSize() throws Exception
 	{
-		if (value.getType() instanceof PointerType) 
+		if(value == null)
+		{
+			return 0;
+		}
+		else if (value.getType() instanceof PointerType) 
 		{
 			return 3;
 		}

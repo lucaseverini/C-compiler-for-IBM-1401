@@ -24,9 +24,8 @@ public class ArrayNameExpression extends Expression
 		this.arrayType = (ArrayType) array.getType();
 	}
 
-	//for stack management reasons, address of a pointer variable is at the end
-	//of that variable
-	//we need to get a pointer to the beginning.
+	// For stack management reasons, address of a pointer variable is at the end
+	// of that variable we need to get a pointer to the beginning.
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = "";
@@ -38,14 +37,23 @@ public class ArrayNameExpression extends Expression
 		
 		if (array.isStatic()) 
 		{
-			code = code + COM("ArrayNameExpresssion(" + array + ":" + arrayType + ")");
-			code = code + PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof(), false));
+			code += COM("Static Array (" + array + ":" + arrayType + ")");
+			code += PUSH(3, ADDR_CONST(array.getOffset(), false));
 		} 
 		else 
 		{
-			code = code + COM("ArrayNameExpresssion(" + array + ":" + arrayType + ")");
-			code = code + PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof(), false));
-			code = code + INS(null, null, "MA", "X3", STACK_OFF(0));
+			if (array.isParameter())
+			{
+				code += COM("Parameter Array (" + array + ":" + arrayType + ")");
+				code += PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof(), false));
+				code += INS(null, null, "MA", "X3", STACK_OFF(0));
+			}
+			else
+			{
+				code += COM("Local Array (" + array + ":" + arrayType + ")");
+				code += PUSH(3, ADDR_CONST(array.getOffset() + arrayType.getArrayBaseType().sizeof(), false));
+				code += INS(null, null, "MA", "X3", STACK_OFF(0));
+			}
 		}
 		
 		return code;
@@ -60,8 +68,8 @@ public class ArrayNameExpression extends Expression
 	{
 		if (this.array.isStatic())
 		{
-			return new ConstantExpression(new PointerType(((ArrayType) array.getType()).getArrayBaseType()),
-						array.getOffset() + arrayType.getArrayBaseType().sizeof() - arrayType.sizeof());
+			int value = array.getOffset();
+			return new ConstantExpression(new PointerType(((ArrayType) array.getType()).getArrayBaseType()), value);
 		}
 		
 		return this;

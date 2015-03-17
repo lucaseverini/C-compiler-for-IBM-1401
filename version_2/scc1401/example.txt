@@ -1,0 +1,2 @@
+// Here is an example to compile the file test.c inside c_files folder:
+java -jar Small-C.jar -v -h nonstdlib -D IBM1401 c_files/test.c

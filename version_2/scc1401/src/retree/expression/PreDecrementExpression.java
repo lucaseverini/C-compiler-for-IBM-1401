@@ -46,11 +46,11 @@ public class PreDecrementExpression extends Expression
 		if (getType() instanceof PointerType)
 		{
 			PointerType pt = (PointerType) getType();
-			code += INS(null, null, "MA", ADDR_CONST(-pt.getType().sizeof(), false), "0+X1");
+			code += INS("PreDecrement pointer pointed by X1", null, "MA", ADDR_CONST(-pt.getType().sizeof(), false), "0+X1");
 		} 
 		else 
 		{
-			code += INS(null, null, "S", NUM_CONST(1, false), "0+X1");
+			code += INS("PreDecrement variable pointed by X1", null, "S", NUM_CONST(1, false), "0+X1");
 		}
 		
 		if (valueNeeded) 

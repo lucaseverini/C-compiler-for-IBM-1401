@@ -2,7 +2,7 @@
 	SmallC_PreProcessor.java
 
     Assignment #6 - CS153 - SJSU
-	November-11-2014
+	March-16-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -35,7 +35,7 @@ public class SmallC_PreProcessor
 		if (verbose != 0 || printOutput)
 		{
 			System.out.println("Small-C Cross-Compiler for IBM1401");
-			System.out.println("Version 1.0 - March 12 2015");
+			System.out.println("Version 1.0 - March 16 2015");
 			System.out.println("Working Directory: " + System.getProperty("user.dir"));
 		}
 		
@@ -51,7 +51,7 @@ public class SmallC_PreProcessor
 				System.out.println("");
 			}
 			
-			if (printOutput)
+			if (verbose != 0)
 			{
 				System.out.println("C file: " + file);
 			}

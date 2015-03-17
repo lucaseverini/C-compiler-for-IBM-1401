@@ -38,15 +38,22 @@ public class FunctionDefinition
 	{
 		String code = "\n" + 
 			COM("********************************************************************************") +
-			COM("FunctionDefinition(" + SmallCC.getFunctionNameFromExpression(declaration) + ")") +
+			COM("Function : " + SmallCC.getFunctionNameFromExpression(declaration)) +
 			COM("********************************************************************************") +
-			INS(null, label(declaration.getValue()), "SBR", "3+X3") +
-			INS(null, null, "SW", "1+X3") +
-			INS(null, null, "CW", "2+X3") +
-			INS(null, null, "CW", "3+X3") +
-			block.generateCode() +
-			INS(null, null, "LCA", "3+X3", "X1") +
+			INS("Save return address in register B to local frame", label(declaration.getValue()), "SBR", "3+X3") +
+			INS("Set the WM", null, "SW", "1+X3") +
+			INS("Clean WM", null, "CW", "2+X3") +
+			INS("Clean WM", null, "CW", "3+X3");
+					  
+		code += block.generateCode();
+					  
+		code += INS("Load return address to X1", null, "LCA", "3+X3", "X1") +
 			INS("Jump back to caller", null, "B", "0+X1");
+
+		code += "\n";
+		code += COM("********************************************************************************");
+		code += COM("End Function : " + SmallCC.getFunctionNameFromExpression(declaration));
+		code += COM("********************************************************************************");
 		
 		return code;
 	}

@@ -29,19 +29,19 @@ public class ConstantExpression extends Expression
 			if (getType() instanceof PointerType) 
 			{
 				String cons = ADDR_CONST(val, false);
-				return COM("ConstantExpression (" + this.toString() + " : " + cons + ")") 
+				return COM("Constant (" + this.toString() + " : " + cons + ")") 
 					   + PUSH(getType().sizeof(), cons);
 			} 
 			else if (getType().equals(Type.intType)) 
 			{
 				String cons = NUM_CONST(val, false);
-				return COM("ConstantExpression (" + this.toString() + " : " + cons + ")") 
+				return COM("Constant (" + this.toString() + " : " + cons + ")") 
 					   + PUSH(getType().sizeof(), cons);
 			} 
 			else if (getType().equals(Type.charType)) 
 			{
 				String cons = CHAR_CONST(val, false);
-				return COM("ConstantExpression (" + this.toString() + " : " + cons + ")") 
+				return COM("Constant (" + this.toString() + " : " + cons + ")") 
 					   + PUSH(getType().sizeof(), CHAR_CONST(val, false));
 			} 
 			else 

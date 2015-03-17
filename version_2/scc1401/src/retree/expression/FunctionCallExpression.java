@@ -48,7 +48,7 @@ public class FunctionCallExpression extends Expression
 
 	public String generateCode(boolean valueNeeded) 
 	{
-		String code = COM("FunctionCallExpr " + this.toString());
+		String code = COM("Function Call " + this.toString());
 		
 		// First, push room for our return address to the stack.
 		FunctionType functionType = (FunctionType)function.getType();
@@ -63,7 +63,7 @@ public class FunctionCallExpression extends Expression
 		
 		// Make a new frame
 		code += PUSH(3, "X3");
-		code += INS(null, null, "MCW", "X2", "X3");
+		code += INS("Copy X2 into X3", null, "MCW", "X2", "X3");
 		
 		// Branch
 		String name = SmallCC.getFunctionNameFromExpression(function);

@@ -97,11 +97,11 @@ public class AddExpression extends Expression
 		{
 			if (l.getType() instanceof PointerType) 
 			{
-				code += INS(null, null, "MA", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
+				code += INS("Add", null, "MA", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
 			}
 			else 
 			{
-				code += INS(null, null, "A", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
+				code += INS("Add", null, "A", STACK_OFF(0), STACK_OFF(-r.getType().sizeof()));
 			}
 			
 			code += POP(r.getType().sizeof());

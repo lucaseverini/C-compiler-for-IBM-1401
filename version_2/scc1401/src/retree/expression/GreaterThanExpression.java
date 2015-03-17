@@ -52,7 +52,7 @@ public class GreaterThanExpression extends Expression
 	{
 		if (valueNeeded) 
 		{
-			String code = COM("GreaterThanExpression " + this.toString()) +
+			String code = COM("Greater (>) " + this.toString()) +
 								l.generateCode(valueNeeded) + 
 								SNIP("clean_number") + r.generateCode(valueNeeded) + 
 								SNIP("clean_number");
@@ -64,14 +64,14 @@ public class GreaterThanExpression extends Expression
 			// ## WARNING!! ##
 			// ###############
 			// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
-			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-5));
+			code += INS("Compare", null, "C", STACK_OFF(0), STACK_OFF(-5));
 			code += POP(5);
 			
-			code += INS(null, null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+			code += INS("Set stack location to 0", null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
 			code += INS("Jump if more than..", null, "BH", labelMoreThan);
 			code += INS("Jump to End", null, "B", labelEnd);
-			code += INS("MoreThan", labelMoreThan, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += INS("End", labelEnd, "NOP");
+			code += INS("MoreThan: Set stack location to 1", labelMoreThan, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+			code += INS("End of Greater", labelEnd, "NOP");
 			
 			return code;
 		} 

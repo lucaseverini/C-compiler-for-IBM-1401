@@ -42,7 +42,7 @@ public class NegExpression extends Expression
 
 	public String generateCode(boolean valueNeeded)
 	{
-		String code = COM("NegExpression " + this.toString());
+		String code = COM("Negate " + this.toString());
 		code += child.generateCode(valueNeeded);
 		
 		if (valueNeeded) 

@@ -28,11 +28,11 @@ public class AddressOfExpression extends Expression
 	{
 		if (valueNeeded) 
 		{
-			return COM("AddressOfExpression " + this.toString()) + child.generateAddress();
+			return COM("AddressOf " + this.toString()) + child.generateAddress();
 		} 
 		else 
 		{
-			return COM("AddressOfExpression " + this.toString()) + child.generateCode(false);
+			return COM("AddressOf " + this.toString()) + child.generateCode(false);
 		}
 	}
 

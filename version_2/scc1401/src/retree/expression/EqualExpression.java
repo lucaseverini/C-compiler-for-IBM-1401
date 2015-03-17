@@ -57,7 +57,7 @@ public class EqualExpression extends Expression
 		String labelEqual = label(SmallCC.nextLabelNumber());
 		String labelEnd = label(SmallCC.nextLabelNumber());	
 		
-		String code = COM("EqualExpression " + this.toString());
+		String code = COM("Equal (==) " + this.toString());
 		code += l.generateCode(valueNeeded);
 		
 		if (valueNeeded && l.getType().equals(Type.intType))
@@ -76,14 +76,14 @@ public class EqualExpression extends Expression
 		{
 			int size = l.getType().sizeof();
 
-			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-size));
+			code += INS("Compare", null, "C", STACK_OFF(0), STACK_OFF(-size));
 			code += POP(size) + POP(size);
 			code += PUSH(Type.intType.sizeof(), NUM_CONST(0, false));
 
 			code += INS("Jump if equal", null, "BE", labelEqual);
 			code += INS("Jump to End", null, "B", labelEnd);
 			code += INS("Equal", labelEqual, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += INS("End", labelEnd, "NOP");
+			code += INS("End of Equal", labelEnd, "NOP");
 		}
 		
 		return code;

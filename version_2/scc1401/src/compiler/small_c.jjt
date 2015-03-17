@@ -2,7 +2,7 @@
 	small_c.jjt
 
     Small-C compiler - SJSU
-	March-1-2015
+	March-16-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -27,6 +27,7 @@ import retree.type.*;
 import retree.symtab.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.Map.Entry;
 import static retree.RetreeUtils.*;
 
 public class SmallCC
@@ -47,9 +48,9 @@ public class SmallCC
 
 	public static boolean inAsmFunc = false;
 
-	public static int stackMem = 400;
-	public static int codeMem = 3000;
-	public static int dataMem = 2000;
+  	public static int stackMem = 400;
+  	public static int dataMem = 2000;
+  	public static int codeMem = 0;					// if 0 then put the code immediately after the data
 	public static boolean reuseStringLiterals = false;
 	
   	private static int labelNumber = 0;
@@ -71,6 +72,19 @@ public class SmallCC
 			labelTable.put(var, label);
 			return label;
 		}
+	}
+
+	public static String getVariableLabelValue(String label)
+	{
+		for (Entry<String, String> entry : labelTable.entrySet()) 
+		{
+			if (label.equals(entry.getValue()))
+			{
+				return entry.getKey();
+			}
+		}
+
+		return null;
 	}
 
 	public static String getLabelForArrayMember(String var)
@@ -1025,11 +1039,14 @@ List<Expression> expressionList(Expression e) : {
 	List<Expression> list = new ArrayList<Expression>();
 	Expression exp;
 } {
-	(exp=assignmentExpression() {
+	(exp=assignmentExpression() 
+	{
 		if ((e instanceof AssemblyExpression))
 		{
 			((AssemblyExpression)e).addASM(token.image);
-		} else {
+		} 
+		else 
+		{
 			list.add(exp);
 		}
 	}
@@ -1037,7 +1054,9 @@ List<Expression> expressionList(Expression e) : {
 		if ((e instanceof AssemblyExpression))
 		{
 			((AssemblyExpression)e).addASM(token.image);
-		} else {
+		} 
+		else 
+		{
 			list.add(exp);
 		}
 	})*)?
@@ -1045,7 +1064,6 @@ List<Expression> expressionList(Expression e) : {
 	{
 		return list;
 	}
-
 }
 
 Expression AtomicExpression()  : {
@@ -1104,8 +1122,10 @@ Expression AtomicExpression()  : {
 		else 
 		{
 			str = str.substring(1, str.length() - 1);
+			
 			List<Expression> list = new ArrayList<Expression>();
 			List<Expression> rlist = new ArrayList<Expression>();
+			
 			for(int i = 0; i < str.length(); i++)
 			{
 				if (str.charAt(i) == '\\')
@@ -1121,7 +1141,7 @@ Expression AtomicExpression()  : {
 								list.add(new ConstantExpression(Type.charType, 0));
 								break;
 						}
-						i ++;
+						i++;
 					}
 				} 
 				else
@@ -1144,6 +1164,7 @@ Expression AtomicExpression()  : {
 			{
 				stringInits.add(new Initializer(ve, rlist));
 			}
+			
 			return ane;
 		}
 		// check symtab for this string

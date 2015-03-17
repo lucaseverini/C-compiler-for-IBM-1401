@@ -108,6 +108,7 @@ public class SymbolTableStack
 	public VariableExpression add(String identifier, Type type, boolean isParam) throws Exception
 	{
 		SymTab table = peek();
+		
 		if (table.get(identifier) != null) 
 		{
 			throw new Exception("Redefinition of variable " + identifier);
@@ -121,6 +122,7 @@ public class SymbolTableStack
 	public VariableExpression addStatic(String identifier, Type type) throws Exception
 	{
 		SymTab table = getStaticSymTab();
+		
 		if (table.get(identifier) != null) 
 		{
 			throw new Exception("Redefinition of variable " + identifier);

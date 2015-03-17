@@ -40,14 +40,15 @@ public class WhileStatement implements Statement
 		
 		code += condition.generateCode(true);
 		
-		code += INS(null, null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+		code += INS("Clear WM", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
 		code += POP(size);
 		code += INS("Jump to bottom", null, "BCE", bottomLabel, STACK_OFF(size), " ");
 
 		code += body.generateCode();
 		
 		code += INS("Jump to top", null, "B", topLabel);
-		code += INS("Bottom of the loop", bottomLabel, "NOP");
+		code += INS("Bottom of the while loop", bottomLabel, "NOP");
+		code += "\n";
 		
 		return code;
 	}

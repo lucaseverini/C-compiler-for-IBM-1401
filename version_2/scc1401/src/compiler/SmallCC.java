@@ -11,246 +11,261 @@ import retree.type.*;
 import retree.symtab.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.Map.Entry;
 import static retree.RetreeUtils.*;
 
 public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCConstants {/*@bgen(jjtree)*/
-  protected static JJTSmallCCState jjtree = new JJTSmallCCState();// used during tree build
-  private static List<Initializer> stringInits;
-  private static int stringLiteralIdx;
-  public static SymbolTableStack variableTable;
-  public static HashMap<String, ConstantExpression> functionTable;
-  //when a function is defined, we stage it here.  Only when it is called do we add it to our program.
-  private static HashMap<ConstantExpression, FunctionDefinition> pendingFunctionDefinitions;
-  private static HashSet<FunctionDefinition> includedFunctions;
-  public static HashMap<String, String> labelTable;
-  public static List<Pair<String, String>> arrMemberLabelTable; 
+  protected static JJTSmallCCState jjtree = new JJTSmallCCState();// protected static JJTSmallCCState jjtree = new JJTSmallCCState(); // used during tree build
+        private static List<Initializer> stringInits;
+        private static int stringLiteralIdx;
+        public static SymbolTableStack variableTable;
+        public static HashMap<String, ConstantExpression> functionTable;
+        // when a function is defined, we stage it here.  Only when it is called do we add it to our program.
+        private static HashMap<ConstantExpression, FunctionDefinition> pendingFunctionDefinitions;
+        private static HashSet<FunctionDefinition> includedFunctions;
+        public static HashMap<String, String> labelTable;
+        public static List<Pair<String, String>> arrMemberLabelTable;
 
-  public static String autocoderFile = null;
-  public static String compilationTime = null;
-  
-  public static boolean inAsmFunc = false;
-  
-  public static int stackMem = 400;
-  public static int codeMem = 3000;
-  public static int dataMem = 2000;
-  public static boolean reuseStringLiterals = false;
+        public static String autocoderFile = null;
+        public static String compilationTime = null;
 
-  private static int labelNumber = 0;
-  public static int nextLabelNumber() 
-  {
-      return labelNumber++;
-  }
- 
-  public static String getLabelForVariable(String var)
-  {
-		if(labelTable.containsKey(var))
-		{
-			String label = labelTable.get(var);
-			return label;
-		}
-		else
-		{
-			String label = label(nextLabelNumber());
-			labelTable.put(var, label);
-			return label;
-		}
-  }
-  
-  public static String getLabelForArrayMember(String var)
-  {
-		String label = label(nextLabelNumber());
-		
-		@SuppressWarnings("unchecked")
-		Pair<String, String> p = new Pair(label, var);		
-		arrMemberLabelTable.add(p);
-		
-		return label;
-  }
+        public static boolean inAsmFunc = false;
 
-	public static String getFunctionNameFromExpression(ConstantExpression c)
-	{
-		for (Map.Entry<String,ConstantExpression> entry : functionTable.entrySet())
-		{
-			if (entry.getValue() == c)
-			{
-				return entry.getKey();
-			}
-		}
-		
-		return "UNNAMED FUNCTION";
-	}
+        public static int stackMem = 400;
+        public static int dataMem = 2000;
+        public static int codeMem = 0;                                  // if 0 then put the code immediately after the data
+        public static boolean reuseStringLiterals = false;
 
-	public static void main(String args[]) throws Exception
-  {
+        private static int labelNumber = 0;
+        public static int nextLabelNumber()
+        {
+                return labelNumber++;
+        }
+
+        public static String getLabelForVariable(String var)
+        {
+                if(labelTable.containsKey(var))
+                {
+                        String label = labelTable.get(var);
+                        return label;
+                }
+                else
+                {
+                        String label = label(nextLabelNumber());
+                        labelTable.put(var, label);
+                        return label;
+                }
+        }
+
+        public static String getVariableLabelValue(String label)
+        {
+                for (Entry<String, String> entry : labelTable.entrySet())
+                {
+                        if (label.equals(entry.getValue()))
+                        {
+                                return entry.getKey();
+                        }
+                }
+
+                return null;
+        }
+
+        public static String getLabelForArrayMember(String var)
+        {
+                String label = label(nextLabelNumber());
+
+                @SuppressWarnings("unchecked")
+                Pair<String, String> p = new Pair(label, var);
+                arrMemberLabelTable.add(p);
+
+                return label;
+        }
+
+        public static String getFunctionNameFromExpression(ConstantExpression c)
+        {
+                for (Map.Entry<String,ConstantExpression> entry : functionTable.entrySet())
+                {
+                        if (entry.getValue() == c)
+                        {
+                                return entry.getKey();
+                        }
+                }
+
+                return "UNNAMED FUNCTION";
+        }
+
+        public static void main(String args[]) throws Exception
+        {
         if(args.length == 0)
         {
             System.out.println("No input file");
-			System.exit(1);
+                        System.exit(1);
         }
         else
         {
             System.exit(compile(args[0], null, 0, 0, 0));
         }
-  }
+        }
 
-  public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
-  {
-    SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
-	compilationTime = sdf.format(Calendar.getInstance().getTime());
-	
-	if(stackLoc > 0 && stackLoc < 16000)
-	{
-		stackMem = stackLoc;
-	}
+        public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
+        {
+        SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
+                compilationTime = sdf.format(Calendar.getInstance().getTime());
 
-	if(codeLoc > 0 && codeLoc < 16000)
-	{
-		codeMem = codeLoc;
-	}
+                if(stackLoc > 0 && stackLoc < 16000)
+                {
+                        stackMem = stackLoc;
+                }
 
-	if(dataLoc > 0 && dataLoc < 16000)
-	{
-		dataMem = dataLoc;
-	}
+                if(codeLoc > 0 && codeLoc < 16000)
+                {
+                        codeMem = codeLoc;
+                }
 
-	if(outputFile.length() > 0)
-	{
-		File f = new File(outputFile);
-		autocoderFile = f.getName();
-	}
-	else
-	{
-		autocoderFile = "";
-	}
-	
-	System.out.println("Stack: " + stackMem);
-	System.out.println("Code: " + codeMem);
-	System.out.println("Data: " + dataMem);
-	System.out.println("Reuse String Constants: " + (reuseStringLiterals ? "YES" : "NO"));
+                if(dataLoc > 0 && dataLoc < 16000)
+                {
+                        dataMem = dataLoc;
+                }
 
-	File inFile = new File(inputFile);
-    Reader sr = new FileReader(inFile);
-	
-	stringInits = new ArrayList<>();
-	stringLiteralIdx = 0;
-	functionTable = new HashMap<>();
-	variableTable = new SymbolTableStack(dataMem);
-	pendingFunctionDefinitions = new HashMap<>();
-	includedFunctions = new HashSet<>();
-	labelTable = new HashMap<>();
-	arrMemberLabelTable = new ArrayList<>();
+                if(outputFile.length() > 0)
+                {
+                        File f = new File(outputFile);
+                        autocoderFile = f.getName();
+                }
+                else
+                {
+                        autocoderFile = "";
+                }
 
-	ArrayList<Type> tmp = new ArrayList<>();
-	tmp.add(new PointerType(Type.charType));
-	tmp.add(null);
-	
-	int asmFuncNumber = nextLabelNumber();
-	functionTable.put("asm", new ConstantExpression(new FunctionType(Type.intType, tmp, true), asmFuncNumber));
+                System.out.println("Stack: " + stackMem);
+                System.out.println("Code: " + codeMem);
+                System.out.println("Data: " + dataMem);
+                System.out.println("Reuse String Constants: " + (reuseStringLiterals ? "YES" : "NO"));
 
-    SmallCC parser = new SmallCC(sr);
-    try 
-	{
-		Program program = parser.program();
-		if(program != null)
-		{
-			for (Initializer i : stringInits)
-			{
-				program.addInitializer(i);
-			}
+                File inFile = new File(inputFile);
+                Reader sr = new FileReader(inFile);
 
-			if (errorFree) 
-			{
-				String code = program.generateCode();
+                stringInits = new ArrayList<Initializer>();
+                stringLiteralIdx = 0;
+                functionTable = new HashMap<String, ConstantExpression>();
+                variableTable = new SymbolTableStack(dataMem);
+                pendingFunctionDefinitions = new HashMap<ConstantExpression, FunctionDefinition>();
+                includedFunctions = new HashSet<FunctionDefinition>();
+                labelTable = new HashMap<String, String>();
+                arrMemberLabelTable = new ArrayList<Pair<String, String>>();
 
-				if(outputFile != null)
-				{
-					File outFile = new File(outputFile);
-					Writer wr = new FileWriter(outFile);
-					wr.write(code);
-					wr.close();
-				}
-				else
-				{
-					System.out.print(code);
-				}
-			}
-		}
-		else
-		{
-			errorFree = false;
-		}
-    } 
-	catch (Exception e) 
-	{
-		e.printStackTrace();
-		errorFree = false;
-	}
-	
-	// Node rootNode = jjtree.rootNode();
-    // printTree((SimpleNode)rootNode);
-	
-	return(errorFree ? 0 : 1);
-  }
+                ArrayList<Type> tmp = new ArrayList<Type>();
+                tmp.add(new PointerType(Type.charType));
+                tmp.add(null);
 
-	private static boolean errorFree = true;
+                int asmFuncNumber = nextLabelNumber();
+                functionTable.put("asm", new ConstantExpression(new FunctionType(Type.intType, tmp, true), asmFuncNumber));
 
-	public static void reportError(Exception e, Token t) 
-	{
-        reportError(e.toString(), t);
-    }
+                SmallCC parser = new SmallCC(sr);
+                try
+                {
+                        Program program = parser.program();
+                        if(program != null)
+                        {
+                                for (Initializer i : stringInits)
+                                {
+                                        program.addInitializer(i);
+                                }
 
-    public static void reportError(String m, Token t)
-	{
-        errorFree = false;
-        System.out.println("Error on line " + t.beginLine + " column " + t.beginColumn);
-        System.out.println(m);
-    }
+                                if (errorFree)
+                                {
+                                        String code = program.generateCode();
 
-	public static void printTree(SimpleNode node)
-	{
-		System.out.println("===== AST (parse tree) =====");
+                                        if(outputFile != null)
+                                        {
+                                                File outFile = new File(outputFile);
+                                                Writer wr = new FileWriter(outFile);
+                                                wr.write(code);
+                                                wr.close();
+                                        }
+                                        else
+                                        {
+                                                System.out.print(code);
+                                        }
+                                }
+                        }
+                        else
+                        {
+                                errorFree = false;
+                        }
+                }
+                catch (Exception e)
+                {
+                        e.printStackTrace();
+                        errorFree = false;
+                }
 
-		printTree(node, 0);
-	}
+                // Node rootNode = jjtree.rootNode();
+                // printTree((SimpleNode)rootNode);
 
-	public static void printTree(SimpleNode node, int level)
-	{
-		for(int i = 0; i < level; ++i) 
-		{
-			System.out.print("    ");
-		}
+                return(errorFree ? 0 : 1);
+        }
 
-		//MyNode n = (MyNode) node;
-		//int kind = n.getKind();
-		//String name = n.getName();
+        private static boolean errorFree = true;
 
-		String begin = String.format("<%s>", node.toString());
-		System.out.println(begin);
+        public static void reportError(Exception e, Token t)
+        {
+                reportError(e.toString(), t);
+        }
 
-		// System.out.println(kind);
-		//if(kind == 49 || kind == 50 || kind == 51 || kind == 52 || kind == 15) 
-		//{
-			//for(int i = 0; i < level; ++i) 
-			//{
-			//	System.out.print("    ");
-			//}
+        public static void reportError(String m, Token t)
+        {
+                errorFree = false;
+                System.out.println("Error on line " + t.beginLine + " column " + t.beginColumn);
+                System.out.println(m);
+        }
 
-			// System.out.println("    " + node.value);
-		//}
+        public static void printTree(SimpleNode node)
+        {
+                System.out.println("===== AST (parse tree) =====");
 
-		int numChildren = node.jjtGetNumChildren();
-		for(int i = 0; i < numChildren; ++i) 
-		{
-			printTree((SimpleNode) node.jjtGetChild(i), level + 1);
-		}
+                printTree(node, 0);
+        }
 
-		for(int i = 0; i < level; ++i) {
-			System.out.print("    ");
-		}
+        public static void printTree(SimpleNode node, int level)
+        {
+                for(int i = 0; i < level; ++i)
+                {
+                        System.out.print("    ");
+                }
 
-		String end = String.format("</%s>", node.toString());
-		System.out.println(end);
-	}
+                //MyNode n = (MyNode) node;
+                //int kind = n.getKind();
+                //String name = n.getName();
+
+                String begin = String.format("<%s>", node.toString());
+                System.out.println(begin);
+
+                // System.out.println(kind);
+                //if(kind == 49 || kind == 50 || kind == 51 || kind == 52 || kind == 15)
+                //{
+                        //for(int i = 0; i < level; ++i)
+                        //{
+                        //	System.out.print("    ");
+                        //}
+
+                        // System.out.println("    " + node.value);
+                //}
+
+                int numChildren = node.jjtGetNumChildren();
+                for(int i = 0; i < numChildren; ++i)
+                {
+                        printTree((SimpleNode) node.jjtGetChild(i), level + 1);
+                }
+
+                for(int i = 0; i < level; ++i)
+                {
+                        System.out.print("    ");
+                }
+
+                String end = String.format("</%s>", node.toString());
+                System.out.println(end);
+        }
 
 /** Main production. */
   static final public 
@@ -291,7 +306,7 @@ jjtree.closeNodeScope(jjtn000, true);
 ConstantExpression mainDec = functionTable.get("main");
                                 if (mainDec == null) {
                                         System.out.println("Missing main function");
-                                        return null;
+                                        {if ("" != null) return null;}
                                 }
                                 if (pendingFunctionDefinitions.containsKey(mainDec)) {
                                         includedFunctions.add(pendingFunctionDefinitions.remove(mainDec));
@@ -2012,7 +2027,9 @@ if (jjtc000) {
 if ((e instanceof AssemblyExpression))
                 {
                         ((AssemblyExpression)e).addASM(token.image);
-                } else {
+                }
+                else
+                {
                         list.add(exp);
                 }
         label_21:
@@ -2027,7 +2044,9 @@ if ((e instanceof AssemblyExpression))
 if ((e instanceof AssemblyExpression))
                 {
                         ((AssemblyExpression)e).addASM(token.image);
-                } else {
+                }
+                else
+                {
                         list.add(exp);
                 }
         }
@@ -2065,68 +2084,59 @@ if (jjtc000) {
         jjtree.openNodeScope(jjtn000);Expression e = null;
         ConstantExpression ce = null;
         String str = "";
-    try 
-	{
-      if (jj_2_104(99999)) 
-	  {
+    try {
+      if (jj_2_104(99999)) {
         str = Identifier();
-		VariableExpression var = variableTable.searchStack(str);
+VariableExpression var = variableTable.searchStack(str);
                 if (var == null)
-				{
+                {
                         ConstantExpression fun = functionTable.get(str);
-                        if (fun == null) 
-						{
+                        if (fun == null)
+                        {
                                 reportError("Did not find: " + str + " anywhere did you forget to declare it?", token);
                                 {if ("" != null) return null;}
-                        } 
-						else
-						{
-                                if (pendingFunctionDefinitions.containsKey(fun)) 
-								{
+                        }
+                        else
+                        {
+                                if (pendingFunctionDefinitions.containsKey(fun))
+                                {
                                         //lazily add our function definition to the program
                                         includedFunctions.add(pendingFunctionDefinitions.remove(fun));
                                 }
                                 {if ("" != null) return fun;}
                         }
-                } 
-				else if (var.getType() instanceof ArrayType) 
-				{
+                }
+                else if (var.getType() instanceof ArrayType)
+                {
                         {if ("" != null) return new ArrayNameExpression(var);}
-                } 
-				else 
-				{
+                }
+                else
+                {
                         {if ("" != null) return var;}
                 }
-      } 
-	  else if (jj_2_105(99999)) 
-	  {
+      } else if (jj_2_105(99999)) {
         str = Number();
-		int val = Integer.parseInt(str);
-        ce = new ConstantExpression(Type.intType, val);
-        e = ce;
-      } 
-	  else if (jj_2_106(99999))
-	  {
-			str = StringLiteral();
-			
-			// Use the string value as identifier if string constants can be reused otherwise define an unique identifier 
-			String identif = reuseStringLiterals ? str : "STR_LIT_" + Integer.toString(++stringLiteralIdx);
-				
-				VariableExpression ve = variableTable.searchStack(str);
+int val = Integer.parseInt(str);
+                ce = new ConstantExpression(Type.intType, val);
+                e = ce;
+      } else if (jj_2_106(99999)) {
+        str = StringLiteral();
+// Use the string value as identifier if string constants can be reused otherwise define an unique identifier 
+                String identif = reuseStringLiterals ? str : "STR_LIT_" + Integer.toString(++stringLiteralIdx);
+
+                VariableExpression ve = variableTable.searchStack(str);
                 if (ve != null)
                 {
                         ArrayNameExpression ane = new ArrayNameExpression(ve);
-                        {
-							if ("" != null) 
-								return ane;
-						}
-                } 
-				else 
-				{
+                        {if ("" != null) return ane;}
+                }
+                else
+                {
                         str = str.substring(1, str.length() - 1);
-						
+
                         List<Expression> list = new ArrayList<Expression>();
                         List<Expression> rlist = new ArrayList<Expression>();
+
                         for(int i = 0; i < str.length(); i++)
                         {
                                 if (str.charAt(i) == '\u005c\u005c')
@@ -2142,32 +2152,31 @@ if (jjtc000) {
                                                                 list.add(new ConstantExpression(Type.charType, 0));
                                                                 break;
                                                 }
-                                                i ++;
+                                                i++;
                                         }
-                                } 
-								else 
-								{
+                                }
+                                else
+                                 {
                                         list.add(new ConstantExpression(Type.charType,("" + str.charAt(i)).toUpperCase().charAt(0)));
                                 }
                         }
                         list.add(new ConstantExpression(Type.charType, 0));
-                        for (int i = list.size()-1; i >= 0; i--)
+
+                        for (int i = list.size() - 1; i >= 0; i--)
                         {
                                 rlist.add(list.get(i));
                         }
                         // need the +1 for the '\0' char
-						
+
                         ve = variableTable.addStatic(identif, new ArrayType(rlist.size(), Type.charType));
-						
+
                         ArrayNameExpression ane = new ArrayNameExpression(ve);
                         if (!inAsmFunc)
                         {
                                 stringInits.add(new Initializer(ve, rlist));
                         }
-                        {
-							if ("" != null) 
-								return ane;
-						}
+
+                        {if ("" != null) return ane;}
                 }
                 // check symtab for this string
                 // if it is Put that in arry name expr and ret that
@@ -2181,19 +2190,20 @@ if (jjtc000) {
                 // return array name
                 //
 
-      } 
-	  else if (jj_2_107(99999))
-	  {
-			str = CharacterConstant();
-			int val = 0;
+      } else if (jj_2_107(99999)) {
+        str = CharacterConstant();
+int val = 0;
                         //strip the quote characters
                         str = str.substring(1, str.length() - 1);
-                        if (str.charAt(0) == '\u005c\u005c') {
-                                if (str.length() != 2) {
+                        if (str.charAt(0) == '\u005c\u005c')
+                        {
+                                if (str.length() != 2)
+                                {
                                         //invalid char constant
                                         {if ("" != null) return null;}
                                 }
-                                switch(str.charAt(1)) {
+                                switch(str.charAt(1))
+                                {
                                         case 'n':
                                                 val = '\u005cn';
                                                 break;
@@ -2201,8 +2211,11 @@ if (jjtc000) {
                                                 val = 0;
                                                 break;
                                 }
-                        } else {
-                                if (str.length() != 1) {
+                        }
+                        else
+                        {
+                                if (str.length() != 1)
+                                {
                                         //invalid char constant.
                                         {if ("" != null) return null;}
                                 }
@@ -3496,425 +3509,6 @@ if (jjtc000) {
     finally { jj_save(107, xla); }
   }
 
-  static private boolean jj_3_14()
- {
-    if (jj_scan_token(STAR)) return true;
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_13()
- {
-    if (jj_3R_30()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_10()
- {
-    if (jj_scan_token(EQUALS)) return true;
-    if (jj_3R_27()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_28()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_13()) {
-    jj_scanpos = xsp;
-    if (jj_3_14()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3_71()
- {
-    if (jj_scan_token(78)) return true;
-    if (jj_3R_44()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_44()
- {
-    if (jj_3R_45()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_72()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_67()
- {
-    if (jj_scan_token(EQUALS_EQUALS)) return true;
-    if (jj_3R_43()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_66()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_67()) {
-    jj_scanpos = xsp;
-    if (jj_3_68()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3_12()
- {
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_43()
- {
-    if (jj_3R_44()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_69()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_65()
- {
-    if (jj_scan_token(BIT_AND)) return true;
-    if (jj_3R_42()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_11()
- {
-    if (jj_3R_28()) return true;
-    if (jj_scan_token(61)) return true;
-    if (jj_3R_29()) return true;
-    if (jj_scan_token(62)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_55()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_11()) {
-    jj_scanpos = xsp;
-    if (jj_3_12()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3_68()
- {
-    if (jj_scan_token(NOT_EQUALS)) return true;
-    if (jj_3R_43()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_42()
- {
-    if (jj_3R_43()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_66()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_64()
- {
-    if (jj_scan_token(BIT_XOR)) return true;
-    if (jj_3R_41()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_26()
- {
-    if (jj_3R_55()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_10()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_41()
- {
-    if (jj_3R_42()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_65()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_63()
- {
-    if (jj_scan_token(BIT_OR)) return true;
-    if (jj_3R_40()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_52()
- {
-    if (jj_scan_token(STRING_LIT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_9()
- {
-    if (jj_scan_token(60)) return true;
-    if (jj_3R_26()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_40()
- {
-    if (jj_3R_41()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_64()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_54()
- {
-    if (jj_3R_26()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_9()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_62()
- {
-    if (jj_scan_token(BOOLEAN_AND)) return true;
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_51()
- {
-    if (jj_scan_token(NUMBER)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_6()
- {
-    if (jj_scan_token(INT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_34()
- {
-    if (jj_3R_25()) return true;
-    if (jj_3R_54()) return true;
-    if (jj_scan_token(SEMI_COLON)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_53()
- {
-    if (jj_scan_token(CHARACTER_CONST)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_39()
- {
-    if (jj_3R_40()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_63()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_7()
- {
-    if (jj_scan_token(STAR)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_61()
- {
-    if (jj_scan_token(BOOLEAN_OR)) return true;
-    if (jj_3R_38()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_30()
- {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_8()
- {
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_22()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_8()) jj_scanpos = xsp;
-    if (jj_3R_54()) return true;
-    if (jj_scan_token(SEMI_COLON)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_38()
- {
-    if (jj_3R_39()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_62()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_108()
- {
-    if (jj_scan_token(L_PAREN)) return true;
-    if (jj_3R_29()) return true;
-    if (jj_scan_token(R_PAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_32()
- {
-    if (jj_3R_25()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_7()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_60()
- {
-    if (jj_scan_token(76)) return true;
-    if (jj_3R_29()) return true;
-    if (jj_scan_token(77)) return true;
-    if (jj_3R_27()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_56()
- {
-    if (jj_3R_38()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_61()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_4()
- {
-    if (jj_3R_24()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_3()
- {
-    if (jj_3R_23()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_5()
- {
-    if (jj_scan_token(CHAR)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_25()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_5()) {
-    jj_scanpos = xsp;
-    if (jj_3_6()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3_107()
- {
-    if (jj_3R_53()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_58()
- {
-    if (jj_scan_token(EQUALS)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_57()
- {
-    if (jj_scan_token(75)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_27()
- {
-    if (jj_3R_56()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_60()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3_56()
- {
-    if (jj_scan_token(74)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_1()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_2()) {
-    jj_scanpos = xsp;
-    if (jj_3_3()) {
-    jj_scanpos = xsp;
-    if (jj_3_4()) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_2()
- {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_55()
- {
-    if (jj_scan_token(73)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
   static private boolean jj_3_37()
  {
     if (jj_scan_token(R_PAREN)) return true;
@@ -4015,6 +3609,12 @@ if (jjtc000) {
     return false;
   }
 
+  static private boolean jj_3_106()
+ {
+    if (jj_3R_52()) return true;
+    return false;
+  }
+
   static private boolean jj_3_35()
  {
     if (jj_scan_token(SEMI_COLON)) return true;
@@ -4025,6 +3625,12 @@ if (jjtc000) {
  {
     if (jj_scan_token(60)) return true;
     if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_105()
+ {
+    if (jj_3R_51()) return true;
     return false;
   }
 
@@ -4041,18 +3647,6 @@ if (jjtc000) {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3_59()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3_106()
- {
-    if (jj_3R_52()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_105()
- {
-    if (jj_3R_51()) return true;
     return false;
   }
 
@@ -4793,6 +4387,425 @@ if (jjtc000) {
     if (jj_3_16()) jj_scanpos = xsp;
     if (jj_scan_token(R_PAREN)) return true;
     if (jj_scan_token(SEMI_COLON)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_14()
+ {
+    if (jj_scan_token(STAR)) return true;
+    if (jj_3R_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_13()
+ {
+    if (jj_3R_30()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_10()
+ {
+    if (jj_scan_token(EQUALS)) return true;
+    if (jj_3R_27()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_28()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_13()) {
+    jj_scanpos = xsp;
+    if (jj_3_14()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3_71()
+ {
+    if (jj_scan_token(78)) return true;
+    if (jj_3R_44()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_44()
+ {
+    if (jj_3R_45()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_72()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_67()
+ {
+    if (jj_scan_token(EQUALS_EQUALS)) return true;
+    if (jj_3R_43()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_66()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_67()) {
+    jj_scanpos = xsp;
+    if (jj_3_68()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3_12()
+ {
+    if (jj_3R_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_43()
+ {
+    if (jj_3R_44()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_69()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_65()
+ {
+    if (jj_scan_token(BIT_AND)) return true;
+    if (jj_3R_42()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_52()
+ {
+    if (jj_scan_token(STRING_LIT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_11()
+ {
+    if (jj_3R_28()) return true;
+    if (jj_scan_token(61)) return true;
+    if (jj_3R_29()) return true;
+    if (jj_scan_token(62)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_55()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_11()) {
+    jj_scanpos = xsp;
+    if (jj_3_12()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3_68()
+ {
+    if (jj_scan_token(NOT_EQUALS)) return true;
+    if (jj_3R_43()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_51()
+ {
+    if (jj_scan_token(NUMBER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_42()
+ {
+    if (jj_3R_43()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_66()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_64()
+ {
+    if (jj_scan_token(BIT_XOR)) return true;
+    if (jj_3R_41()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_53()
+ {
+    if (jj_scan_token(CHARACTER_CONST)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_26()
+ {
+    if (jj_3R_55()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_10()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_30()
+ {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_41()
+ {
+    if (jj_3R_42()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_65()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_63()
+ {
+    if (jj_scan_token(BIT_OR)) return true;
+    if (jj_3R_40()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_108()
+ {
+    if (jj_scan_token(L_PAREN)) return true;
+    if (jj_3R_29()) return true;
+    if (jj_scan_token(R_PAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_9()
+ {
+    if (jj_scan_token(60)) return true;
+    if (jj_3R_26()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_40()
+ {
+    if (jj_3R_41()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_64()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_54()
+ {
+    if (jj_3R_26()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_9()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_62()
+ {
+    if (jj_scan_token(BOOLEAN_AND)) return true;
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_6()
+ {
+    if (jj_scan_token(INT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_34()
+ {
+    if (jj_3R_25()) return true;
+    if (jj_3R_54()) return true;
+    if (jj_scan_token(SEMI_COLON)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_39()
+ {
+    if (jj_3R_40()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_63()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_7()
+ {
+    if (jj_scan_token(STAR)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_61()
+ {
+    if (jj_scan_token(BOOLEAN_OR)) return true;
+    if (jj_3R_38()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_8()
+ {
+    if (jj_3R_25()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_22()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_8()) jj_scanpos = xsp;
+    if (jj_3R_54()) return true;
+    if (jj_scan_token(SEMI_COLON)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_107()
+ {
+    if (jj_3R_53()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_38()
+ {
+    if (jj_3R_39()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_62()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_32()
+ {
+    if (jj_3R_25()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_7()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_60()
+ {
+    if (jj_scan_token(76)) return true;
+    if (jj_3R_29()) return true;
+    if (jj_scan_token(77)) return true;
+    if (jj_3R_27()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_56()
+ {
+    if (jj_3R_38()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_61()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_4()
+ {
+    if (jj_3R_24()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_3()
+ {
+    if (jj_3R_23()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_5()
+ {
+    if (jj_scan_token(CHAR)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_25()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_5()) {
+    jj_scanpos = xsp;
+    if (jj_3_6()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3_58()
+ {
+    if (jj_scan_token(EQUALS)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_57()
+ {
+    if (jj_scan_token(75)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_27()
+ {
+    if (jj_3R_56()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_60()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3_56()
+ {
+    if (jj_scan_token(74)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_1()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_2()) {
+    jj_scanpos = xsp;
+    if (jj_3_3()) {
+    jj_scanpos = xsp;
+    if (jj_3_4()) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_2()
+ {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_55()
+ {
+    if (jj_scan_token(73)) return true;
+    if (jj_3R_37()) return true;
     return false;
   }
 

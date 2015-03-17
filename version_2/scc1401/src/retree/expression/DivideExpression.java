@@ -58,7 +58,8 @@ public class DivideExpression extends Expression
 		if (valueNeeded) 
 		{
 			code += SNIP("SNIP_DIV");
-			code += INS(null, null, "MCW", STACK_OFF(0), STACK_OFF(-Type.intType.sizeof()));
+			int size = -Type.intType.sizeof();
+			code += INS("copy stack location to stack location at offset " + size, null, "MCW", STACK_OFF(0), STACK_OFF(size));
 			code += POP(Type.intType.sizeof());
 		}
 		

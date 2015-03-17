@@ -84,7 +84,7 @@ public class AssemblyExpression extends Expression
 	
 	public String toString() 
 	{
-		return "asm(" + args + ")";
+		return "asm (" + args + ")";
 	}
 }
 

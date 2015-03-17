@@ -9,6 +9,7 @@
 
 package retree.symtab;
 
+import compiler.SmallCC;
 import java.util.HashMap;
 import retree.expression.VariableExpression;
 import retree.type.Type;
@@ -44,16 +45,30 @@ public class SymTab
 	{
 		if (isParam) 
 		{
-			VariableExpression varExp = new VariableExpression(t, paramOffset, false, identifier);
+			VariableExpression varExp = new VariableExpression(t, paramOffset, false, true, identifier);
 			paramOffset -= t.sizeof();
 			table.put(identifier, varExp);
 			return varExp;
 		} 
 		else 
 		{
-			localOffset += t.sizeof();
-			VariableExpression varExp = new VariableExpression(t, localOffset, isStatic, identifier);
-			table.put(identifier, varExp);
+			Boolean inAsm = SmallCC.inAsmFunc;
+			
+			if(!inAsm)
+			{
+				// localOffset += t.sizeof();
+			}
+
+			VariableExpression varExp = new VariableExpression(t, localOffset, isStatic, false, identifier);
+			varExp.inAsm = inAsm;
+			
+			// If the expression is used in ASM pseudo-function, is not present in the code and is not added to the table
+			if(!inAsm)
+			{
+				localOffset += t.sizeof();
+				table.put(identifier, varExp);
+			}
+			
 			return varExp;
 		}
 	}

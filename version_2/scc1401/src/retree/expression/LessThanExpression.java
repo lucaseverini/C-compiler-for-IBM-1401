@@ -58,7 +58,7 @@ public class LessThanExpression extends Expression
 		//l = B, r = A
 		if (valueNeeded) 
 		{
-			String code = COM("LessThanExpression " + this.toString()) +
+			String code = COM("Less (<) " + this.toString()) +
 								l.generateCode(valueNeeded) + SNIP("clean_number") + 
 								r.generateCode(valueNeeded) + SNIP("clean_number");
 			
@@ -69,14 +69,14 @@ public class LessThanExpression extends Expression
 			// ## WARNING!! ##
 			// ###############
 			// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
-			code += INS(null, null, "C", STACK_OFF(0), STACK_OFF(-5));
+			code += INS("Compare", null, "C", STACK_OFF(0), STACK_OFF(-5));
 			code += POP(5);
 			
-			code += INS(null, null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+			code += INS("Set stack location to 0", null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
 			code += INS("Jump if less", null, "BL", labelLessThan);
 			code += INS("Jump to End", null, "B", labelEnd);
-			code += INS("Less", labelLessThan, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += INS("End", labelEnd, "NOP");
+			code += INS("Less: Set stack location to 1", labelLessThan, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+			code += INS("End of Less", labelEnd, "NOP");
 			
 			return code;
 		}

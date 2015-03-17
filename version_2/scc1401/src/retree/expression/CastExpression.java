@@ -46,21 +46,29 @@ public class CastExpression extends Expression
 		{
 			if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.intType))) 
 			{
+				code += COM("Cast Number(" + child.toString() + ") to Pointer"); 
+
 				code += SNIP("number_to_pointer");
 			} 
 			else if ((!(getType() instanceof PointerType) && getType().equals(Type.intType)) && child.getType() instanceof PointerType)
 			{
+				code += COM("Cast Pointer(" + child.toString() + ") to Number"); 
+
 				code += SNIP("pointer_to_number");
 			} 
 			else if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.charType)))
 			{
+				code += COM("Cast Char(" + child.toString() + ") to Pointer"); 
+
 				code += SNIP("char_to_pointer");
 			}
 			else if ((!(getType() instanceof PointerType) && getType().equals(Type.charType)) && child.getType() instanceof PointerType) 
 			{
+				code += COM("Cast Pointer(" + child.toString() + ") to Char"); 
+
 				code += SNIP("pointer_to_char");
 			}
-			//otherwise we don't need to do anything and our value is already on the stack.
+			// otherwise we don't need to do anything and our value is already on the stack.
 		}
 		return code;
 	}

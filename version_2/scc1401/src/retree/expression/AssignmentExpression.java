@@ -53,7 +53,7 @@ public class AssignmentExpression extends Expression
 		
 		if (valueNeeded) 
 		{
-			code += INS(null, null, "LCA", STACK_OFF(0), "0+X1");
+			code += INS("Load data at Stack location to X1", null, "LCA", STACK_OFF(0), "0+X1");
 		}
 		else 
 		{

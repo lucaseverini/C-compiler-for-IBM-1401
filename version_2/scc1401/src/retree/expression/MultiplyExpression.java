@@ -84,12 +84,12 @@ public class MultiplyExpression extends Expression
 	{
 		int size = r.getType().sizeof();
 		
-		String code = COM("Multiplication " + this.toString());
+		String code = COM("Multiply " + this.toString());
 		code += l.generateCode(valueNeeded) + r.generateCode(valueNeeded);	
 		
 		if (valueNeeded) 
 		{
-			code += INS(null, null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
+			code += INS("Multiply", null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
 			
 			// this puts the product at size + 1 bits above the stack
 			// ###############

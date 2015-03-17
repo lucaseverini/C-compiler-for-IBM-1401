@@ -53,7 +53,7 @@ public class ModuloExpression extends Expression
 	
 	public String generateCode(boolean valueNeeded)
 	{
-		String code = COM("ModuloExpression " + this.toString());
+		String code = COM("Modulo (%) " + this.toString());
 		code += r.generateCode(valueNeeded) + l.generateCode(valueNeeded);
 		
 		if (valueNeeded) 

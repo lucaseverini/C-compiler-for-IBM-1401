@@ -49,14 +49,15 @@ public class NotExpression extends Expression
 	{
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("NotExpression " + this.toString()) + PUSH(5,NUM_CONST(0, false));
+        String code = COM("Not (!) " + this.toString()) + PUSH(5,NUM_CONST(0, false));
         code += l.generateCode(true);
 		
-        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
-        code += POP(l.getType().sizeof());
-        code += INS(null, null, "BCE", labelEnd, STACK_OFF(l.getType().sizeof()), " ");
-        code += INS(null, null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-        code += INS(null, labelEnd, "NOP");
+		int size = l.getType().sizeof();
+        code += INS("Clear WM", null, "MCS", STACK_OFF(0),STACK_OFF(0));
+        code += POP(size);
+        code += INS("Jump to End if equal to stack at offset " + size, null, "BCE", labelEnd, STACK_OFF(size), " ");
+        code += INS("Set stack location to 0", null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+        code += INS("End of Not", labelEnd, "NOP");
 		
         return code;
     }

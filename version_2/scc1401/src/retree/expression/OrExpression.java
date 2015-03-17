@@ -57,21 +57,23 @@ public class OrExpression extends Expression
         String labelSecond = label(SmallCC.nextLabelNumber());
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("OrExpression " + this.toString());
+        String code = COM("Or (||) " + this.toString());
 		code += PUSH(5, NUM_CONST(0, false));
         code += l.generateCode(true);
-        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
-        code += POP(l.getType().sizeof());
-        code += INS("Jump to Second if equal", null, "BCE", labelSecond, STACK_OFF(l.getType().sizeof())," ");
-        code += INS(null, null, "MCW", NUM_CONST(1, false),STACK_OFF(0));
+		int lSize = l.getType().sizeof();
+		int rSize = r.getType().sizeof();
+        code += INS("Clear WM", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+        code += POP(lSize);
+        code += INS("Jump to Second if equal to stack at offset " + lSize, null, "BCE", labelSecond, STACK_OFF(lSize)," ");
+        code += INS("Set stack location to 1", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
         code += INS("Jump to End", null, "B", labelEnd);
         code += INS("Second", labelSecond, "NOP");
         code += r.generateCode(true);
-        code += INS(null, null, "MCS", STACK_OFF(0),STACK_OFF(0));
-        code += POP(r.getType().sizeof());
-        code += INS("Jump to End if equal", null, "BCE", labelEnd, STACK_OFF(r.getType().sizeof())," ");
-        code += INS(null, null, "MCW", NUM_CONST(1, false),STACK_OFF(0));
-        code += INS("End", labelEnd, "NOP");
+        code += INS("Clear WM", null, "MCS", STACK_OFF(0),STACK_OFF(0));
+        code += POP(rSize);
+        code += INS("Jump to End if equal to stack at offset " + rSize, null, "BCE", labelEnd, STACK_OFF(rSize)," ");
+        code += INS("Set stack location to 1", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+        code += INS("End of Or", labelEnd, "NOP");
 
         return code;
     }

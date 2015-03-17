@@ -1,8 +1,8 @@
 // test.c
 
+// #define STACK 400
 #define DATA 600
-#define CODE 2000
-#define STACK 400
+// #define CODE 800
 
 #ifdef IBM1401
 	#include <nonstdlib.h>
@@ -30,6 +30,7 @@ int main ()
 	x3 = x4;
 
  	printf("x0:%d\n", x0);
+
  	printf("x1:%d\n", x1);
  	printf("x2:%d\n", x2);
  	printf("x3:%d\n", x3);
@@ -42,5 +43,4 @@ int main ()
 	printf("c4:%s\n", c4);
 	
 	printf("\nDone.\n");
-
 }

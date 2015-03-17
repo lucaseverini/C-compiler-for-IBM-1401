@@ -34,13 +34,18 @@ public class Type
 		this.size = size;
 	}
 
-	public boolean equals(Type t) 
+	public int getSize() 
 	{
-		return this == t;
+		return size;
 	}
 
 	public int sizeof() 
 	{
 		return size;
+	}
+
+	public boolean equals(Type t) 
+	{
+		return this == t;
 	}
 }

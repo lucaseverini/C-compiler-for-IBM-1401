@@ -47,7 +47,7 @@ public class IfStatement implements Statement
 		
 		code += condition.generateCode(true);
 		
-		code += INS(null, null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+		code += INS("Clear WM", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
 		code += POP(size);
 		code += INS("Jump when False", null, "BCE", falseLabel, STACK_OFF(size), " ");
 		

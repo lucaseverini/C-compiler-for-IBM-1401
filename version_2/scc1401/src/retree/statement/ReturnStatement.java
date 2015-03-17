@@ -38,7 +38,7 @@ public class ReturnStatement implements Statement
 		}
 		
 		code += COM("Set the return flag, so we know do deallocate our stack");
-		code += INS(null, null, "MCW", "@R@", "RF");
+		code += INS("PUT @R@ into location RF", null, "MCW", "@R@", "RF");
 		
 		code += INS("Jump back to caller", null, "B", returnLabel);
 		

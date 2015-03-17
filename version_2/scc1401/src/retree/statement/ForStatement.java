@@ -61,7 +61,7 @@ public class ForStatement implements Statement
 		if (condition != null) 
 		{
 			code += condition.generateCode(true);
-			code += INS(null, null, "MCS", STACK_OFF(0), STACK_OFF(0));
+			code += INS("Clear WM", null, "MCS", STACK_OFF(0), STACK_OFF(0));
 			code += POP(size);
 			code += INS("Jump to bottom", null, "BCE", bottomLabel, STACK_OFF(size), " ");
 		}
@@ -75,7 +75,8 @@ public class ForStatement implements Statement
 		}
 		
 		code += INS("Jump to top", null, "B", topLabel);
-		code += INS("Bottom of the loop", bottomLabel, "NOP");
+		code += INS("Bottom of the for loop", bottomLabel, "NOP");
+		code += "\n";
 		
 		return code;
 	}
