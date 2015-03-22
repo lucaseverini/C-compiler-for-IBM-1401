@@ -16,15 +16,16 @@ import retree.expression.LValue;
 import retree.type.PointerType;
 import retree.type.Type;
 import retree.exceptions.*;
+import retree.intermediate.*;
 
-public class DereferenceExpression extends LValue 
+public class DereferenceExpression extends LValue
 {
 	private Expression child;
 
-	public DereferenceExpression(Expression child) throws TypeMismatchException 
+	public DereferenceExpression(Expression child) throws TypeMismatchException
 	{
 		super(getReferenceType(child));
-		
+
 		this.child = child;
 	}
 
@@ -34,37 +35,39 @@ public class DereferenceExpression extends LValue
 		{
 			throw new retree.exceptions.TypeMismatchException(exp, new PointerType(exp.getType()), exp.getType());
 		}
-		
+
 		return ((PointerType) exp.getType()).getType();
 	}
 
-	public LValue collapse() 
+	public LValue collapse()
 	{
 		try {
 			return new DereferenceExpression(child.collapse());
-		} 
-		catch (TypeMismatchException e) 
+		}
+		catch (TypeMismatchException e)
 		{
 			//should never happen
 			return null;
 		}
 	}
 
-	public String generateCode(boolean valueNeeded) 
+	public String generateCode(boolean valueNeeded)
 	{
-		try 
+		try
 		{
-			if (!valueNeeded) 
+			if (!valueNeeded)
 			{
+				Optimizer.addInstruction("DereferenceExpression " + this.toString(),"","");
 				return COM("DereferenceExpression " + this.toString()) + child.generateCode(false);
-			} 
-			else 
+			}
+			else
 			{
+				Optimizer.addInstruction("DereferenceExpression " + this.toString(),"","");
 				return COM("DereferenceExpression " + this.toString()) + child.generateCode(true) +
 					POP(3,"X1") +
 					PUSH(getReferenceType(child).sizeof(), "0+X1");
 			}
-		} 
+		}
 		catch(TypeMismatchException e)
 		{
 			return null;
@@ -76,7 +79,7 @@ public class DereferenceExpression extends LValue
 		return child.generateCode(true);
 	}
 
-	public String toString() 
+	public String toString()
 	{
 		return "( " + "*" + child +" )";
 	}

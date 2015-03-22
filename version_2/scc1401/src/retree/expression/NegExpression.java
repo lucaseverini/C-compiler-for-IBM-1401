@@ -11,19 +11,20 @@ package retree.expression;
 
 import retree.exceptions.TypeMismatchException;
 import static retree.RetreeUtils.*;
+import retree.intermediate.*;
 import retree.expression.Expression;
 import retree.expression.LValue;
 import retree.type.PointerType;
 import retree.type.Type;
 
-public class NegExpression extends Expression 
+public class NegExpression extends Expression
 {
 	private Expression child;
 
-	public NegExpression(Expression child) 
+	public NegExpression(Expression child)
 	{
 		super(child.getType());
-		
+
 		this.child = child;
 	}
 
@@ -42,23 +43,26 @@ public class NegExpression extends Expression
 
 	public String generateCode(boolean valueNeeded)
 	{
+		Optimizer.addInstruction("Negate " + this.toString(), "", "");
 		String code = COM("Negate " + this.toString());
 		code += child.generateCode(valueNeeded);
-		
-		if (valueNeeded) 
+
+		if (valueNeeded)
 		{
-			if (child.getType() instanceof PointerType) 
+			if (child.getType() instanceof PointerType)
 			{
+				Optimizer.addInstruction("// Check for PointerType", "","H");
 				COM("// Check for PointerType");
 				INS(null, null, "H");
 			}
-			else 
+			else
 			{
+				Optimizer.addInstruction("", "", "ZS", STACK_OFF(0));
 				code += INS(null, null, "ZS", STACK_OFF(0));
 				code += SNIP("clean_number");
 			}
 		}
-		
+
 		return code;
 	}
 

@@ -10,38 +10,40 @@
 package retree.statement;
 
 import retree.expression.*;
+import retree.intermediate.*;
 import retree.exceptions.*;
 import static retree.RetreeUtils.*;
 
-public class ReturnStatement implements Statement 
+public class ReturnStatement implements Statement
 {
 	private final Expression exp;
 	private final VariableExpression returnLocation;
 	private final String returnLabel;
-	
-	public ReturnStatement(Expression exp, VariableExpression returnLocation, String returnLabel) 
+
+	public ReturnStatement(Expression exp, VariableExpression returnLocation, String returnLabel)
 	{
 		this.exp = exp;
 		this.returnLocation = returnLocation;
 		this.returnLabel = returnLabel;
 	}
-	
-	public String generateCode() 
+
+	public String generateCode()
 	{
 		String code = "";
-		
+
 		if (exp != null && returnLocation != null)
 		{
 			int offset = returnLocation.getOffset();
 			code += exp.generateCode(true);
 			code += POP(exp.getType().sizeof(), OFF(offset));
 		}
-		
+		Optimizer.addInstruction("Set the return flag, so we know do deallocate our stack","","");
 		code += COM("Set the return flag, so we know do deallocate our stack");
+		Optimizer.addInstruction("PUT @R@ into location RF", "", "MCW", "@R@", "RF");
 		code += INS("PUT @R@ into location RF", null, "MCW", "@R@", "RF");
-		
+		Optimizer.addInstruction("Jump back to caller", "", "B", returnLabel);
 		code += INS("Jump back to caller", null, "B", returnLabel);
-		
+
 		return code;
 	}
 }

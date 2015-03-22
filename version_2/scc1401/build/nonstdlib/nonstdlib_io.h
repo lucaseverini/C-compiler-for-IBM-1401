@@ -60,24 +60,40 @@ int printf(char *cformat_str, ...)
 	char *arg;
 	char c;
 	arg = (char *)(&cformat_str - 1);
-	while ((c = *cformat_str++) != '\0') {
-		if (c != '%') putchar(c);
-		else {
+	while ((c = *cformat_str++) != '\0')
+	{
+		if (c != '%')
+		{
+			putchar(c);
+		}
+		else
+		{
 			c = *cformat_str++;
-			if (c == '%') {
+			if (c == '%')
+			{
 				putchar('%');
-			} else if (c == 'c') {
+			}
+			else if (c == 'c')
+			{
 				putchar(*arg--);
-			} else if (c == 's') {
+			}
+			else if (c == 's')
+			{
 				puts(*((char **)arg));
 				arg -= sizeof(char *);
-			} else if (c == 'd') {
+			}
+			else if (c == 'd')
+			{
 				char a[7];
 				//putnumber(*((int*)arg));
 				itoa(*((int*)arg), a, 10);
 				puts(a);
 				arg -= sizeof(int);
-			} else return;
+			}
+			else
+			{
+				return;
+			}
 		}
 	}
 }

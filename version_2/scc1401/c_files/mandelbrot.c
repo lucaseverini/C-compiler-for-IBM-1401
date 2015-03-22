@@ -1,5 +1,6 @@
 // mandelbrot.c
 
+#define IBM1401
 #ifdef IBM1401
 	#include <nonstdlib.h>
 #else
