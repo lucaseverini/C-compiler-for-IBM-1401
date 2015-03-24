@@ -157,20 +157,39 @@ public class RetreeUtils
 		return s;
 	}
 
+	public static int ADDR_DECOD(String addr)
+	{
+		addr = addr.replace("@", "");
+		
+		if(addr.length() != 3)
+		{
+			return Integer.getInteger(addr);
+		}
+		
+		
+		
+		return 0;
+	}
+
 	public static String ADDR_COD(int addr)
 	{
 		String[] digits = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 			"'", "/", "S", "T", "U", "V", "W", "X", "Y", "Z",
 			"!", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
 			 "?", "A", "B", "C", "D", "E", "F", "G", "H", "I"};
+		
+		// 0-3999 use 0-9 for units , 0-9 for tens , 0-I for hundreds
+		// 4000-7999 use '-Z for units , 0-9 for tens , 0-I for hundreds
+		// 8000-11999 use !-R for units , 0-9 for tens , 0-I for hundreds
+		// 12000-15999 use ?-I for units , 0-9 for tens , 0-I for hundreds 
 
 		addr = (16000 - (-addr) % 16000) % 16000; // addr = addr % 16000
 		
 		int lastDigitSet = 10 * (addr / 4000);
-		int firstDigitSet = 10 * ((addr%4000) / 1000);
+		int firstDigitSet = 10 * ((addr % 4000) / 1000);
 		int decPart = addr % 1000;
 		
-		return digits[decPart/100 + firstDigitSet] + digits[(decPart/10) % 10] + digits[decPart % 10 + lastDigitSet];
+		return digits[decPart / 100 + firstDigitSet] + digits[(decPart / 10) % 10] + digits[decPart % 10 + lastDigitSet];
 	}
 
 	public static String CHAR_COD(int val)
@@ -259,7 +278,7 @@ public class RetreeUtils
 	// returns an address at the stack pointer + offset
 	public static String STACK_OFF(int offset) 
 	{
-		offset = (16000 + offset % 16000) % 16000; // offset :=  offset mod 16000
+		offset = (16000 + offset % 16000) % 16000; // offset := offset mod 16000
 		return offset + "+X2";
 	}
 
@@ -280,7 +299,7 @@ public class RetreeUtils
 			String comm = "";
 			if(value.length() == 5)
 			{
-				comm = "Pointer " + value;
+				comm = "Pointer " + ADDR_DECOD(value);
 			}
 			else
 			{
@@ -288,8 +307,6 @@ public class RetreeUtils
 			}
 			
 			code += INS(comm, label, "DCW", value);
-			
-			// code = code + ("     " + pair.getValue() + "    DCW  " + pair.getKey() + "\n");
 		}
 
 		code += "\n";	
