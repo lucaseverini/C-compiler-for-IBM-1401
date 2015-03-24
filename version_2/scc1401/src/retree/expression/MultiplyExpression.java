@@ -12,67 +12,68 @@ package retree.expression;
 import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.type.*;
+import retree.intermediate.*;
 
 public class MultiplyExpression extends Expression
 {
 	private Expression l, r;
 
-	public MultiplyExpression(Expression l, Expression r) throws Exception 
+	public MultiplyExpression(Expression l, Expression r) throws Exception
 	{
 		super(strongestType(l.getType(), r.getType()));
-		
+
 		if (getType() instanceof PointerType)
 		{
 			throw new Exception("Invalid types for operator *: " + l.getType() + " * " + r.getType());
 		}
-		
-		if (!l.getType().equals(getType())) 
+
+		if (!l.getType().equals(getType()))
 		{
 			l = new CastExpression(getType(), l);
-		} 
-		else if (!r.getType().equals(getType())) 
+		}
+		else if (!r.getType().equals(getType()))
 		{
 			l = new CastExpression(getType(), r);
 		}
-		
+
 		this.l = l;
 		this.r = r;
 	}
 
 	private static Type strongestType(Type a, Type b)
 	{
-		if (a instanceof PointerType) 
+		if (a instanceof PointerType)
 		{
 			return a;
 		}
-		
-		if (b instanceof PointerType) 
+
+		if (b instanceof PointerType)
 		{
 			return b;
 		}
-		
-		if (a.equals(Type.intType) || b.equals(Type.intType)) 
+
+		if (a.equals(Type.intType) || b.equals(Type.intType))
 		{
 			return Type.intType;
 		}
-		
+
 		return a;
 	}
 
 	public Expression collapse()
 	{
-		try 
+		try
 		{
 			Expression l2 = l.collapse();
 			Expression r2 = r.collapse();
-			
+
 			if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression)
 			{
 				return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() * ((ConstantExpression)r2).getValue());
 			}
-			
+
 			return new MultiplyExpression(l2, r2);
-		} 
+		}
 		catch (Exception e)
 		{
 			//should never happen
@@ -80,29 +81,31 @@ public class MultiplyExpression extends Expression
 		}
 	}
 
-	public String generateCode(boolean valueNeeded) 
+	public String generateCode(boolean valueNeeded)
 	{
 		int size = r.getType().sizeof();
-		
+		Optimizer.addInstruction("Multiply " + this.toString(),"","");
 		String code = COM("Multiply " + this.toString());
-		code += l.generateCode(valueNeeded) + r.generateCode(valueNeeded);	
-		
-		if (valueNeeded) 
+		code += l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
+
+		if (valueNeeded)
 		{
+			Optimizer.addInstruction("Multiply", "", "M", STACK_OFF(-size), STACK_OFF(size + 1));
 			code += INS("Multiply", null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
-			
+
 			// this puts the product at size + 1 bits above the stack
 			// ###############
 			// ## WARNING!! ##
 			// ###############
 			// DO WE NEED THIS SW ??
+			Optimizer.addInstruction("", "", "SW", STACK_OFF(2));
 			code += INS(null, null, "SW", STACK_OFF(2));
-			
+			Optimizer.addInstruction("", "", "LCA", STACK_OFF(size + 1), STACK_OFF(-size));
 			code += INS(null, null, "LCA", STACK_OFF(size + 1), STACK_OFF(-size));
-			
+
 			code += POP(size);
 		}
-		
+
 		return code;
 	}
 

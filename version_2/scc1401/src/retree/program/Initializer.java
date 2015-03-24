@@ -13,9 +13,10 @@ import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.expression.*;
 import retree.type.*;
+import retree.intermediate.*;
 import java.util.*;
 
-public class Initializer 
+public class Initializer
 {
 	private final VariableExpression variable;
 	private ConstantExpression value;
@@ -23,39 +24,39 @@ public class Initializer
 	// Used for array types
 	private List<Initializer> subInitializers = null;
 	private int initializerSize = 0;
-	
-	public Initializer(VariableExpression variable, Expression value, boolean arrayMember) throws Exception, NonConstantExpressionException 
+
+	public Initializer(VariableExpression variable, Expression value, boolean arrayMember) throws Exception, NonConstantExpressionException
 	{
 		this.variable = variable;
 		this.value = null;
 		this.isArrayMember = arrayMember;
-				
-		if (value != null) 
+
+		if (value != null)
 		{
 			value = value.collapse();
-			
+
 			if (value instanceof ConstantExpression)
 			{
 				this.value = (ConstantExpression) value;
-			} 
-			else 
+			}
+			else
 			{
 				throw new NonConstantExpressionException(value);
 			}
 		}
-				
-		if (variable.getType() instanceof ArrayType) 
+
+		if (variable.getType() instanceof ArrayType)
 		{
 			this.subInitializers = new ArrayList<>();
-			
+
 			ArrayType at = (ArrayType) variable.getType();
 			for (int i = 0, index = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++)
 			{
-				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i, 
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() - i,
 												variable.isStatic(), variable.isParameter(), variable + "[" + index + "]");
 				Initializer subInitializer = new Initializer(subVar, (Expression)null, true);
 				subInitializers.add(subInitializer);
-				
+
 				initializerSize += subInitializer.getInitializerSize();
 			}
 		}
@@ -65,25 +66,25 @@ public class Initializer
 		}
 	}
 
-	public Initializer(VariableExpression variable, List<Expression> l) throws Exception 
+	public Initializer(VariableExpression variable, List<Expression> l) throws Exception
 	{
 		this.variable = variable;
 		this.value = null;
-		
-		if (variable.getType() instanceof ArrayType) 
+
+		if (variable.getType() instanceof ArrayType)
 		{
 			this.subInitializers = new ArrayList<>();
-			
+
 			ArrayType at = (ArrayType) variable.getType();
 			for (int i = 0, index = 0; i < at.sizeof(); i += at.getArrayBaseType().sizeof(), index++)
 			{
-				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() + i, 
+				VariableExpression subVar = new VariableExpression(at.getArrayBaseType(), variable.getOffset() + i,
 														variable.isStatic(), variable.isParameter(), variable + "[" + index + "]");
 				Expression tmp = l.get(i / at.getArrayBaseType().sizeof());
 				tmp = tmp.collapse();
 				Initializer subInitializer = new Initializer(subVar, tmp, true);
 				subInitializers.add(subInitializer);
-				
+
 				initializerSize += subInitializer.getInitializerSize();
 			}
 		}
@@ -97,128 +98,135 @@ public class Initializer
 	{
 		String code = "";
 
-		if (subInitializers != null) 
+		if (subInitializers != null)
 		{
 			// ORG directive only for initialization data of static variables
 			if(variable.isStatic())
-			{			
+			{
 				code += "\n";
+				Optimizer.addInstruction("", "", "ORG", Integer.toString(subInitializers.get(0).getVariable().getOffset()));
 				code += INS(null, null, "ORG", Integer.toString(subInitializers.get(0).getVariable().getOffset()));
 			}
-			
+
 			ListIterator<Initializer> iter = subInitializers.listIterator(subInitializers.size());
-			while(iter.hasPrevious()) 
+			while(iter.hasPrevious())
 			{
-				Initializer init = iter.previous();				
+				Initializer init = iter.previous();
 				code += init.generateCode();
 			}
-		} 
-		else 
+		}
+		else
 		{
 			// In case we want to set a default value and/or the wordmark at the right position but is not really necessary
 			// code += INS("SW", variable.getWordMarkAddress());
 		}
-		
-		if (value == null) 
+
+		if (value == null)
 		{
 			return code;
 		}
-		
-		if (value.getType() instanceof PointerType) 
+
+		if (value.getType() instanceof PointerType)
 		{
 			if(variable.isStatic())
-			{			
+			{
 				if(!isArrayMember)
 				{
+					Optimizer.addInstruction("", "", "ORG", Integer.toString(variable.getOffset()));
 					code += "\n";
 					code += INS(null, null, "ORG", Integer.toString(variable.getOffset()));
 				}
-				
+				Optimizer.addInstruction("", "", "DCW", "@" + ADDR_COD(value.getValue()) + "@");
 				code += INS(null, null, "DCW", "@" + ADDR_COD(value.getValue()) + "@");
 			}
 			else
 			{
 				String comm = "" + value.getValue();
+				Optimizer.addInstruction(comm, "", "LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 				code += INS(comm, null, "LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
-		} 
+		}
 		else if (value.getType().equals(Type.intType))
 		{
 			if(variable.isStatic())
-			{			
+			{
 				if(!isArrayMember)
 				{
 					code += "\n";
+					Optimizer.addInstruction("", "", "ORG", Integer.toString(variable.getOffset()));
 					code += INS(null, null, "ORG", Integer.toString(variable.getOffset()));
 				}
-				
+				Optimizer.addInstruction("", "", "DCW", "@" + COD(value.getValue()) + "@");
 				code += INS(null, null, "DCW", "@" + COD(value.getValue()) + "@");
 			}
 			else
 			{
 				String comm = "" + value.getValue();
+				Optimizer.addInstruction(comm, "", "LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
 				code += INS(comm, null, "LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
 		}
 		else if (value.getType().equals(Type.charType))
 		{
 			if(variable.isStatic())
-			{			
+			{
 				if(!isArrayMember)
 				{
 					code += "\n";
+					Optimizer.addInstruction("", "", "ORG", Integer.toString(variable.getOffset()));
 					code += INS(null, null, "ORG", Integer.toString(variable.getOffset()));
 				}
-				
+				Optimizer.addInstruction("", "", "DCW", "@" + CHAR_COD(value.getValue()) + "@");
 				code += INS(null, null, "DCW", "@" + CHAR_COD(value.getValue()) + "@");
 			}
 			else
 			{
 				String comm = "" + value.getValue();
+				Optimizer.addInstruction(comm, "", "LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 				code += INS(comm, null, "LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
 			}
-		} 
-		else 
+		}
+		else
 		{
 			return null;
 		}
-		
+
 		return code;
 	}
 
 	// this generates code that occurs when the initialized variable goes out of scope
-	public String freeCode() 
+	public String freeCode()
 	{
 		String code = "";
-		
-		if (subInitializers != null) 
+
+		if (subInitializers != null)
 		{
 			for (Initializer i : subInitializers)
 			{
 				code += i.freeCode();
 			}
-		} 
-		
+		}
+
 		return code;
 	}
-	
+
 	public VariableExpression getVariable()
 	{
 		return variable;
 	}
-	
+
 	public int getInitializerSize()
 	{
 		return initializerSize;
 	}
-	
+
 	public int getSize() throws Exception
 	{
 		if(value == null)
 		{
 			return 0;
 		}
-		else if (value.getType() instanceof PointerType) 
+		else if (value.getType() instanceof PointerType)
 		{
 			return 3;
 		}

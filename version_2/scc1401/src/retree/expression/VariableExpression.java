@@ -11,8 +11,9 @@ package retree.expression;
 
 import static retree.RetreeUtils.*;
 import retree.type.Type;
+import retree.intermediate.*;
 
-public class VariableExpression extends LValue 
+public class VariableExpression extends LValue
 {
 	private final int offset;
 	private final boolean isStatic;
@@ -23,7 +24,7 @@ public class VariableExpression extends LValue
 	public VariableExpression(Type type, int offset, boolean isStatic, boolean isParam, String name)
 	{
 		super(type);
-		
+
 		this.offset = offset;
 		this.isStatic = isStatic;
 		this.isParam = isParam;
@@ -33,81 +34,86 @@ public class VariableExpression extends LValue
 	public String generateCode(boolean valueNeeded)
 	{
 		String code = "";
-		
-		if (valueNeeded) 
+
+		if (valueNeeded)
 		{
 			if (isStatic)
 			{
 				int addr = offset + getType().getSize() - 1;
-				code += COM("Static Variable (" + name + " : " + ADDR_LIT(addr) + ")"); 
+				Optimizer.addInstruction("Static Variable (" + name + " : " + ADDR_LIT(addr) + ")","","");
+				code += COM("Static Variable (" + name + " : " + ADDR_LIT(addr) + ")");
 				code += PUSH(getType().sizeof(), ADDR_LIT(addr));
-			} 
+			}
 			else
 			{
 				if (isParam)
 				{
 					int off = offset;
-					code += COM("Parameter Variable (" + name + " : " + OFF(off) + ")"); 
+					Optimizer.addInstruction("Parameter Variable (" + name + " : " + OFF(off) + ")","","");
+					code += COM("Parameter Variable (" + name + " : " + OFF(off) + ")");
 					code += PUSH(getType().sizeof(), OFF(off));
 				}
 				else
 				{
 					int off = offset + getType().getSize();
-					code += COM("Local Variable (" + name + " : " + OFF(off) + ")"); 
+					Optimizer.addInstruction("Local Variable (" + name + " : " + OFF(off) + ")","","");
+					code += COM("Local Variable (" + name + " : " + OFF(off) + ")");
 					code += PUSH(getType().sizeof(), OFF(off));
 				}
 			}
-		} 
-		
+		}
+
 		// System.out.println("CODE: " + name + (isStatic ? " static " : "") + " : " + offset + " : " + code);
-		
+
 		return code;
 	}
 
-	public LValue collapse() 
+	public LValue collapse()
 	{
 		return this;
 	}
 
-	public String generateAddress() 
+	public String generateAddress()
 	{
 		String code = "";
-		
-		if (isStatic) 
+
+		if (isStatic)
 		{
 			int addr = offset + getType().getSize() - 1;
 			code += PUSH(3, ADDR_CONST(addr, false));
-		} 
-		else 
+		}
+		else
 		{
 			if (isParam)
 			{
 				int addr = offset;
 				code += PUSH(3, ADDR_CONST(addr, false));
+				Optimizer.addInstruction("", "", "MA", "X3", STACK_OFF(0));
 				code += INS(null, null, "MA", "X3", STACK_OFF(0));
 			}
 			else
-			{	
+			{
 				int addr = offset + getType().getSize();
 				code += PUSH(3, ADDR_CONST(addr, false));
+				Optimizer.addInstruction("", "", "MA", "X3", STACK_OFF(0));
 				code += INS(null, null, "MA", "X3", STACK_OFF(0));
 			}
 		}
-		
+
 		// System.out.println("ADDRESS: " + name + (isStatic ? " static " : "") + " : " + offset + " : " + code);
 
 		return code;
 	}
 
-	public String getAddress() 
+	public String getAddress()
 	{
 		String code = "";
-		
-		if (isStatic) 
+
+		if (isStatic)
 		{
 			code += (offset + getType().getSize() - 1);
-		} 
-		else 
+		}
+		else
 		{
 			if (isParam)
 			{
@@ -119,21 +125,21 @@ public class VariableExpression extends LValue
 				code += OFF(off);
 			}
 		}
-		
+
 		// System.out.println("ADDRESS-2: " + name + (isStatic ? " static " : "") + " : " + offset + " : " + code);
-		
+
 		return code;
 	}
 
-	public String getWordMarkAddress() 
+	public String getWordMarkAddress()
 	{
 		String code = "";
 
-		if (isStatic) 
+		if (isStatic)
 		{
 			code += (offset + 1);
-		} 
-		else 
+		}
+		else
 		{
 			if (isParam)
 			{
@@ -144,25 +150,25 @@ public class VariableExpression extends LValue
 				code += OFF(offset + 1);
 			}
 		}
-		
+
 		return code;
 	}
 
-	public boolean isStatic() 
+	public boolean isStatic()
 	{
 		return isStatic;
 	}
 
-	public boolean isParameter() 
+	public boolean isParameter()
 	{
 		return isParam;
 	}
 
-	public int getOffset() 
+	public int getOffset()
 	{
 		return offset;
 	}
-	
+
 	public String toString()
 	{
 		return name;

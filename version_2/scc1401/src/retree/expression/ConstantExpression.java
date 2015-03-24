@@ -11,78 +11,82 @@ package retree.expression;
 
 import static retree.RetreeUtils.*;
 import retree.type.*;
+import retree.intermediate.*;
 
 public class ConstantExpression extends Expression
 {
 	private final int val; // everything should fit into an int.
 
-	public ConstantExpression(Type type, int val) 
+	public ConstantExpression(Type type, int val)
 	{
 		super(type);
 		this.val = val;
 	}
 
-	public String generateCode(boolean valueNeeded) 
+	public String generateCode(boolean valueNeeded)
 	{
-		if (valueNeeded) 
+		if (valueNeeded)
 		{
-			if (getType() instanceof PointerType) 
+			if (getType() instanceof PointerType)
 			{
 				String cons = ADDR_CONST(val, false);
-				return COM("Constant (" + this.toString() + " : " + cons + ")") 
+				Optimizer.addInstruction("Constant (" + this.toString() + " : " + cons + ")", "","");
+				return COM("Constant (" + this.toString() + " : " + cons + ")")
 					   + PUSH(getType().sizeof(), cons);
-			} 
-			else if (getType().equals(Type.intType)) 
+			}
+			else if (getType().equals(Type.intType))
 			{
 				String cons = NUM_CONST(val, false);
-				return COM("Constant (" + this.toString() + " : " + cons + ")") 
+				Optimizer.addInstruction("Constant (" + this.toString() + " : " + cons + ")", "","");
+				return COM("Constant (" + this.toString() + " : " + cons + ")")
 					   + PUSH(getType().sizeof(), cons);
-			} 
-			else if (getType().equals(Type.charType)) 
+			}
+			else if (getType().equals(Type.charType))
 			{
 				String cons = CHAR_CONST(val, false);
-				return COM("Constant (" + this.toString() + " : " + cons + ")") 
+				Optimizer.addInstruction("Constant (" + this.toString() + " : " + cons + ")", "","");
+				return COM("Constant (" + this.toString() + " : " + cons + ")")
 					   + PUSH(getType().sizeof(), CHAR_CONST(val, false));
-			} 
-			else 
+			}
+			else
 			{
 				// oops!
 				return null;
 			}
-		} 
-		else 
+		}
+		else
 		{
 			return "";
 		}
 	}
 
-	public int getValue() 
+	public int getValue()
 	{
 		return val;
 	}
-	
-	public String toString() 
+
+	public String toString()
 	{
-		if (getType().equals(Type.intType)) 
+		if (getType().equals(Type.intType))
 		{
 			return Integer.toString(val);
 		}
-		
-		if (getType().equals(Type.charType)) 
+
+		if (getType().equals(Type.charType))
 		{
-			switch(val) 
+			switch(val)
 			{
 				case 0:
 					return "'\\0'";
-					
+
 				case '\n':
 					return "'\\n'";
-					
+
 				default:
 					return "'" + ((char)val) + "'";
 			}
 		}
-		else 
+		else
 		{
 			return Integer.toString(val);
 		}

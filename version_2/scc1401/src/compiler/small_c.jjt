@@ -25,6 +25,7 @@ import retree.exceptions.*;
 import retree.program.*;
 import retree.type.*;
 import retree.symtab.*;
+import retree.intermediate.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Map.Entry;
@@ -52,7 +53,7 @@ public class SmallCC
   	public static int dataMem = 2000;
   	public static int codeMem = 0;					// if 0 then put the code immediately after the data
 	public static boolean reuseStringLiterals = false;
-	
+
   	private static int labelNumber = 0;
   	public static int nextLabelNumber()
   	{
@@ -76,7 +77,7 @@ public class SmallCC
 
 	public static String getVariableLabelValue(String label)
 	{
-		for (Entry<String, String> entry : labelTable.entrySet()) 
+		for (Entry<String, String> entry : labelTable.entrySet())
 		{
 			if (label.equals(entry.getValue()))
 			{
@@ -107,7 +108,7 @@ public class SmallCC
 				return entry.getKey();
 			}
 		}
-		
+
 		return "UNNAMED FUNCTION";
 	}
 
@@ -126,6 +127,8 @@ public class SmallCC
 
 	public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
 	{
+		Snippet.Init();
+		// Optimizer.DropComments(true);
     	SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
 		compilationTime = sdf.format(Calendar.getInstance().getTime());
 
@@ -197,7 +200,8 @@ public class SmallCC
 					{
 						File outFile = new File(outputFile);
 						Writer wr = new FileWriter(outFile);
-						wr.write(code);
+						wr.write(Optimizer.GenerateCode());
+						// wr.write(code);
 						wr.close();
 					}
 					else
@@ -1039,13 +1043,13 @@ List<Expression> expressionList(Expression e) : {
 	List<Expression> list = new ArrayList<Expression>();
 	Expression exp;
 } {
-	(exp=assignmentExpression() 
+	(exp=assignmentExpression()
 	{
 		if ((e instanceof AssemblyExpression))
 		{
 			((AssemblyExpression)e).addASM(token.image);
-		} 
-		else 
+		}
+		else
 		{
 			list.add(exp);
 		}
@@ -1054,8 +1058,8 @@ List<Expression> expressionList(Expression e) : {
 		if ((e instanceof AssemblyExpression))
 		{
 			((AssemblyExpression)e).addASM(token.image);
-		} 
-		else 
+		}
+		else
 		{
 			list.add(exp);
 		}
@@ -1077,55 +1081,55 @@ Expression AtomicExpression()  : {
 		if (var == null)
 		{
 			ConstantExpression fun = functionTable.get(str);
-			if (fun == null) 
+			if (fun == null)
 			{
 				reportError("Did not find: " + str + " anywhere did you forget to declare it?", token);
 				return null;
-			} 
-			else 
+			}
+			else
 			{
-				if (pendingFunctionDefinitions.containsKey(fun)) 
+				if (pendingFunctionDefinitions.containsKey(fun))
 				{
 					//lazily add our function definition to the program
 					includedFunctions.add(pendingFunctionDefinitions.remove(fun));
 				}
 				return fun;
 			}
-		} 
-		else if (var.getType() instanceof ArrayType) 
+		}
+		else if (var.getType() instanceof ArrayType)
 		{
 			return new ArrayNameExpression(var);
-		} 
-		else 
+		}
+		else
 		{
 			return var;
 		}
 	}
-	
+
     | str = Number(){
 		int val = Integer.parseInt(str);
 		ce = new ConstantExpression(Type.intType, val);
 		e = ce;
 	}
-	
+
     | str = StringLiteral() {
 
-		// Use the string value as identifier if string constants can be reused otherwise define an unique identifier 
+		// Use the string value as identifier if string constants can be reused otherwise define an unique identifier
 		String identif = reuseStringLiterals ? str : "STR_LIT_" + Integer.toString(++stringLiteralIdx);
-    	
+
 		VariableExpression ve = variableTable.searchStack(str);
 		if (ve != null)
 		{
 			ArrayNameExpression ane = new ArrayNameExpression(ve);
 			return ane;
-		} 
-		else 
+		}
+		else
 		{
 			str = str.substring(1, str.length() - 1);
-			
+
 			List<Expression> list = new ArrayList<Expression>();
 			List<Expression> rlist = new ArrayList<Expression>();
-			
+
 			for(int i = 0; i < str.length(); i++)
 			{
 				if (str.charAt(i) == '\\')
@@ -1143,28 +1147,28 @@ Expression AtomicExpression()  : {
 						}
 						i++;
 					}
-				} 
+				}
 				else
 				 {
 					list.add(new ConstantExpression(Type.charType,("" + str.charAt(i)).toUpperCase().charAt(0)));
 				}
 			}
 			list.add(new ConstantExpression(Type.charType, 0));
-			
+
 			for (int i = list.size() - 1; i >= 0; i--)
 			{
 				rlist.add(list.get(i));
 			}
 			// need the +1 for the '\0' char
-			
+
 			ve = variableTable.addStatic(identif, new ArrayType(rlist.size(), Type.charType));
-			
+
 			ArrayNameExpression ane = new ArrayNameExpression(ve);
 			if (!inAsmFunc)
 			{
 				stringInits.add(new Initializer(ve, rlist));
 			}
-			
+
 			return ane;
 		}
 		// check symtab for this string
@@ -1179,19 +1183,19 @@ Expression AtomicExpression()  : {
 		// return array name
 		//
 	}
-	
+
     | str=CharacterConstant() {
 			int val = 0;
 			//strip the quote characters
 			str = str.substring(1, str.length() - 1);
-			if (str.charAt(0) == '\\') 
+			if (str.charAt(0) == '\\')
 			{
-				if (str.length() != 2) 
+				if (str.length() != 2)
 				{
 					//invalid char constant
 					return null;
 				}
-				switch(str.charAt(1)) 
+				switch(str.charAt(1))
 				{
 					case 'n':
 						val = '\n';
@@ -1200,10 +1204,10 @@ Expression AtomicExpression()  : {
 						val = 0;
 						break;
 				}
-			} 
-			else 
+			}
+			else
 			{
-				if (str.length() != 1) 
+				if (str.length() != 1)
 				{
 					//invalid char constant.
 					return null;
@@ -1213,7 +1217,7 @@ Expression AtomicExpression()  : {
 		ce = new ConstantExpression(Type.charType, val);
 		e = ce;
 	}
-	
+
     | "(" e=expression() ")")
 	{
 		return e;

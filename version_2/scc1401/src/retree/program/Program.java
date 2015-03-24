@@ -10,33 +10,33 @@
 package retree.program;
 
 import static retree.RetreeUtils.*;
-
+import retree.intermediate.*;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Program 
+public class Program
 {
 	private final List<Initializer> initializers;
 	private final List<FunctionDefinition> functions;
 	private int mainLabelNumber = -1;
 
-	public Program() 
+	public Program()
 	{
 		initializers = new ArrayList<Initializer>();
 		functions = new ArrayList<FunctionDefinition>();
 	}
 
-	public void addInitializer(Initializer init) 
+	public void addInitializer(Initializer init)
 	{
 		initializers.add(init);
 	}
 
-	public void addFunction(FunctionDefinition func) 
+	public void addFunction(FunctionDefinition func)
 	{
 		functions.add(func);
 	}
 
-	public void setMainLabelNumber(int mainLabelNumber) 
+	public void setMainLabelNumber(int mainLabelNumber)
 	{
 		this.mainLabelNumber = mainLabelNumber;
 	}
@@ -44,31 +44,33 @@ public class Program
 	// TODO - call main
 	public String generateCode() throws Exception
 	{
-		if (mainLabelNumber < 0) 
+		if (mainLabelNumber < 0)
 		{
 			return null;
 		}
-		
+
 		String code = "";
-		
+
 		code += HEADER();
-		
+
 		code += SET_VARDATA(initializers);
 		code += SET_CODE();
 		code += SET_STACK();
-	
+		Optimizer.addInstruction("Jump to function main", "", "B", label(mainLabelNumber));
 		code += INS("Jump to function main", null, "B", label(mainLabelNumber));
+		Optimizer.addInstruction("Program executed. System halted.", "", "H");
 		code += INS("Program executed. System halted.", null, "H");
 
-		for (FunctionDefinition func : functions) 
+		for (FunctionDefinition func : functions)
 		{
 			code += func.generateCode();
 		}
-		
+
 		code += FOOTER();
-		
+
+		// dont need Optimizer.addInstruction call here as that is handled already
 		code += INS("End of program code.", null, "END", "START");
-		
+
 		return code ;
 	}
 }

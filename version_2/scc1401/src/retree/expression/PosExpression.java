@@ -15,25 +15,27 @@ import retree.expression.Expression;
 import retree.expression.LValue;
 import retree.type.PointerType;
 import retree.type.Type;
+import retree.intermediate.*;
 
 // a unary plus sign -- acts as an identity function
-public class PosExpression extends Expression 
+public class PosExpression extends Expression
 {
 	private final Expression child;
 
-	public PosExpression(Expression child) 
+	public PosExpression(Expression child)
 	{
 		super(child.getType());
 		this.child = child;
 	}
 
-	public Expression collapse() 
+	public Expression collapse()
 	{
 		return child.collapse();
 	}
 
-	public String generateCode(boolean valueNeeded) 
+	public String generateCode(boolean valueNeeded)
 	{
+		Optimizer.addInstruction("PosExpression " + this.toString(), "", "");
 		return COM("PosExpression " + this.toString())
 					+ child.generateCode(valueNeeded);
 	}
