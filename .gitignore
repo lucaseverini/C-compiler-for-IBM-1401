@@ -9,3 +9,8 @@ build.xml
 /version_2/dist/
 /version_2/build/
 /nbproject/private/
+version_2/dist
+version_2/build
+/nbproject/private/*
+/version_2/dist/*
+/version_2/build/*
