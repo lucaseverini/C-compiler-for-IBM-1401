@@ -88,7 +88,7 @@ public class RetreeUtils
 			comment = "* " + comment;
 		}
 
-		return "     " + comment;// + "\n";
+		return "     " + comment + "\n";
 	}
 
 	public static String NUM_CONST(int val, boolean arrayMember)
@@ -378,7 +378,8 @@ public class RetreeUtils
 			}
 		}
 
-		label = snippetLabels.get(snippetName);
+		// label = snippetLabels.get(snippetName);
+		label = Snippet.getSnippetLabel(snippetName);
 		Optimizer.addSnippet(snippetName);
 		Optimizer.addInstruction("Jump to snippet " + snippetName, "", "B", Snippet.getSnippetLabel(snippetName));
 		return INS("Jump to snippet " + snippetName, null, "B", label);

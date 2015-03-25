@@ -9,6 +9,16 @@ public class Snippet
     private static HashMap<String, ArrayList<Instruction>> snips = new HashMap<String, ArrayList<Instruction>>();
     private static final HashMap<String, String> snippetLabels = new HashMap<String, String>();
 
+    private static int countStars(String in)
+    {
+        int count = 0;
+        for (int i = 0; i < in.length(); i++)
+        {
+            if(in.charAt(i) == '*') count++;
+        }
+        return count;
+    }
+
     private static void loadSnippet(String snippet)
     {
         try {
@@ -23,9 +33,10 @@ public class Snippet
                 {
                     if (line.charAt(0) == '*')
                     {
-                        list.add(new Instruction("","     "+line));
+                        list.add(new Instruction("","     "+line + "\n"));
                     } else {
                         String[] parts;
+                        String[] comparts;
                         // Handles the case where we have a constant space
                         // otherwise it will split incorrectly and lead to bad code
                         if (line.contains("@ @"))
@@ -34,7 +45,24 @@ public class Snippet
                             int posAt = line.indexOf('@');
                             tmp[posAt + 1] = '_';
                             line = new String(tmp);
-                            parts = line.split(" ");
+                            int commentpos = line.lastIndexOf("*");
+                            if (commentpos != -1)
+                            {
+                                if (countStars(line) == 1)
+                                {
+                                    comparts = line.split("\\*");
+                                } else {
+                                    String part1 = line.substring(0,commentpos);
+                                    String part2 = line.substring(commentpos);
+                                    comparts = new String[2];
+                                    comparts[0] = part1;
+                                    comparts[1] = part2;
+                                }
+                            } else {
+                                comparts = new String[1];
+                                comparts[0] = line;
+                            }
+                            parts = comparts[0].split(" ");
                             for(int i = 0; i < parts.length; i++)
                             {
                                 if (parts[i].contains("@_@"))
@@ -43,24 +71,45 @@ public class Snippet
                                 }
                             }
                         } else {
-                            parts = line.split(" ");
+                            int commentpos = line.lastIndexOf("*");
+                            if (commentpos != -1)
+                            {
+                                if (countStars(line) == 1)
+                                {
+                                    comparts = line.split("\\*");
+                                } else {
+                                    String part1 = line.substring(0,commentpos);
+                                    String part2 = line.substring(commentpos+2);
+                                    comparts = new String[2];
+                                    comparts[0] = part1;
+                                    comparts[1] = part2;
+                                }
+                            } else {
+                                comparts = new String[1];
+                                comparts[0] = line;
+                            }
+                            parts = comparts[0].split(" ");
                         }
                         if (parts.length > 2)
                         {
-                            String[] instrArgs = new String[parts.length - 2];
-                            for (int i = 0; i < instrArgs.length; i++)
+                            String[] instrArgs = new String[comparts.length > 1 ? parts.length - 1 : parts.length - 2];
+                            for (int i = 0; i < instrArgs.length - (comparts.length > 1 ? 1 : 0); i++)
                             {
                                 instrArgs[i] = parts[i+2];
+                            }
+                            if (comparts.length > 1)
+                            {
+                                instrArgs[instrArgs.length-1] = "* " + comparts[1];
                             }
                             list.add(new Instruction(parts[0],parts[1],instrArgs));
                         }
                         else if (parts.length == 2)
                         {
-                            list.add(new Instruction("",parts[0],parts[1]));
+                            list.add(new Instruction("",parts[0],parts[1], comparts.length > 1 ? "* " + comparts[1] : "" ));
                         }
                         else if (parts.length == 1)
                         {
-                            list.add(new Instruction("",parts[0]));
+                            list.add(new Instruction("",parts[0], comparts.length > 1 ? "* " + comparts[1] : ""));
                         }
                     }
                 }
