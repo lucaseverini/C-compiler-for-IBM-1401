@@ -16,10 +16,21 @@ public class Instruction{
         {
             comment = true;
         }
-        operands = new String[args.length];
+        int numArgs = args.length;
         for (int i = 0; i < args.length; i++)
         {
-            operands[i] = args[i];
+            if (args[i].equals(""))
+            {
+                numArgs -= 1;
+            }
+        }
+        operands = new String[numArgs];
+        for (int i = 0; i < args.length; i++)
+        {
+            if (!args[i].equals(""))
+            {
+                operands[i] = args[i];
+            }
         }
     }
 
@@ -62,7 +73,7 @@ public class Instruction{
     {
         if (comment)
         {
-            return mnemonic + "\n";
+            return mnemonic;
         }
         String line = "     ";
 		line += label;
@@ -86,10 +97,24 @@ public class Instruction{
         {
             if (operands[i] != null)
             {
+                if (operands[i].contains("* ") && i == operands.length - 1)
+                {
+                    line = line.substring(0,line.length() - 1);
+                    while(line.length() < 38)
+            		{
+            			line += " ";
+            		}
+                    line += operands[i];
+                } else {
                     line += operands[i]+",";
+                }
             }
         }
-        return line.substring(0,line.length()-1) + "\n" ;
+        if (line.charAt(line.length() - 1) == ',')
+        {
+            line = line.substring(0,line.length()-1);
+        }
+        return line + "\n" ;
     }
 
     @Override

@@ -7,10 +7,10 @@ bd69f7d0de901491628d24cb8b76fb6d  src/retree/statement/DoWhileStatement.java
 a6bea07438024bf7d4e205c98e129db5  src/retree/statement/IfStatement.java
 9559a8f4804bf769a0144363b96b53c9  src/retree/statement/BlockStatement.java
 6c8f28b943f07acacb3337c0d470ef55  src/retree/statement/Statement.java
-ee0f68e5705ec0ef0b1ecfa227033b2a  src/retree/intermediate/Optimizer.java
-ba2b697d43fdc2e2ba0b97ff0ea4f681  src/retree/intermediate/Instruction.java
-73c0b17b6cabe2b45a5a3536f9e61b78  src/retree/intermediate/Snippet.java
-10d48ffb826e3c7cf61572b5e99c19f9  src/retree/RetreeUtils.java
+df720bf668a896409f4591472df5ca67  src/retree/intermediate/Optimizer.java
+4edaff139dffbf2c50615f5a0e942b91  src/retree/intermediate/Instruction.java
+fe224fd21bde2d648187331bb2203415  src/retree/intermediate/Snippet.java
+b3ef711b020660847bd2775df3cd159c  src/retree/RetreeUtils.java
 869816a3742d256337b49d85678e5e29  src/retree/program/FunctionDeclaration.java
 898e6050350345c1ebd5d68af5da40c6  src/retree/program/Initializer.java
 f384d80f01180b0b838698544392e9e1  src/retree/program/FunctionDefinition.java
@@ -58,7 +58,7 @@ a8f7cd3056a03f549a3bbd34752a69dd  src/retree/expression/DereferenceExpression.ja
 66abdcd33f3e5d0477952f68cbda4a01  src/retree/type/PointerType.java
 cd4176d379d6146c97802cacd7317e0f  src/retree/type/ArrayType.java
 8f1c5105448ca2833a9946f4402805df  src/compiler/Token.java
-3ccf042c3990ae81ff9d221faaaff87b  src/compiler/small_c.jjt
+0d6166c39cf6a034c3c84396cd3572ba  src/compiler/small_c.jjt
 0f918b9df2ca54d4d18f4cf4eee0b829  src/compiler/SmallCCTreeConstants.java
 ce35297f93cf3da7e37994180e4ec9b2  src/compiler/Node.java
 55d485442803f6223410956bc24d0703  src/compiler/SimpleNode.java
@@ -108,7 +108,7 @@ a6fae09156c85f3790b143bc8d85e39f  src/wci/intermediate/typeimpl/TypeSpecImpl.jav
 9c388bbbe9b4987e2eaccdda4bcc1dc7  src/wci/intermediate/SymTabStack.java
 b94764b4087e62151d1f64ec01fff8f6  src/wci/intermediate/TypeKey.java
 a428f8bfd6fa93be327771e36fab2ded  src/wci/util/CrossReferencer.java
-ea2aac602efeecd88110db5b87dc3dec  snippets/header.s
+2a0171848aaa3c332cbd09fe0ba4e8ce  snippets/header.s
 83488253598b0c54cf215c7f119c1244  snippets/SNIP_PFLUSH.s
 e3bec4c0785837222afebfa7679d4904  snippets/Macros/MUL.mac
 14c4d60641315b32baaf73bcadc51393  snippets/Macros/PUSH.mac
@@ -126,7 +126,7 @@ cb05df057a987b1fa829007a16013f60  snippets/CLIB.s
 f6db838dc3cab53859535e14b610119a  snippets/SNIP_CMP.s
 f56fe507ef29a2eff7bede47b8a92c9b  snippets/SNIP_PUNCHS.s
 06bc98c97f6e7e33ea69ed698273c7d2  snippets/number_to_pointer.s
-aa08ecba790e6455c96e2e845086f8eb  snippets/SNIP_DIV.s
+0151708781e8402f42c0a9a118ad5081  snippets/SNIP_DIV.s
 24b914696bd82993d8452fd31095e4cb  snippets/pointer_to_number.s
 d97473008c785a523acc916b07ca68a7  snippets/SNIP_READS.a
 6acef712d6ee400d2f693ab744c08195  snippets/SNIP_PUNCHC.s

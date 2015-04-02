@@ -1,37 +1,29 @@
      ****************************************************************
-     * Read area
-     READ      EQU  001
-     * Punch area
-     PUNCH     EQU  101
-     * Print area
-     PRINT     EQU  201
 
-     * Char position in print area
-     PRCPOS    DCW  000
-     * Char position in punch area
-     PUCPOS    DCW  000
+     READ      EQU  001               * Read area
+     PUNCH     EQU  101               * Punch area
+     PRINT     EQU  201               * Print area
 
-     * Size of punch area
-     PUNSIZ    DCW  @080@
-     * Size of print area
-     PRTSIZ    DCW  @132@
 
-     * End of string char
-     EOS       DCW  @'@
-     * End of line char
-     EOL       DCW  @;@
+     PRCPOS    DCW  000               * Char position in print area
+     PUCPOS    DCW  000               * Char position in punch area
 
-     * Index reg 1
+
+     PUNSIZ    DCW  @080@             * Size of punch area
+     PRTSIZ    DCW  @132@             * Size of print area
+
+
+     EOS       DCW  @'@               * End of string char
+     EOL       DCW  @;@               * End of line char
+
                ORG  87
-     X1        DSA  0
+     X1        DSA  0                 * Index reg 1
 
-     * Index reg 2
                ORG  92
-     X2        DSA  0
+     X2        DSA  0                 * Index reg 2
 
-     * Index reg 3
                ORG  97
-     X3        DSA  0
+     X3        DSA  0                 * Index reg 3
 
      * I need a single digit flag - should I replace this with a DA?
      RF        EQU  324

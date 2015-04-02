@@ -36,6 +36,16 @@ public class Optimizer
                     i -= 1;
                     break;
                 }
+                case "B":
+                {
+                    if (instr.get(i+1).getMnemonic().equals("B") && instr.get(i+1).getOperand(0).equals(instr.get(i).getOperand(0)))
+                    {
+                        instr.remove(i);
+                        i -= 1;
+                        break;
+                    }
+                    break;
+                }
             }
             if (instr.get(i).getMnemonic().contains("*") && !instr.get(i).getLabel().equals(""))
             {
@@ -123,13 +133,24 @@ public class Optimizer
 
     public static void addInstruction(String comment, String label, String op, String ... args)
     {
-        if (comment.length() > 0)
+        if (comment.length() > 0 && !(label.length() > 0 && op.length() > 0))
         {
             instr.add(new Instruction("", COM(comment)));
         }
-        if (label.length() > 0 || op.length() > 0)
+        if ((label.length() > 0 || op.length() > 0))
         {
-            instr.add(new Instruction(label, op, args));
+            if (comment.length() > 0)
+            {
+                String[] newArgs = new String[args.length + 1];
+                for (int i = 0; i < args.length; i++)
+                {
+                    newArgs[i] = args[i];
+                }
+                newArgs[args.length] = "* " + comment;
+                instr.add(new Instruction(label, op, newArgs));
+            } else {
+                instr.add(new Instruction(label, op, args));
+            }
         }
     }
 
@@ -228,14 +249,14 @@ public class Optimizer
         {
             removeComments();
         }
-        System.out.println("Started to generate code");
+        System.out.println("Adding snippets");
+        PutSnippets();
+        System.out.println("Collapse instructions");
         CollapseInstrcs();
-        System.out.println("Removed Nop and moved labels");
+        System.out.println("Moveing labels");
         ReLabel();
         System.out.println("Labeling constants");
         ConstantLabel();
-        System.out.println("Adding snippets");
-        PutSnippets();
         System.out.println("Putting labels and constants in");
         PutConstants();
         addInstruction(new Instruction("","END", "START"));
