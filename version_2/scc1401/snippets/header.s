@@ -34,5 +34,6 @@
      X3        DSA  0
 
      * I need a single digit flag - should I replace this with a DA?
-     RF        EQU  340
+     RF        EQU  324
+     
      ****************************************************************
