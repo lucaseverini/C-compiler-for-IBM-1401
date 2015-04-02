@@ -1,3 +1,7 @@
+     ****************************************************************
+     ** CAST POINTER TO NUMBER SNIPPET                             **
+     ****************************************************************
+
      PTRNUM    SBR  X1
      * Casts a 3-digit address to a 5-digit number
      * Make room on the stack for an int
@@ -32,3 +36,5 @@
                B    PTRNME
      PNLOO     A    @12000@,0+X2
      PTRNME    B    0+X1
+     
+     ****************************************************************

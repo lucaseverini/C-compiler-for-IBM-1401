@@ -568,6 +568,7 @@ public class RetreeUtils
       
         Collections.sort(entries, new Comparator<Map.Entry<K, V>>() 
 		{
+			@SuppressWarnings("unchecked")
             public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) 
 			{
                 return o1.getValue().compareTo(o2.getValue());
@@ -585,6 +586,7 @@ public class RetreeUtils
         return sortedMap;
     }
 	
+	@SuppressWarnings("unchecked")
 	public static <K extends Comparable, V extends Comparable> Map<K, V> sortMapByKey(Map<K, V> map)
 	{
         List<K> keys = new LinkedList<K>(map.keySet());

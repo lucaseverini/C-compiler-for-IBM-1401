@@ -8,6 +8,7 @@ import retree.exceptions.*;
 import retree.program.*;
 import retree.type.*;
 import retree.symtab.*;
+import retree.intermediate.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Map.Entry;

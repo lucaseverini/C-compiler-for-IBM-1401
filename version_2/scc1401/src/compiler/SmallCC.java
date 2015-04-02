@@ -9,6 +9,7 @@ import retree.exceptions.*;
 import retree.program.*;
 import retree.type.*;
 import retree.symtab.*;
+import retree.intermediate.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Map.Entry;
@@ -35,6 +36,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
         public static int dataMem = 2000;
         public static int codeMem = 0;                                  // if 0 then put the code immediately after the data
         public static boolean reuseStringLiterals = false;
+        public static boolean optimize = true;
 
         private static int labelNumber = 0;
         public static int nextLabelNumber()
@@ -109,6 +111,8 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
 
         public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
         {
+                Snippet.Init();
+                // Optimizer.DropComments(true);
         SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
                 compilationTime = sdf.format(Calendar.getInstance().getTime());
 
@@ -180,7 +184,16 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
                                         {
                                                 File outFile = new File(outputFile);
                                                 Writer wr = new FileWriter(outFile);
-                                                wr.write(code);
+												
+												if(SmallCC.optimize)
+												{											
+													wr.write(Optimizer.GenerateCode());
+												}
+												else
+												{
+													wr.write(code);
+												}
+												
                                                 wr.close();
                                         }
                                         else
@@ -2121,7 +2134,7 @@ int val = Integer.parseInt(str);
                 e = ce;
       } else if (jj_2_106(99999)) {
         str = StringLiteral();
-// Use the string value as identifier if string constants can be reused otherwise define an unique identifier 
+// Use the string value as identifier if string constants can be reused otherwise define an unique identifier
                 String identif = reuseStringLiterals ? str : "STR_LIT_" + Integer.toString(++stringLiteralIdx);
 
                 VariableExpression ve = variableTable.searchStack(str);
@@ -3509,19 +3522,6 @@ if (jjtc000) {
     finally { jj_save(107, xla); }
   }
 
-  static private boolean jj_3_37()
- {
-    if (jj_scan_token(R_PAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_54()
- {
-    if (jj_scan_token(72)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
   static private boolean jj_3_53()
  {
     if (jj_scan_token(71)) return true;
@@ -4805,6 +4805,19 @@ if (jjtc000) {
   static private boolean jj_3_55()
  {
     if (jj_scan_token(73)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_37()
+ {
+    if (jj_scan_token(R_PAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_54()
+ {
+    if (jj_scan_token(72)) return true;
     if (jj_3R_37()) return true;
     return false;
   }

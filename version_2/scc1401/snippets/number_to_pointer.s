@@ -1,3 +1,7 @@
+     ****************************************************************
+     ** CAST NUMBER TO POINTER SNIPPET                             **
+     ****************************************************************
+
      NUMPTR    SBR  X1
      * Casts a 5-digit number to a 3-digit address
      * make a copy of the top of the stack
@@ -38,3 +42,5 @@
      NMPTRE    LCA  3+X2,15998+X2
                SBR  X2,15998+X2
                B    0+X1
+
+     ****************************************************************
