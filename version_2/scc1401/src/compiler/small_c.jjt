@@ -53,6 +53,7 @@ public class SmallCC
   	public static int dataMem = 2000;
   	public static int codeMem = 0;					// if 0 then put the code immediately after the data
 	public static boolean reuseStringLiterals = false;
+    public static boolean optimize = false;
 
   	private static int labelNumber = 0;
   	public static int nextLabelNumber()
@@ -200,8 +201,16 @@ public class SmallCC
 					{
 						File outFile = new File(outputFile);
 						Writer wr = new FileWriter(outFile);
-						wr.write(Optimizer.GenerateCode());
-						// wr.write(code);
+
+						if(SmallCC.optimize)
+						{											
+							wr.write(Optimizer.GenerateCode());
+						}
+						else
+						{
+							wr.write(code);
+						}
+
 						wr.close();
 					}
 					else

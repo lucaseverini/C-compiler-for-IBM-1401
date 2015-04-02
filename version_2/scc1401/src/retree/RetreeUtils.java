@@ -88,23 +88,41 @@ public class RetreeUtils
 			comment = "* " + comment;
 		}
 
-		return "     " + comment;// + "\n";
+		return "     " + comment + "\n";
 	}
 
 	public static String NUM_CONST(int val, boolean arrayMember)
 	{
-		String str =  "@" + COD(val) + "@";
 		// System.out.println("NUM_CONST: " + str + " : " + label + " : " + (arrayMember ? "ARR" : ""));
 
-		return str;
+		String str =  "@" + COD(val) + "@";
+		
+		if(SmallCC.optimize)
+		{
+			return str;
+		}
+		else
+		{
+			String label = SmallCC.getLabelForVariable(str);
+			return label;
+		}
 	}
 
 	public static String ADDR_CONST(int val, boolean arrayMember)
 	{
-		String str = "@" + ADDR_COD(val) + "@";
 		// System.out.println("ADDR_CONST: " + str + " : " + label + " : " + (arrayMember ? "ARR" : ""));
 
-		return str;
+		String str = "@" + ADDR_COD(val) + "@";
+
+		if(SmallCC.optimize)
+		{
+			return str;
+		}
+		else
+		{
+			String label = SmallCC.getLabelForVariable(str);
+			return label;
+		}
 	}
 
 	public static String CHAR_CONST(int value, boolean arrayMember)
@@ -122,10 +140,19 @@ public class RetreeUtils
 		}
 		else
 		{
-			String str =  "@" + Character.toUpperCase((char)value) + "@";
 			// System.out.println("CHAR_CONST: " + str + " : " + label + " : " + (arrayMember ? "ARR" : ""));
 
-			return str;
+			String str =  "@" + Character.toUpperCase((char)value) + "@";
+			
+			if(SmallCC.optimize)
+			{
+				return str;
+			}
+			else
+			{
+				String label = SmallCC.getLabelForVariable(str);
+				return label;
+			}
 		}
 	}
 
@@ -292,8 +319,9 @@ public class RetreeUtils
 	private static String loadVariables()
 	{
 		String code = "\n";
-
-		for(Map.Entry pair : SmallCC.labelTable.entrySet())
+		
+		Map<String, String> sortedMap = sortMapByValue(SmallCC.labelTable);
+		for(Map.Entry pair : sortedMap.entrySet())
 		{
 			String label = "" + pair.getValue();
 			String value = "" + pair.getKey();
@@ -308,10 +336,14 @@ public class RetreeUtils
 				comm = "Value " + value;
 			}
 
-			Optimizer.addInstruction(comm, label, "DCW", value);
-			code += INS(comm, label, "DCW", value);
-
-			// code = code + ("     " + pair.getValue() + "    DCW  " + pair.getKey() + "\n");
+			if(SmallCC.optimize)
+			{
+				Optimizer.addInstruction(comm, label, "DCW", value);
+			}
+			else
+			{
+				code += INS(comm, label, "DCW", value);
+			}
 		}
 
 		code += "\n";
@@ -528,4 +560,42 @@ public class RetreeUtils
 
 		return label;
 	}
+	
+	public static <K extends Comparable, V extends Comparable> Map<K, V> sortMapByValue(Map<K, V> map)
+	{
+        List<Map.Entry<K, V>> entries = new LinkedList<Map.Entry<K, V>>(map.entrySet());
+      
+        Collections.sort(entries, new Comparator<Map.Entry<K, V>>() 
+		{
+            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) 
+			{
+                return o1.getValue().compareTo(o2.getValue());
+            }
+        });
+      
+        // LinkedHashMap will keep the keys in the order they are inserted which is currently sorted on natural ordering
+        Map<K,V> sortedMap = new LinkedHashMap<K, V>();
+      
+        for(Map.Entry<K, V> entry: entries)
+		{
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+      
+        return sortedMap;
+    }
+	
+	public static <K extends Comparable, V extends Comparable> Map<K, V> sortMapByKey(Map<K, V> map)
+	{
+        List<K> keys = new LinkedList<K>(map.keySet());
+        Collections.sort(keys);
+      
+        // LinkedHashMap will keep the keys in the order they are inserted which is currently sorted on natural ordering
+        Map<K, V> sortedMap = new LinkedHashMap<K, V>();
+        for(K key: keys)
+		{
+            sortedMap.put(key, map.get(key));
+        }
+      
+        return sortedMap;
+    }
 }
