@@ -249,14 +249,14 @@ public class Optimizer
         {
             removeComments();
         }
-        System.out.println("Adding snippets");
-        PutSnippets();
         System.out.println("Collapse instructions");
         CollapseInstrcs();
         System.out.println("Moveing labels");
         ReLabel();
         System.out.println("Labeling constants");
         ConstantLabel();
+        System.out.println("Adding snippets");
+        PutSnippets();
         System.out.println("Putting labels and constants in");
         PutConstants();
         addInstruction(new Instruction("","END", "START"));
