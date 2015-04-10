@@ -24,8 +24,28 @@ public class RetreeUtils
 	private static int inlineCommentStart = 40;
 	private static Boolean noComments = false;
 
-	public static String INS(String comment, String label, String operation, String ... args)
+	public static String INS(String lineComment, String label, String operation, String ... args)
 	{
+		if(SmallCC.optimize)
+		{
+			if(lineComment != null && !lineComment.isEmpty())
+			{
+				String[] newArgs = new String[args.length + 1];
+				
+				for(int idx = 0; idx < args.length; idx++)
+				{
+					newArgs[idx] = args[idx];
+				}
+				newArgs[args.length] = "* " + lineComment;
+				
+				Optimizer.addInstruction("", label != null ? label : "", operation, newArgs);
+			}
+			else
+			{
+				Optimizer.addInstruction("", label != null ? label : "", operation, args);
+			}
+		}
+
 		String line = "     ";
 
 		if(label != null && !label.isEmpty())
@@ -55,7 +75,7 @@ public class RetreeUtils
 			line += args[i];
 		}
 
-		if(!noComments && comment != null && !comment.isEmpty())
+		if(!noComments && lineComment != null && !lineComment.isEmpty())
 		{
 			while (line.length() < inlineCommentStart - 1)
 			{
@@ -63,39 +83,32 @@ public class RetreeUtils
 			}
 
 			// Remove any '@' from the inline comment because it can be considered part of the instruction...
-			comment = comment.replace("@", "");
+			lineComment = lineComment.replace("@", "");
 
-			if(comment.charAt(0) != '*')
+			if(lineComment.charAt(0) != '*')
 			{
-				comment = "* " + comment;
+				lineComment = "* " + lineComment;
 			}
 
-			line += comment;
+			line += lineComment;
 		}
-
+		
 		return line + "\n";
 	}
 
 	public static String COM(String comment)
 	{
-		if(noComments)
+		if(SmallCC.optimize)
 		{
-			return "";
+			Optimizer.addInstruction(comment, "", "");
 		}
 
-		if(comment.length() > 0 && comment.charAt(0) != '*')
-		{
-			comment = "* " + comment;
-		}
-
-		return "     " + comment + "\n";
+		return makeLineComment(comment);
 	}
 
 	public static String NUM_CONST(int val, boolean arrayMember)
 	{
-		// System.out.println("NUM_CONST: " + str + " : " + label + " : " + (arrayMember ? "ARR" : ""));
-
-		String str =  "@" + COD(val) + "@";
+		String str = "@" + COD(val) + "@";
 		
 		if(SmallCC.optimize)
 		{
@@ -104,14 +117,14 @@ public class RetreeUtils
 		else
 		{
 			String label = SmallCC.getLabelForVariable(str);
+			// System.out.println("NUM_CONST: " + str + " : " + label + " : " + (arrayMember ? "ARR" : ""));
+
 			return label;
 		}
 	}
 
 	public static String ADDR_CONST(int val, boolean arrayMember)
 	{
-		// System.out.println("ADDR_CONST: " + str + " : " + label + " : " + (arrayMember ? "ARR" : ""));
-
 		String str = "@" + ADDR_COD(val) + "@";
 
 		if(SmallCC.optimize)
@@ -140,9 +153,7 @@ public class RetreeUtils
 		}
 		else
 		{
-			// System.out.println("CHAR_CONST: " + str + " : " + label + " : " + (arrayMember ? "ARR" : ""));
-
-			String str =  "@" + Character.toUpperCase((char)value) + "@";
+			String str = "@" + Character.toUpperCase((char)value) + "@";
 			
 			if(SmallCC.optimize)
 			{
@@ -210,6 +221,7 @@ public class RetreeUtils
 		int lastDigitSet = 10 * (addr / 4000);
 		int firstDigitSet = 10 * ((addr % 4000) / 1000);
 		int decPart = addr % 1000;
+		
 		return digits[decPart / 100 + firstDigitSet] + digits[(decPart / 10) % 10] + digits[decPart % 10 + lastDigitSet];
 	}
 
@@ -227,10 +239,15 @@ public class RetreeUtils
 		return "" + Character.toUpperCase((char)val);
 	}
 
-	public static String PUSH(int size, String location)
+	public static String PUSH_MCW(int size, String location) 
 	{
 		String code = "";
 		String locValue;
+		
+		if(size == 0)
+		{
+			return code;
+		}
 
 		if(location.charAt(0) == 'L')
 		{
@@ -240,24 +257,74 @@ public class RetreeUtils
 		{
 			locValue = location;
 		}
-		Optimizer.addInstruction("Push (" + location + ":" + size + ")","","");
-		Optimizer.addInstruction("Add " + size + " to X2", "", "MA", ADDR_CONST(size, false), "X2");
-		Optimizer.addInstruction("Load data at " + locValue + " to X2", "", "LCA", location, "0+X2");
+		
+		code += COM("Push Special (" + location + ":" + size + ")");
+		code += INS("Add " + size + " to stack pointer", null, "MA", ADDR_CONST(size, false), "X2");
+		code += INS("Move data " + locValue + " in stack", null, "MCW", location, "0+X2");
+				
+		return code;
+	}
+
+	public static String PUSH(int size, String location)
+	{
+		String code = "";
+		String locValue;
+		Boolean isMemLocation = false;
+		Boolean isRegister = false;
+		
+		if(size == 0)
+		{
+			return code;
+		}
+
+		if(location.charAt(0) == 'L')
+		{
+			locValue = SmallCC.getVariableLabelValue(location);
+		}
+		else
+		{
+			locValue = location;
+			
+			if(location.charAt(0) == 'X')
+			{
+				isRegister = true;
+			}
+			else if(location.charAt(0) != '@')
+			{
+				isMemLocation = true;
+			}
+		}
+
 		code += COM("Push (" + location + ":" + size + ")");
-		code += INS("Add " + size + " to X2", null, "MA", ADDR_CONST(size, false), "X2");
-		code += INS("Load data at " + locValue + " to X2", null, "LCA", location, "0+X2");
+		code += INS("Add " + size + " to stack pointer", null, "MA", ADDR_CONST(size, false), "X2");
+		
+		if(isRegister)
+		{
+			code += INS("Load " + locValue + " in stack", null, "LCA", location, "0+X2");
+		}
+		else if(isMemLocation)
+		{
+			code += INS("Load memory " + locValue + " in stack", null, "LCA", location, "0+X2");
+		}
+		else
+		{
+			code += INS("Load data " + locValue + " in stack", null, "LCA", location, "0+X2");
+		}
 
 		return code;
 	}
 
 	public static String PUSH(int size)
 	{
-
 		String code = "";
-		Optimizer.addInstruction("Push (" + size + ")","","");
+		
+		if(size == 0)
+		{
+			return code;
+		}
+
 		code += COM("Push (" + size + ")");
-		Optimizer.addInstruction("Add " + size + " to X2", "", "MA", ADDR_CONST(size, false), "X2");
-		code += INS("Add " + size + " to X2", null, "MA", ADDR_CONST(size, false), "X2");
+		code += INS("Add " + size + " to stack pointer", null, "MA", ADDR_CONST(size, false), "X2");
 
 		return code;
 	}
@@ -267,6 +334,11 @@ public class RetreeUtils
 		String code = "";
 		String locValue;
 
+		if(size == 0)
+		{
+			return code;
+		}
+
 		if(location.charAt(0) == 'L')
 		{
 			locValue = SmallCC.getVariableLabelValue(location);
@@ -276,12 +348,9 @@ public class RetreeUtils
 			locValue = location;
 		}
 
-		Optimizer.addInstruction("Pop (" + location + ":" + size + ")","","");
 		code += COM("Pop (" + location + ":" + size + ")");
-		Optimizer.addInstruction("Load data at X2 to " + locValue, "", "LCA", "0+X2", location);
-		code += INS("Load data at X2 to " + locValue, null, "LCA", "0+X2", location);
-		Optimizer.addInstruction("Add " + -size + " to X2", "", "MA", ADDR_CONST(-size, false), "X2");
-		code += INS("Add " + -size + " to X2", null, "MA", ADDR_CONST(-size, false), "X2");
+		code += INS("Load stack in " + locValue, null, "LCA", "0+X2", location);
+		code += INS("Add " + -size + " to stack pointer", null, "MA", ADDR_CONST(-size, false), "X2");
 
 		return code;
 	}
@@ -289,10 +358,14 @@ public class RetreeUtils
 	public static String POP(int size)
 	{
 		String code = "";
-		Optimizer.addInstruction("Pop (" + size + ")","","");
+		
+		if(size == 0)
+		{
+			return code;
+		}
+
 		code += COM("Pop (" + size + ")");
-		Optimizer.addInstruction("Add " + -size + " to X2", "", "MA", ADDR_CONST(-size, false), "X2");
-		code += INS("Add " + -size + " to X2", null, "MA", ADDR_CONST(-size, false), "X2");
+		code += INS("Add " + -size + " to stack pointer", null, "MA", ADDR_CONST(-size, false), "X2");
 
 		return code;
 	}
@@ -316,6 +389,26 @@ public class RetreeUtils
 		return "" + ((16000 + addr % 16000) % 16000);
 	}
 
+	public static Boolean IS_LABEL(String str) 
+	{
+		return (str.charAt(0) == 'L');
+	}
+		
+	public static String makeLineComment(String comment)
+	{
+		if(comment.length() == 0 || noComments)
+		{
+			return "";
+		}
+
+		if(comment.charAt(0) != '*')
+		{
+			comment = "* " + comment;
+		}
+
+		return "     " + comment + "\n";
+	}
+
 	private static String loadVariables()
 	{
 		String code = "\n";
@@ -336,14 +429,7 @@ public class RetreeUtils
 				comm = "Value " + value;
 			}
 
-			if(SmallCC.optimize)
-			{
-				Optimizer.addInstruction(comm, label, "DCW", value);
-			}
-			else
-			{
-				code += INS(comm, label, "DCW", value);
-			}
+			code += INS(comm, label, "DCW", value);
 		}
 
 		code += "\n";
@@ -355,6 +441,11 @@ public class RetreeUtils
 	{
 		String fileName = "snippets/header.s";
 		String code = "";
+
+		if(SmallCC.optimize)
+		{
+			Optimizer.addSnippet("header");
+		}
 
 		try
 		{
@@ -379,7 +470,12 @@ public class RetreeUtils
 		String line = "";
 		String code = "";
 		String fileName = "snippets/" + snippetName + ".s";
-
+		
+		if(SmallCC.optimize)
+		{
+			Optimizer.addSnippet(snippetName);
+		}
+		
 		try
 		{
 			BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -430,9 +526,11 @@ public class RetreeUtils
 
 		// label = snippetLabels.get(snippetName);
 		label = Snippet.getSnippetLabel(snippetName);
-		Optimizer.addSnippet(snippetName);
-		Optimizer.addInstruction("Jump to snippet " + snippetName, "", "B", Snippet.getSnippetLabel(snippetName));
-		return INS("Jump to snippet " + snippetName, null, "B", label);
+		
+		String code = INS("Jump to snippet " + snippetName, null, "B", label);
+		code += "\n";
+		
+		return code;
 	}
 
 	// this must be called AFTER everything else, including FOOTER.
@@ -446,9 +544,8 @@ public class RetreeUtils
 		}
 
 		code += "     ***  Generated by Small-C Compiler on " + SmallCC.compilationTime + "\n";
-
 		code += "     ****************************************************************\n";
-		Optimizer.addSnippet("header");
+		
 		code += loadHeader();
 
 		return code;
@@ -457,14 +554,12 @@ public class RetreeUtils
 	public static String SET_STACK()
 	{
 		String code = "";
-		Optimizer.addInstruction("SET THE STACK POINTER (STACK GROWS UPWARD)","","");
-		code += COM("SET THE STACK POINTER (STACK GROWS UPWARD)");
 
+		code += COM("SET X2 TO BE THE STACK POINTER (STACK GROWS UPWARD)");
+		
 		// The stack pointer must point to last used location or the previous one
-		Optimizer.addInstruction("X2 is the stack pointer", "", "SBR", "X2", Integer.toString(SmallCC.stackMem - 1));
-		code += INS("X2 is the stack pointer", null, "SBR", "X2", Integer.toString(SmallCC.stackMem - 1));
-		Optimizer.addInstruction("Copy X2 to X3", "", "MCW", "X2", "X3");
-		code += INS("Copy X2 to X3", null, "MCW", "X2", "X3");
+		code += INS("Set X2 to stack pointer value", null, "SBR", "X2", Integer.toString(SmallCC.stackMem - 1));
+		code += INS("Copy stack pointer in X3", null, "MCW", "X2", "X3");
 		code += "\n";
 
 		return code;
@@ -473,20 +568,18 @@ public class RetreeUtils
 	public static String SET_CODE()
 	{
 		String code = "";
-		Optimizer.addInstruction("SET THE START POSITION OF CODE","","");
-		code += COM("SET THE START POSITION OF CODE");
+
+		code += COM("START POSITION OF PROGRAM CODE");
 
 		if(SmallCC.codeMem == 0)
 		{
-			Optimizer.addInstruction("", "", "ORG", Integer.toString(SmallCC.dataMem + staticInitializersSize));
 			code += INS(null, null, "ORG", Integer.toString(SmallCC.dataMem + staticInitializersSize));
 		}
 		else
 		{
-			Optimizer.addInstruction("", "", "ORG", Integer.toString(SmallCC.codeMem));
 			code += INS(null, null, "ORG", Integer.toString(SmallCC.codeMem));
 		}
-		Optimizer.addInstruction("Program starts here", "START", "NOP");
+
 		code += INS("Program starts here", "START", "NOP");
 		code += "\n";
 
@@ -496,8 +589,8 @@ public class RetreeUtils
 	public static String SET_VARDATA(List<Initializer> initializers) throws Exception
 	{
 		String code = "";
-		Optimizer.addInstruction("SET THE START POSITION OF VARIABLES INITIALIZATION DATA","","");
-		code += COM("SET THE START POSITION OF VARIABLES INITIALIZATION DATA");
+
+		code += COM("GLOBAL/STATIC DATA AND VARIABLES");
 
 		staticInitializersSize = 0;
 
@@ -568,6 +661,7 @@ public class RetreeUtils
       
         Collections.sort(entries, new Comparator<Map.Entry<K, V>>() 
 		{
+			@Override
 			@SuppressWarnings("unchecked")
             public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) 
 			{

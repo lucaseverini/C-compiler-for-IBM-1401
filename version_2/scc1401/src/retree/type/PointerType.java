@@ -20,7 +20,7 @@ public class PointerType extends Type
 		this.refType = refType;
 	}
 
-	public Type getType()
+	public Type getRefType()
 	{
 		return refType;
 	}
@@ -29,7 +29,7 @@ public class PointerType extends Type
 	{
 		if (t instanceof PointerType) 
 		{
-			if (this.getType().equals( ((PointerType)t).getType()))
+			if (this.getRefType().equals(((PointerType)t).getRefType()))
 			{
 				return true;
 			}
@@ -41,5 +41,10 @@ public class PointerType extends Type
 	public String toString() 
 	{
 		return "*" + refType.toString();
+	}
+	
+	public Boolean isPointerType()
+	{
+		return true;
 	}
 }

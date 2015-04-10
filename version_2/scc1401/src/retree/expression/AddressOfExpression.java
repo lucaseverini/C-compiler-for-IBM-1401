@@ -13,33 +13,30 @@ import static retree.RetreeUtils.*;
 import retree.expression.LValue;
 import retree.expression.Expression;
 import retree.type.PointerType;
-import retree.intermediate.*;
 
 public class AddressOfExpression extends Expression
 {
 	private final LValue child;
 
-	public AddressOfExpression(LValue child)
+	public AddressOfExpression(LValue child) 
 	{
 		super(new PointerType(child.getType()));
 		this.child = child;
 	}
 
-	public String generateCode(boolean valueNeeded)
+	public String generateCode(boolean valueNeeded) 
 	{
-		if (valueNeeded)
+		if (valueNeeded) 
 		{
-			Optimizer.addInstruction("AddressOf " + this.toString(), "", "");
 			return COM("AddressOf " + this.toString()) + child.generateAddress();
-		}
-		else
+		} 
+		else 
 		{
-			Optimizer.addInstruction("AddressOf " + this.toString(), "", "");
 			return COM("AddressOf " + this.toString()) + child.generateCode(false);
 		}
 	}
 
-	public Expression collapse()
+	public Expression collapse() 
 	{
 		return new AddressOfExpression(child.collapse());
 	}

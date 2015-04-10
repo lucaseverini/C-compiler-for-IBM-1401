@@ -13,69 +13,89 @@ import static retree.RetreeUtils.*;
 import retree.expression.Expression;
 import retree.type.PointerType;
 import retree.type.Type;
-import retree.intermediate.*;
 
-public class CastExpression extends Expression
+public class CastExpression extends Expression 
 {
 	private Expression child;
 
-	public CastExpression(Type castType, Expression child)
+	public CastExpression(Type castType, Expression child) 
 	{
 		super(castType);
 		this.child = child;
 	}
 
-	public Expression collapse()
+	public Expression collapse() 
 	{
-		if (child.getType().equals(getType())) return child.collapse();
-		Expression collapsedChild = child.collapse();
-		if (collapsedChild instanceof ConstantExpression)
+		if (child.getType().equals(getType())) 
 		{
-			//this should handle casting that can be done at compile time
-			return new ConstantExpression(getType(), ((ConstantExpression)collapsedChild).getValue());
+			return child.collapse();
 		}
-		else
+		
+		Expression collapsedChild = child.collapse();
+		
+		if (collapsedChild instanceof ConstantExpression) 
+		{
+			// this should handle casting that can be done at compile time
+			return new ConstantExpression(getType(), ((ConstantExpression)collapsedChild).getValue());
+		} 
+		else 
 		{
 			return new CastExpression(getType(), collapsedChild);
 		}
 	}
 
-	public String generateCode(boolean valueNeeded)
+	public String generateCode(boolean valueNeeded) 
 	{
 		String code = child.generateCode(valueNeeded);
-		if (valueNeeded)
+		if (valueNeeded) 
 		{
-			if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.intType)))
+			if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.intType))) 
 			{
-				Optimizer.addInstruction("Cast Number(" + child.toString() + ") to Pointer","","");
-				code += COM("Cast Number(" + child.toString() + ") to Pointer");
+				code += COM("Cast Number(" + child.toString() + ") to Pointer"); 
+
 				code += SNIP("number_to_pointer");
-			}
+			} 
+			else if ((!(getType() instanceof PointerType) && getType().equals(Type.charType)) && child.getType().equals(Type.intType))
+			{
+				code += COM("Cast Number(" + child.toString() + ") to Char"); 
+
+				code += SNIP("number_to_char");
+			} 
 			else if ((!(getType() instanceof PointerType) && getType().equals(Type.intType)) && child.getType() instanceof PointerType)
 			{
-				Optimizer.addInstruction("Cast Pointer(" + child.toString() + ") to Number","","");
-				code += COM("Cast Pointer(" + child.toString() + ") to Number");
+				code += COM("Cast Pointer(" + child.toString() + ") to Number"); 
+
 				code += SNIP("pointer_to_number");
+			} 
+			else if ((!(getType() instanceof PointerType) && getType().equals(Type.charType)) && child.getType() instanceof PointerType) 
+			{
+				code += COM("Cast Pointer(" + child.toString() + ") to Char"); 
+
+				code += SNIP("pointer_to_char");
 			}
 			else if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.charType)))
 			{
-				Optimizer.addInstruction("Cast Char(" + child.toString() + ") to Pointer","","");
-				code += COM("Cast Char(" + child.toString() + ") to Pointer");
+				code += COM("Cast Char(" + child.toString() + ") to Pointer"); 
+
 				code += SNIP("char_to_pointer");
 			}
-			else if ((!(getType() instanceof PointerType) && getType().equals(Type.charType)) && child.getType() instanceof PointerType)
+			else if ((!(getType() instanceof PointerType) && getType().equals(Type.intType)) && child.getType().equals(Type.charType))
 			{
-				Optimizer.addInstruction("Cast Pointer(" + child.toString() + ") to Char", "", "");
-				code += COM("Cast Pointer(" + child.toString() + ") to Char");
-				code += SNIP("pointer_to_char");
+				code += COM("Cast Char(" + child.toString() + ") to Number"); 
+
+				code += SNIP("char_to_number");
+			} 
+			else
+			{
+				// Otherwise we don't need to do anything and our value is already on the stack
 			}
-			// otherwise we don't need to do anything and our value is already on the stack.
 		}
+		
 		return code;
 	}
-
-	public String toString()
+	
+	public String toString() 
 	{
-		return "((" + getType() + ") "  + child + ")";
-	}
+		return "((" + getType() + ") "  + child + ")";	
+	}	
 }

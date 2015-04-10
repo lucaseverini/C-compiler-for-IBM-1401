@@ -128,10 +128,11 @@ public class SmallCC
 
 	public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
 	{
-		Snippet.Init();
-		// Optimizer.DropComments(true);
     	SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
 		compilationTime = sdf.format(Calendar.getInstance().getTime());
+
+		Snippet.Init();
+		// Optimizer.DropComments(true);
 
 		if(stackLoc > 0 && stackLoc < 16000)
 		{
@@ -641,7 +642,7 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 		for (Initializer init : initList) {
 			initializers.add(init);
 		}
-	})* (s = statement(newReturnLabel) {
+	})* (s = statement(newReturnLabel, returnLabel) {
 		statements.add(s);
 	})* "}"
 	{
@@ -654,7 +655,7 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 	}
 }
 
-Statement statement(String returnLabel)  : {
+Statement statement(String returnLabel, String parentReturnlabel)  : {
 	Statement stat, stat2 = null;
 	Expression exp=null, exp2=null, exp3=null;
 }
@@ -668,16 +669,16 @@ Statement statement(String returnLabel)  : {
 		| stat = blockStatement(false, returnLabel) {
 			return stat;
 		}
-    | "if" "(" exp=expression() ")" stat=statement(returnLabel) ("else" stat2=statement(returnLabel))?  {
+    | "if" "(" exp=expression() ")" stat=statement(returnLabel, parentReturnlabel) ("else" stat2=statement(returnLabel, parentReturnlabel))?  {
 			return new IfStatement(exp, stat, stat2);
 		}
-    | "while" "(" exp=expression() ")" stat=statement(returnLabel) {
+    | "while" "(" exp=expression() ")" stat=statement(returnLabel, parentReturnlabel) {
 			return new WhileStatement(exp, stat);
 		}
-    | "for" "(" (exp=expression()";"| ";" ) (exp2=expression() ";" | ";" ) (exp3=expression() ")" | ")" ) stat=statement(returnLabel) {
+    | "for" "(" (exp=expression()";"| ";" ) (exp2=expression() ";" | ";" ) (exp3=expression() ")" | ")" ) stat=statement(returnLabel, parentReturnlabel) {
 			return new ForStatement(exp, exp2, exp3, stat);
 		}
-    | "do" stat=statement(returnLabel) "while" "(" exp=expression() ")" ";" {
+    | "do" stat=statement(returnLabel, parentReturnlabel) "while" "(" exp=expression() ")" ";" {
 			return new DoWhileStatement(exp, stat);
 		}
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
@@ -686,7 +687,7 @@ Statement statement(String returnLabel)  : {
     //TODO| "break" ";"
     //TODO| "continue" ";"
     | "return" (exp=expression())? ";" {
-			return new ReturnStatement(exp, variableTable.searchStack("return"), returnLabel);
+			return new ReturnStatement(exp, variableTable.searchStack("return"), parentReturnlabel);
 
 		}
     //TODO| Identifier() ":" Statement()
@@ -1124,7 +1125,7 @@ Expression AtomicExpression()  : {
     | str = StringLiteral() {
 
 		// Use the string value as identifier if string constants can be reused otherwise define an unique identifier
-		String identif = reuseStringLiterals ? str : "STR_LIT_" + Integer.toString(++stringLiteralIdx);
+		String identif = reuseStringLiterals ? str : "CONST_STR_LITERAL_" + Integer.toString(++stringLiteralIdx);
 
 		VariableExpression ve = variableTable.searchStack(str);
 		if (ve != null)

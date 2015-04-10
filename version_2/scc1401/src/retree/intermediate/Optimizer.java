@@ -1,8 +1,18 @@
+/*
+	Optimizer.java
+
+    Small-C compiler - SJSU
+	April-9-2015
+
+	By Matt Pleva, Luca Severini
+*/
+
 package retree.intermediate;
 
 import java.util.*;
 import static retree.RetreeUtils.*;
 import compiler.*;
+import retree.RetreeUtils;
 
 public class Optimizer
 {
@@ -133,10 +143,11 @@ public class Optimizer
 
     public static void addInstruction(String comment, String label, String op, String ... args)
     {
-        if (comment.length() > 0 && !(label.length() > 0 && op.length() > 0))
+		if (comment.length() > 0 && !(label.length() > 0 && op.length() > 0))
         {
-            instr.add(new Instruction("", COM(comment)));
+            instr.add(new Instruction("", RetreeUtils.makeLineComment(comment)));
         }
+		
         if ((label.length() > 0 || op.length() > 0))
         {
             if (comment.length() > 0)
@@ -146,23 +157,28 @@ public class Optimizer
                 {
                     newArgs[i] = args[i];
                 }
+				
                 newArgs[args.length] = "* " + comment;
                 instr.add(new Instruction(label, op, newArgs));
-            } else {
+            } 
+			else 
+			{
                 instr.add(new Instruction(label, op, args));
             }
         }
     }
 
-    public static void addInstructionAtPos(int pos,Instruction i)
+    public static void addInstructionAtPos(int pos, Instruction i)
     {
-        instr.add(pos,i);
+        instr.add(pos, i);
     }
 
     public static void addSnippet(String snippetName)
     {
         if (!snippetsUsed.contains(snippetName))
+		{
             snippetsUsed.add(snippetName);
+		}
     }
 
     private static void addSnippetInstructions(String snippetName)
@@ -249,24 +265,31 @@ public class Optimizer
         {
             removeComments();
         }
+		
         System.out.println("Collapse instructions");
         CollapseInstrcs();
+		
         System.out.println("Moveing labels");
         ReLabel();
+		
         System.out.println("Labeling constants");
         ConstantLabel();
+		
         System.out.println("Adding snippets");
         PutSnippets();
+		
         System.out.println("Putting labels and constants in");
         PutConstants();
-        addInstruction(new Instruction("","END", "START"));
+		
+        addInstruction(new Instruction("", "END", "START", "* End of program code."));
+		
         System.out.println("Starting to generate code ...");
         String code = "";
         for (Instruction i: instr)
         {
             code += i.generateCode();
         }
+		
         return code;
     }
-
 }

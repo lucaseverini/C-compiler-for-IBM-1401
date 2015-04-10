@@ -11,23 +11,23 @@ package retree.program;
 
 import compiler.SmallCC;
 import java.util.Iterator;
+import java.util.Objects;
 import static retree.RetreeUtils.*;
 import retree.statement.*;
-import retree.intermediate.*;
 import retree.expression.*;
 
-public class FunctionDefinition
+public class FunctionDefinition implements Comparable<FunctionDefinition>
 {
 	private ConstantExpression declaration;
 	private BlockStatement block;
-
+	
 	public FunctionDefinition(ConstantExpression declaration, BlockStatement block)
 	{
 		this.declaration = declaration;
 		this.block = block;
 	}
 
-	public ConstantExpression getDeclaration()
+	public ConstantExpression getDeclaration() 
 	{
 		return declaration;
 	}
@@ -37,41 +37,58 @@ public class FunctionDefinition
 	//address.
 	public String generateCode() throws Exception
 	{
-		Optimizer.addInstruction("********************************************************************************","","");
-		Optimizer.addInstruction("Function : " + SmallCC.getFunctionNameFromExpression(declaration),"","");
-		Optimizer.addInstruction("********************************************************************************","","");
-		Optimizer.addInstruction("Save return address in register B to local frame", label(declaration.getValue()), "SBR", "3+X3");
-		Optimizer.addInstruction("Set the WM", "", "SW", "1+X3");
-		Optimizer.addInstruction("Clean WM", "", "CW", "2+X3");
-		Optimizer.addInstruction("Clean WM", "", "CW", "3+X3");
-		String code = "\n" +
+		String code = "\n" + 
 			COM("********************************************************************************") +
 			COM("Function : " + SmallCC.getFunctionNameFromExpression(declaration)) +
 			COM("********************************************************************************") +
-			INS("Save return address in register B to local frame", label(declaration.getValue()), "SBR", "3+X3") +
-			INS("Set the WM", null, "SW", "1+X3") +
-			INS("Clean WM", null, "CW", "2+X3") +
-			INS("Clean WM", null, "CW", "3+X3");
-
+			INS("Save return address in register B in stack frame (X3)", label(declaration.getValue()), "SBR", "3+X3") +
+			COM("Set the right WM and clear the wrong ones") + 
+			INS("Set WM at 1+X3", null, "SW", "1+X3") +
+			INS("Clear WM at 2+X3", null, "CW", "2+X3") +
+			INS("Clear WM at 3+X3", null, "CW", "3+X3");
+					  
 		code += block.generateCode();
-		Optimizer.addInstruction("Load return address to X1", "", "LCA", "3+X3", "X1");
-		Optimizer.addInstruction("Jump back to caller", "", "B", "0+X1");
-		code += INS("Load return address to X1", null, "LCA", "3+X3", "X1") +
-			INS("Jump back to caller", null, "B", "0+X1");
-		Optimizer.addInstruction("********************************************************************************","","");
-		Optimizer.addInstruction("End Function : " + SmallCC.getFunctionNameFromExpression(declaration),"","");
-		Optimizer.addInstruction("********************************************************************************","","");
+					  
+		code += INS("Load return address in X1", null, "LCA", "3+X3", "X1") +
+			INS("Jump back to caller in X1", null, "B", "0+X1");
+
 		code += "\n";
 		code += COM("********************************************************************************");
 		code += COM("End Function : " + SmallCC.getFunctionNameFromExpression(declaration));
 		code += COM("********************************************************************************");
-
+		
 		return code;
 	}
 
+	@Override
 	public String toString()
 	{
 		String name = SmallCC.getFunctionNameFromExpression(declaration);
 		return name;
+	}
+	
+	@Override
+	public boolean equals(Object o) 
+	{
+        if (!(o instanceof FunctionDefinition))
+		{
+            return false;
+		}
+		
+        FunctionDefinition f = (FunctionDefinition)o;
+        return f.toString().equals(toString());
+    }
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hashCode(this.declaration);
+	}
+
+	@Override
+	public int compareTo(FunctionDefinition f)
+	{
+		int lastCmp = toString().compareTo(f.toString());
+        return (lastCmp != 0 ? lastCmp : toString().compareTo(f.toString()));
 	}
 }

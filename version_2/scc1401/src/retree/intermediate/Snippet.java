@@ -1,8 +1,16 @@
+/*
+	Snippet.java
+
+    Small-C compiler - SJSU
+	April-9-2015
+
+	By Matt Pleva, Luca Severini
+*/
+
 package retree.intermediate;
 
 import java.io.*;
 import java.util.*;
-import static retree.RetreeUtils.*;
 
 public class Snippet
 {
@@ -14,8 +22,12 @@ public class Snippet
         int count = 0;
         for (int i = 0; i < in.length(); i++)
         {
-            if(in.charAt(i) == '*') count++;
+            if(in.charAt(i) == '*') 
+			{
+				count++;
+			}
         }
+		
         return count;
     }
 
@@ -90,6 +102,7 @@ public class Snippet
                             }
                             parts = comparts[0].split(" ");
                         }
+						
                         if (parts.length > 2)
                         {
                             String[] instrArgs = new String[comparts.length > 1 ? parts.length - 1 : parts.length - 2];
@@ -97,6 +110,7 @@ public class Snippet
                             {
                                 instrArgs[i] = parts[i+2];
                             }
+							
                             if (comparts.length > 1)
                             {
                                 instrArgs[instrArgs.length-1] = "* " + comparts[1];
@@ -114,30 +128,44 @@ public class Snippet
                     }
                 }
             }
+			
             snips.put(snippet, list);
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            System.err.println("Snippet "+snippet+" failed to load.");
+            System.err.println("Snippet " + snippet + " failed to load.");
         }
     }
 
     public static void Init()
-    {
-
-        loadSnippet("char_to_pointer");
-        snippetLabels.put("char_to_pointer", "CHRPTR");
-        loadSnippet("clean_number");
-        snippetLabels.put("clean_number", "CLNNUM");
-        loadSnippet("number_to_pointer");
-        snippetLabels.put("number_to_pointer", "NUMPTR");
-        loadSnippet("pointer_to_number");
-        snippetLabels.put("pointer_to_number", "PTRNUM");
+    {		
         loadSnippet("header");
+
+	    loadSnippet("char_to_number");
+        snippetLabels.put("char_to_number", "CHRNMN");
+ 
+		loadSnippet("char_to_pointer");
+        snippetLabels.put("char_to_pointer", "CHRPTR");
+		
+        loadSnippet("clean_number");
+        snippetLabels.put("clean_number", "CLNNMN");
+		
+        loadSnippet("number_to_pointer");
+        snippetLabels.put("number_to_pointer", "NMNPTR");
+		
+        loadSnippet("pointer_to_number");
+        snippetLabels.put("pointer_to_number", "PTRNMN");
+
+		loadSnippet("pointer_to_char");
+        snippetLabels.put("pointer_to_char", "PTRCHR");
+
         loadSnippet("SNIP_DIV");
-        snippetLabels.put("SNIP_DIV","DIV");
-    }
+        snippetLabels.put("SNIP_DIV","SNPDIV");
+
+	    loadSnippet("number_to_char");
+        snippetLabels.put("number_to_char", "NUMCHR");
+	}
 
     public static String getSnippetLabel(String snippet)
     {

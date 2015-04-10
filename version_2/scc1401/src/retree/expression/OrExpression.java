@@ -12,40 +12,39 @@ package retree.expression;
 import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.type.*;
-import retree.intermediate.*;
 import compiler.SmallCC;
 
-public class OrExpression extends Expression
+public class OrExpression extends Expression 
 {
     private Expression l, r;
 
-    public OrExpression(Expression l, Expression r) throws TypeMismatchException
+    public OrExpression(Expression l, Expression r) throws TypeMismatchException 
 	{
         super(Type.intType);
-
+		
         if (!l.getType().equals(r.getType()))
 		{
             throw new TypeMismatchException(r, l.getType(), r.getType());
         }
-
+		
         this.l = l;
         this.r = r;
     }
 
-    public Expression collapse()
+    public Expression collapse() 
 	{
-        try
+        try 
 		{
             Expression l2 = l.collapse();
             Expression r2 = r.collapse();
-
-            if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression)
+			
+            if (l2 instanceof ConstantExpression && r2 instanceof ConstantExpression) 
 			{
-                return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() == ((ConstantExpression)r2).getValue() ? 0 : 1);
+				return new ConstantExpression(l2.getType(), ((ConstantExpression)l2).getValue() != 0 || ((ConstantExpression)r2).getValue() != 0 ? 1 : 0);
             }
-
+			
             return new OrExpression(l2, r2);
-        }
+        } 
 		catch (TypeMismatchException e)
 		{
             //should never happen
@@ -57,32 +56,23 @@ public class OrExpression extends Expression
 	{
         String labelSecond = label(SmallCC.nextLabelNumber());
         String labelEnd = label(SmallCC.nextLabelNumber());
-        Optimizer.addInstruction("Or (||) " + this.toString(), "","");
+
         String code = COM("Or (||) " + this.toString());
 		code += PUSH(5, NUM_CONST(0, false));
         code += l.generateCode(true);
 		int lSize = l.getType().sizeof();
 		int rSize = r.getType().sizeof();
-        Optimizer.addInstruction("Clear WM", "", "MCS", STACK_OFF(0), STACK_OFF(0));
-        code += INS("Clear WM", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+        code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
         code += POP(lSize);
-        Optimizer.addInstruction("Jump to Second if equal to stack at offset " + lSize, "", "BCE", labelSecond, STACK_OFF(lSize)," ");
-        code += INS("Jump to Second if equal to stack at offset " + lSize, null, "BCE", labelSecond, STACK_OFF(lSize)," ");
-        Optimizer.addInstruction("Set stack location to 1", "", "MCW", NUM_CONST(1, false), STACK_OFF(0));
-        code += INS("Set stack location to 1", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-        Optimizer.addInstruction("Jump to End", "", "B", labelEnd);
+        code += INS("Jump to Second if equal to stack at " + lSize, null, "BCE", labelSecond, STACK_OFF(lSize)," ");
+        code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
         code += INS("Jump to End", null, "B", labelEnd);
-        Optimizer.addInstruction("Second", labelSecond, "NOP");
         code += INS("Second", labelSecond, "NOP");
         code += r.generateCode(true);
-        Optimizer.addInstruction("Clear WM", "", "MCS", STACK_OFF(0),STACK_OFF(0));
-        code += INS("Clear WM", null, "MCS", STACK_OFF(0),STACK_OFF(0));
+        code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0),STACK_OFF(0));
         code += POP(rSize);
-        Optimizer.addInstruction("Jump to End if equal to stack at offset " + rSize, "", "BCE", labelEnd, STACK_OFF(rSize)," ");
-        code += INS("Jump to End if equal to stack at offset " + rSize, null, "BCE", labelEnd, STACK_OFF(rSize)," ");
-        Optimizer.addInstruction("Set stack location to 1", "", "MCW", NUM_CONST(1, false), STACK_OFF(0));
-        code += INS("Set stack location to 1", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-        Optimizer.addInstruction("End of Or", labelEnd, "NOP");
+        code += INS("Jump to End if equal to stack at " + rSize, null, "BCE", labelEnd, STACK_OFF(rSize)," ");
+        code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
         code += INS("End of Or", labelEnd, "NOP");
 
         return code;

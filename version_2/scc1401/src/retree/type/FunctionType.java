@@ -87,4 +87,9 @@ public class FunctionType extends Type
 		
 		return str + ")";
 	}
+
+	public Boolean isPointerType()
+	{
+		return true;
+	}
 }

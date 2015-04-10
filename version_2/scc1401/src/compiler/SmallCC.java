@@ -36,7 +36,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
         public static int dataMem = 2000;
         public static int codeMem = 0;                                  // if 0 then put the code immediately after the data
         public static boolean reuseStringLiterals = false;
-        public static boolean optimize = true;
+		public static boolean optimize = false;
 
         private static int labelNumber = 0;
         public static int nextLabelNumber()
@@ -111,12 +111,13 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
 
         public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
         {
-                Snippet.Init();
                 // Optimizer.DropComments(true);
         SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
                 compilationTime = sdf.format(Calendar.getInstance().getTime());
 
-                if(stackLoc > 0 && stackLoc < 16000)
+                Snippet.Init();
+ 
+				if(stackLoc > 0 && stackLoc < 16000)
                 {
                         stackMem = stackLoc;
                 }
@@ -178,27 +179,27 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
 
                                 if (errorFree)
                                 {
-                                        String code = program.generateCode();
+                                   String code = program.generateCode();
 
                                         if(outputFile != null)
                                         {
-                                                File outFile = new File(outputFile);
-                                                Writer wr = new FileWriter(outFile);
-												
-												if(SmallCC.optimize)
-												{											
-													wr.write(Optimizer.GenerateCode());
-												}
-												else
-												{
-													wr.write(code);
-												}
-												
-                                                wr.close();
+                                                        File outFile = new File(outputFile);
+                                                        Writer wr = new FileWriter(outFile);
+
+                                                        if(SmallCC.optimize)
+                                                        {
+                                                                wr.write(Optimizer.GenerateCode());
+                                                        }
+                                                        else
+                                                        {
+                                                                wr.write(code);
+                                                        }
+
+                                                        wr.close();
                                         }
                                         else
                                         {
-                                                System.out.print(code);
+                                                        System.out.print(code);
                                         }
                                 }
                         }
@@ -980,7 +981,7 @@ for (Initializer init : initList) {
         } else {
           break label_7;
         }
-        s = statement(newReturnLabel);
+        s = statement(newReturnLabel, returnLabel);
 statements.add(s);
       }
       jj_consume_token(65);
@@ -1014,7 +1015,7 @@ if (jjtc000) {
     throw new Error("Missing return statement in function");
   }
 
-  static final public Statement statement(String returnLabel) throws ParseException {/*@bgen(jjtree) statement */
+  static final public Statement statement(String returnLabel, String parentReturnlabel) throws ParseException {/*@bgen(jjtree) statement */
         SimpleNode jjtn000 = new SimpleNode(JJTSTATEMENT);
         boolean jjtc000 = true;
         jjtree.openNodeScope(jjtn000);Statement stat, stat2 = null;
@@ -1041,24 +1042,24 @@ jjtree.closeNodeScope(jjtn000, true);
         jj_consume_token(L_PAREN);
         exp = expression();
         jj_consume_token(R_PAREN);
-        stat = statement(returnLabel);
+        stat = statement(returnLabel, parentReturnlabel);
         if (jj_2_31(99999)) {
           jj_consume_token(ELSE);
-          stat2 = statement(returnLabel);
+          stat2 = statement(returnLabel, parentReturnlabel);
         } else {
           ;
         }
 jjtree.closeNodeScope(jjtn000, true);
-                                                                                                          jjtc000 = false;
+                                                                                                                                                jjtc000 = false;
 {if ("" != null) return new IfStatement(exp, stat, stat2);}
       } else if (jj_2_43(99999)) {
         jj_consume_token(WHILE);
         jj_consume_token(L_PAREN);
         exp = expression();
         jj_consume_token(R_PAREN);
-        stat = statement(returnLabel);
+        stat = statement(returnLabel, parentReturnlabel);
 jjtree.closeNodeScope(jjtn000, true);
-                                                                     jjtc000 = false;
+                                                                                        jjtc000 = false;
 {if ("" != null) return new WhileStatement(exp, stat);}
       } else if (jj_2_44(99999)) {
         jj_consume_token(FOR);
@@ -1090,20 +1091,20 @@ jjtree.closeNodeScope(jjtn000, true);
           jj_consume_token(-1);
           throw new ParseException();
         }
-        stat = statement(returnLabel);
+        stat = statement(returnLabel, parentReturnlabel);
 jjtree.closeNodeScope(jjtn000, true);
-                                                                                                                                        jjtc000 = false;
+                                                                                                                                                           jjtc000 = false;
 {if ("" != null) return new ForStatement(exp, exp2, exp3, stat);}
       } else if (jj_2_45(99999)) {
         jj_consume_token(DO);
-        stat = statement(returnLabel);
+        stat = statement(returnLabel, parentReturnlabel);
         jj_consume_token(WHILE);
         jj_consume_token(L_PAREN);
         exp = expression();
         jj_consume_token(R_PAREN);
         jj_consume_token(SEMI_COLON);
 jjtree.closeNodeScope(jjtn000, true);
-                                                                              jjtc000 = false;
+                                                                                                 jjtc000 = false;
 {if ("" != null) return new DoWhileStatement(exp, stat);}
       } else if (jj_2_46(99999)) {
         jj_consume_token(RETURN);
@@ -1115,7 +1116,7 @@ jjtree.closeNodeScope(jjtn000, true);
         jj_consume_token(SEMI_COLON);
 jjtree.closeNodeScope(jjtn000, true);
                                          jjtc000 = false;
-{if ("" != null) return new ReturnStatement(exp, variableTable.searchStack("return"), returnLabel);}
+{if ("" != null) return new ReturnStatement(exp, variableTable.searchStack("return"), parentReturnlabel);}
       } else {
         jj_consume_token(-1);
         throw new ParseException();
@@ -2135,7 +2136,7 @@ int val = Integer.parseInt(str);
       } else if (jj_2_106(99999)) {
         str = StringLiteral();
 // Use the string value as identifier if string constants can be reused otherwise define an unique identifier
-                String identif = reuseStringLiterals ? str : "STR_LIT_" + Integer.toString(++stringLiteralIdx);
+                String identif = reuseStringLiterals ? str : "CONST_STR_LITERAL_" + Integer.toString(++stringLiteralIdx);
 
                 VariableExpression ve = variableTable.searchStack(str);
                 if (ve != null)
@@ -3522,27 +3523,6 @@ if (jjtc000) {
     finally { jj_save(107, xla); }
   }
 
-  static private boolean jj_3_53()
- {
-    if (jj_scan_token(71)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_52()
- {
-    if (jj_scan_token(70)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_51()
- {
-    if (jj_scan_token(69)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
   static private boolean jj_3_50()
  {
     if (jj_scan_token(68)) return true;
@@ -3602,6 +3582,13 @@ if (jjtc000) {
     return false;
   }
 
+  static private boolean jj_3_31()
+ {
+    if (jj_scan_token(ELSE)) return true;
+    if (jj_3R_35()) return true;
+    return false;
+  }
+
   static private boolean jj_3_36()
  {
     if (jj_3R_29()) return true;
@@ -3631,13 +3618,6 @@ if (jjtc000) {
   static private boolean jj_3_105()
  {
     if (jj_3R_51()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_31()
- {
-    if (jj_scan_token(ELSE)) return true;
-    if (jj_3R_35()) return true;
     return false;
   }
 
@@ -4818,6 +4798,27 @@ if (jjtc000) {
   static private boolean jj_3_54()
  {
     if (jj_scan_token(72)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_53()
+ {
+    if (jj_scan_token(71)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_52()
+ {
+    if (jj_scan_token(70)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_51()
+ {
+    if (jj_scan_token(69)) return true;
     if (jj_3R_37()) return true;
     return false;
   }

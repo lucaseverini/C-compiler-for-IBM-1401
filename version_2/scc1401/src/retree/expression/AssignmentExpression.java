@@ -12,57 +12,74 @@ package retree.expression;
 import static retree.RetreeUtils.*;
 import retree.expression.LValue;
 import retree.expression.Expression;
-import retree.intermediate.*;
+import retree.type.PointerType;
+import retree.type.Type;
 
-public class AssignmentExpression extends Expression
+public class AssignmentExpression extends Expression 
 {
 	private LValue l;
 	private Expression r;
 
-	public AssignmentExpression(LValue l, Expression r) throws retree.exceptions.TypeMismatchException
+	public AssignmentExpression(LValue l, Expression r) throws Exception 
 	{
 		super(l.getType());
-
-		if (! l.getType().equals(r.getType()))
+		
+		if (! l.getType().equals(r.getType())) 
 		{
 			throw new retree.exceptions.TypeMismatchException(r, l.getType(), r.getType());
 		}
-
+		
 		this.l = l;
 		this.r = r;
 	}
 
-	public Expression collapse()
+	public Expression collapse() 
 	{
-		try
+		try 
 		{
 			return new AssignmentExpression(l.collapse(), r.collapse());
-		}
-		catch (retree.exceptions.TypeMismatchException e)
+		} 
+		catch (Exception e)
 		{
 			return null;
 		}
 	}
 
-	public String generateCode(boolean valueNeeded)
+	public String generateCode(boolean valueNeeded) 
 	{
-		//no sequence point, so we can evaluate the right side first
-		Optimizer.addInstruction("Assignment " + this.toString(), "","");
-		String code = COM("Assignment " + this.toString()) +
-			r.generateCode(true) +
-			l.generateAddress() +
-			POP(3, "X1");
-
-		if (valueNeeded)
+		// no sequence point, so we can evaluate the right side first
+		String rightCode = r.generateCode(true);
+		String leftCode = l.generateAddress();
+/*		
+		Type lType = l.getType();
+		if(lType.isPointerType())
 		{
-			Optimizer.addInstruction("Load data at Stack location to X1", "", "LCA", STACK_OFF(0), "0+X1");
-			code += INS("Load data at Stack location to X1", null, "LCA", STACK_OFF(0), "0+X1");
-		}
-		else
-		{
-			code += POP(l.getType().sizeof(), "0+X1");
+			System.out.println("Left " + l + " is pointer to " + ((PointerType)lType).getRefType());
 		}
 
+		Type rType = r.getType();
+		if(rType.isPointerType())
+		{
+			System.out.println("Right " + r + " is pointer to " + ((PointerType)rType).getRefType());
+		}
+*/
+		String code = COM("Assignment " + this.toString()); 
+		code += rightCode;
+		code += leftCode;
+		code += POP(3, "X1");	
+		
+		if (valueNeeded) 
+		{
+			code += INS("Load stack in memory X1", null, "LCA", STACK_OFF(0), "0+X1");
+		}
+		else 
+		{
+			code += POP(r.getType().sizeof(), "0+X1");
+		}
+		
+		code += COM("End Assignment " + this.toString());
+		code += "\n";
+		
 		return code;
 	}
 

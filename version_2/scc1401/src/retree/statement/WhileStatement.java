@@ -12,7 +12,6 @@ package retree.statement;
 import compiler.SmallCC;
 
 import retree.expression.Expression;
-import retree.intermediate.*;
 import static retree.RetreeUtils.*;
 
 public class WhileStatement implements Statement
@@ -21,8 +20,8 @@ public class WhileStatement implements Statement
 	private final Statement body;
 	private final String topLabel, bottomLabel;
 	private final int size;
-
-	public WhileStatement(Expression condition, Statement body)
+		
+	public WhileStatement(Expression condition, Statement body) 
 	{
 		this.condition = condition.collapse();
 		this.body = body;
@@ -33,27 +32,29 @@ public class WhileStatement implements Statement
 		this.size = condition.getType().sizeof();
 	}
 
-	public String generateCode() throws Exception
-	{
-		Optimizer.addInstruction("While " + this.toString(),"","");
+	public String generateCode() throws Exception 
+	{		
 		String code = COM("While " + this.toString());
-		Optimizer.addInstruction("Top of the loop", topLabel, "NOP");
-		code += INS("Top of the loop", topLabel, "NOP");
 
+		code += INS("Top of While", topLabel, "NOP");
+		
 		code += condition.generateCode(true);
-		Optimizer.addInstruction("Clear WM", "", "MCS", STACK_OFF(0), STACK_OFF(0));
-		code += INS("Clear WM", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+		
+		code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+		
 		code += POP(size);
-		Optimizer.addInstruction("Jump to bottom", "", "BCE", bottomLabel, STACK_OFF(size), " ");
-		code += INS("Jump to bottom", null, "BCE", bottomLabel, STACK_OFF(size), " ");
-
+		code += INS("Jump to bottom of While", null, "BCE", bottomLabel, STACK_OFF(size), " ");
+	
 		code += body.generateCode();
-		Optimizer.addInstruction("Jump to top", "", "B", topLabel);
-		code += INS("Jump to top", null, "B", topLabel);
-		Optimizer.addInstruction("Bottom of the while loop", bottomLabel, "NOP");
-		code += INS("Bottom of the while loop", bottomLabel, "NOP");
+		
+		code += INS("Jump to top of While", null, "B", topLabel);
 		code += "\n";
-
+		
+		code += INS("Bottom of While", bottomLabel, "NOP");
+		
+		code += COM("End While " + this.toString());
+		code += "\n";
+		
 		return code;
 	}
 
@@ -62,3 +63,4 @@ public class WhileStatement implements Statement
 		return "[while (" + condition + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + "]";
 	}
 }
+

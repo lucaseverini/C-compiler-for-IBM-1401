@@ -31,4 +31,9 @@ public class ArrayType extends Type
 	{
 		return arrayBaseType.toString() + " [" + numElements + "]";
 	}
+
+	public Boolean isPointerType()
+	{
+		return true;
+	}
 }

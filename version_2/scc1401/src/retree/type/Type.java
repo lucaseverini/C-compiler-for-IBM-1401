@@ -48,4 +48,9 @@ public class Type
 	{
 		return this == t;
 	}
+
+	public Boolean isPointerType()
+	{
+		return false;
+	}
 }
