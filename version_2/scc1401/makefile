@@ -4,7 +4,7 @@
 #
 #	Small-C compiler
 #   CS153 Final project - SJSU
-#	Mar-1-2015
+#	Apr-9-2015
 #
 #	By Sean Papay, Matt Pleva, Luca Severini
 #
@@ -21,17 +21,19 @@ all:
 	mkdir -p temp/wci/intermediate; \
 	mkdir -p temp/wci/util; \
 	
-	cp -r src/* temp; \
+	cp -p -r src/* temp; \
+	
 	make compile; \
-	cp -r snippets build; \
-	cp -r nonstdlib build; \
+	
+	cp -p -r snippets build; \
+	cp -p -r nonstdlib build; \
 	
 	#rm -r temp;
 
 javacc: jjtree
 	cd temp/preprocessor; \
 	java -classpath $(JAVACC)/bin/lib/javacc.jar javacc ../../src/preprocessor/small_c_preprocessor.jj; \
-	cp ../../src/preprocessor/*.java .; \
+	cp -p ../../src/preprocessor/*.java .; \
 	cd ../compiler; \
 	java -classpath $(JAVACC)/bin/lib/javacc.jar javacc small_c.jj; \
 	cd ..;
@@ -53,4 +55,4 @@ compile: javacc
 	javac -classpath temp temp/compiler/*.java -d build;
 
 lib:
-	cp -r nonstdlib build
+	cp -p -r nonstdlib build

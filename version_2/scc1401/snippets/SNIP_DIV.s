@@ -2,7 +2,7 @@
      ** DIVISION SNIPPET                                           **
      ****************************************************************
      * SETUP RETURN ADDRESS
-     DIV       SBR  DIVEND+3
+     SNPDIV    SBR  DIVEND+3
 
      * POP DIVIDEND
                MCW  0+X2,CDIV2
