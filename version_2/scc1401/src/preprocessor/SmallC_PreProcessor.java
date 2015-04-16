@@ -1,8 +1,9 @@
 /*
 	SmallC_PreProcessor.java
 
-    Assignment #6 - CS153 - SJSU
-	April-9-2015
+    The Small-C cross-compiler for IBM 1401.
+
+	April-12-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -22,6 +23,7 @@ public class SmallC_PreProcessor
 	static List<String> files = new ArrayList<>();
 	static String outputFile = null;
 	static int verbose = 0;
+	static int optimization = 0;
 	static boolean keepComments = false;
 	static boolean printOutput = false;
 	static boolean keepPreprocessedFile = false;
@@ -34,8 +36,8 @@ public class SmallC_PreProcessor
 		
 		if (verbose != 0 || printOutput)
 		{
-			System.out.println("Small-C Cross-Compiler for IBM1401");
-			System.out.println("Version 1.0 - April 9 2015");
+			System.out.println("Small-C Cross-Compiler for IBM 1401");
+			System.out.println("Version 1.0 - April 12 2015");
 			System.out.println("Working Directory: " + System.getProperty("user.dir"));
 		}
 		
@@ -100,7 +102,7 @@ public class SmallC_PreProcessor
 				value = symTable.getValue("DATA");
 				int dataVal = value == null ? 0 : Integer.parseInt(value);
 
-				result = SmallCC.compile(preprocFile, outputFile, stackVal, codeVal, dataVal);
+				result = SmallCC.compile(preprocFile, outputFile, stackVal, codeVal, dataVal, optimization);
 				
 				if(result == 0 && outputFile != null)
 				{
@@ -137,6 +139,15 @@ public class SmallC_PreProcessor
 		{
 			switch(s)
 			{
+				case "-O0":
+					optimization = 0;
+					break;
+
+				case "-O":
+				case "-O1":
+					optimization = 1;
+					break;
+
 				case "-v0":
 					verbose = 0;
 					break;

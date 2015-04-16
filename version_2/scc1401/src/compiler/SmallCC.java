@@ -36,7 +36,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
         public static int dataMem = 2000;
         public static int codeMem = 0;                                  // if 0 then put the code immediately after the data
         public static boolean reuseStringLiterals = false;
-		public static boolean optimize = false;
+    public static int optimize = 0;
 
         private static int labelNumber = 0;
         public static int nextLabelNumber()
@@ -105,19 +105,21 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
         }
         else
         {
-            System.exit(compile(args[0], null, 0, 0, 0));
+            System.exit(compile(args[0], null, 0, 0, 0, 0));
         }
         }
 
-        public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
+        public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc, int optimization) throws Exception
         {
-                // Optimizer.DropComments(true);
         SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
                 compilationTime = sdf.format(Calendar.getInstance().getTime());
 
+                optimize = optimization;
+
                 Snippet.Init();
- 
-				if(stackLoc > 0 && stackLoc < 16000)
+                // Optimizer.DropComments(true);
+
+                if(stackLoc > 0 && stackLoc < 16000)
                 {
                         stackMem = stackLoc;
                 }
@@ -142,10 +144,30 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
                         autocoderFile = "";
                 }
 
+                if(codeMem > 0)
+                {
+                        if(dataMem < codeMem)
+                        {
+                                System.out.println("Data: " + dataMem);
+                                System.out.println("Code: " + codeMem);
+                        }
+                        else
+                        {
+                                System.out.println("Code: " + codeMem);
+                                System.out.println("Data: " + dataMem);
+                        }
+                }
+                else
+                {
+                        System.out.println("Data: " + dataMem);
+                        System.out.println("Code: immediately after data");
+                }
+
                 System.out.println("Stack: " + stackMem);
-                System.out.println("Code: " + codeMem);
-                System.out.println("Data: " + dataMem);
+
                 System.out.println("Reuse String Constants: " + (reuseStringLiterals ? "YES" : "NO"));
+
+        System.out.println("Optimization: " + (optimize > 0 ? "YES" : "NO"));
 
                 File inFile = new File(inputFile);
                 Reader sr = new FileReader(inFile);
@@ -186,7 +208,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
                                                         File outFile = new File(outputFile);
                                                         Writer wr = new FileWriter(outFile);
 
-                                                        if(SmallCC.optimize)
+                                                        if(SmallCC.optimize > 0)
                                                         {
                                                                 wr.write(Optimizer.GenerateCode());
                                                         }
@@ -3523,104 +3545,6 @@ if (jjtc000) {
     finally { jj_save(107, xla); }
   }
 
-  static private boolean jj_3_50()
- {
-    if (jj_scan_token(68)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_49()
- {
-    if (jj_scan_token(67)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_59()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_48()) {
-    jj_scanpos = xsp;
-    if (jj_3_49()) {
-    jj_scanpos = xsp;
-    if (jj_3_50()) {
-    jj_scanpos = xsp;
-    if (jj_3_51()) {
-    jj_scanpos = xsp;
-    if (jj_3_52()) {
-    jj_scanpos = xsp;
-    if (jj_3_53()) {
-    jj_scanpos = xsp;
-    if (jj_3_54()) {
-    jj_scanpos = xsp;
-    if (jj_3_55()) {
-    jj_scanpos = xsp;
-    if (jj_3_56()) {
-    jj_scanpos = xsp;
-    if (jj_3_57()) {
-    jj_scanpos = xsp;
-    if (jj_3_58()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_48()
- {
-    if (jj_scan_token(66)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_31()
- {
-    if (jj_scan_token(ELSE)) return true;
-    if (jj_3R_35()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_36()
- {
-    if (jj_3R_29()) return true;
-    if (jj_scan_token(R_PAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_106()
- {
-    if (jj_3R_52()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_35()
- {
-    if (jj_scan_token(SEMI_COLON)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_47()
- {
-    if (jj_scan_token(60)) return true;
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_105()
- {
-    if (jj_3R_51()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_37()
  {
     if (jj_3R_27()) return true;
@@ -4820,6 +4744,104 @@ if (jjtc000) {
  {
     if (jj_scan_token(69)) return true;
     if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_50()
+ {
+    if (jj_scan_token(68)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_49()
+ {
+    if (jj_scan_token(67)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_59()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_48()) {
+    jj_scanpos = xsp;
+    if (jj_3_49()) {
+    jj_scanpos = xsp;
+    if (jj_3_50()) {
+    jj_scanpos = xsp;
+    if (jj_3_51()) {
+    jj_scanpos = xsp;
+    if (jj_3_52()) {
+    jj_scanpos = xsp;
+    if (jj_3_53()) {
+    jj_scanpos = xsp;
+    if (jj_3_54()) {
+    jj_scanpos = xsp;
+    if (jj_3_55()) {
+    jj_scanpos = xsp;
+    if (jj_3_56()) {
+    jj_scanpos = xsp;
+    if (jj_3_57()) {
+    jj_scanpos = xsp;
+    if (jj_3_58()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_48()
+ {
+    if (jj_scan_token(66)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_31()
+ {
+    if (jj_scan_token(ELSE)) return true;
+    if (jj_3R_35()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_36()
+ {
+    if (jj_3R_29()) return true;
+    if (jj_scan_token(R_PAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_106()
+ {
+    if (jj_3R_52()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_35()
+ {
+    if (jj_scan_token(SEMI_COLON)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_47()
+ {
+    if (jj_scan_token(60)) return true;
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_105()
+ {
+    if (jj_3R_51()) return true;
     return false;
   }
 

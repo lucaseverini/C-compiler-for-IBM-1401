@@ -12,6 +12,7 @@ package retree.statement;
 import retree.program.*;
 import java.util.*;
 import static retree.RetreeUtils.*;
+import retree.expression.VariableExpression;
 
 public class BlockStatement implements Statement 
 {
@@ -36,6 +37,17 @@ public class BlockStatement implements Statement
 		
 		code += COM("***************************************");
 		code += COM("Begin " + this.toString());
+
+		for (Initializer i : initializers) 
+		{
+			VariableExpression v = i.getVariable();
+			String name = v.getName();
+			if(name != null && name.length() > 0)
+			{
+				code += COM(name + " size:" + v.getType().getSize() + " offset:" + v.getOffset());
+			}
+		}
+
 		code += "\n";
 		
 		for (Initializer i : initializers) 

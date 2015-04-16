@@ -269,7 +269,7 @@ public class Optimizer
         System.out.println("Collapse instructions");
         CollapseInstrcs();
 		
-        System.out.println("Moveing labels");
+        System.out.println("Moving labels");
         ReLabel();
 		
         System.out.println("Labeling constants");

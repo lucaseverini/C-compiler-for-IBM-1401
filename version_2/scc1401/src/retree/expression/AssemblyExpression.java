@@ -73,7 +73,7 @@ public class AssemblyExpression extends Expression
 				
 				sc.close();
 				
-				if(SmallCC.optimize)
+				if(SmallCC.optimize > 0)
 				{
 					int len = instructionPartsList.toArray().length;
 					
@@ -107,7 +107,7 @@ public class AssemblyExpression extends Expression
 	
 	public String generateCode(boolean valueNeeded) 
 	{
-		if(SmallCC.optimize)
+		if(SmallCC.optimize > 0)
 		{
 			Optimizer.addInstruction("Start asm block", "", operation, arguments);
 			Optimizer.addInstruction("End asm block", "", "");

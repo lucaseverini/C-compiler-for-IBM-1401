@@ -13,6 +13,7 @@ import compiler.*;
 import java.util.*;
 import java.util.regex.*;
 import java.io.*;
+import retree.expression.VariableExpression;
 import retree.program.Initializer;
 import retree.intermediate.*;
 
@@ -26,7 +27,7 @@ public class RetreeUtils
 
 	public static String INS(String lineComment, String label, String operation, String ... args)
 	{
-		if(SmallCC.optimize)
+		if(SmallCC.optimize > 0)
 		{
 			if(lineComment != null && !lineComment.isEmpty())
 			{
@@ -98,7 +99,7 @@ public class RetreeUtils
 
 	public static String COM(String comment)
 	{
-		if(SmallCC.optimize)
+		if(SmallCC.optimize > 0)
 		{
 			Optimizer.addInstruction(comment, "", "");
 		}
@@ -110,7 +111,7 @@ public class RetreeUtils
 	{
 		String str = "@" + COD(val) + "@";
 		
-		if(SmallCC.optimize)
+		if(SmallCC.optimize > 0)
 		{
 			return str;
 		}
@@ -127,7 +128,7 @@ public class RetreeUtils
 	{
 		String str = "@" + ADDR_COD(val) + "@";
 
-		if(SmallCC.optimize)
+		if(SmallCC.optimize > 0)
 		{
 			return str;
 		}
@@ -155,7 +156,7 @@ public class RetreeUtils
 		{
 			String str = "@" + Character.toUpperCase((char)value) + "@";
 			
-			if(SmallCC.optimize)
+			if(SmallCC.optimize > 0)
 			{
 				return str;
 			}
@@ -442,7 +443,7 @@ public class RetreeUtils
 		String fileName = "snippets/header.s";
 		String code = "";
 
-		if(SmallCC.optimize)
+		if(SmallCC.optimize > 0)
 		{
 			Optimizer.addSnippet("header");
 		}
@@ -471,7 +472,7 @@ public class RetreeUtils
 		String code = "";
 		String fileName = "snippets/" + snippetName + ".s";
 		
-		if(SmallCC.optimize)
+		if(SmallCC.optimize > 0)
 		{
 			Optimizer.addSnippet(snippetName);
 		}
@@ -612,6 +613,16 @@ public class RetreeUtils
 
 					offset = offset2;
 				}
+			}
+		}
+
+		for (Initializer i : initializers) 
+		{
+			VariableExpression v = i.getVariable();
+			String name = v.getName();
+			if(name != null && name.length() > 0)
+			{
+				code += COM(name + " size:" + v.getType().getSize() + " offset:" + v.getOffset());
 			}
 		}
 

@@ -1,0 +1,29 @@
+  DHRY1NNT.EXE    Dhrystone benchmark 1.1                   non-optimised
+  DHRY1ONT.EXE    Dhrystone benchmark 1.1                   optimised
+  DHRY2NNT.EXE    Dhrystone benchmark 2.1                   non-optimised
+  DHRY2ONT.EXE    Dhrystone benchmark 2.1                   optimised
+  LINPCNNT.EXE    Linpack "C" double precision benchmark    non-optimised
+  LINPCONT.EXE    Linpack "C" double precision benchmark    optimised
+  LIVECNNT.EXE    Livermore Kernels "C" double precision    non-optimised
+  LIVECONT.EXE    Livermore Kernels "C" double precision    optimised
+  WHETCNNT.EXE    Whetstone "C" benchmark single precision  non-optimised
+  WHETCONT.EXE    Whetstone "C" benchmark single precision  optimised
+  WHETDCNT.EXE    Whetstone "C" benchmark double precision  optimised
+
+  WHATSYS.EXE     Additional program to record configuration details
+
+  LiveRel.bat     Commands to run Livermore Loops in reliability testing
+                  mode which checks numeric results for correctness.
+                  Edit to specify running time.
+
+  RunAll.bat      BAT file to run all benchmarks
+
+  C_Source        C/C++ source code plus latest changes
+  Description     Description, History, References, Sample Output
+  OtherEXE        Whetstone Benchmark compiled via MS C/C++ 6.0 and
+                  Visual Basic
+
+  For main results see the following:
+ 
+         Whetstone Results.htm        Linpack Results.htm
+         Dhrystone Results.htm        Livermore Loops Results.htm

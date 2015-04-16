@@ -217,6 +217,12 @@ public class VariableExpression extends LValue
 		return offset;
 	}
 	
+	public String getName() 
+	{
+		return name;
+	}
+
+	@Override
 	public String toString()
 	{
 		return name;

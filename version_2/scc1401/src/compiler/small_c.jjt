@@ -1,8 +1,9 @@
 /*
 	small_c.jjt
 
-    Small-C compiler - SJSU
-	March-16-2015
+    The Small-C cross-compiler for IBM 1401.
+
+	April-12-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -53,7 +54,7 @@ public class SmallCC
   	public static int dataMem = 2000;
   	public static int codeMem = 0;					// if 0 then put the code immediately after the data
 	public static boolean reuseStringLiterals = false;
-    public static boolean optimize = true;
+    public static int optimize = 0;
 
   	private static int labelNumber = 0;
   	public static int nextLabelNumber()
@@ -122,14 +123,16 @@ public class SmallCC
         }
         else
         {
-            System.exit(compile(args[0], null, 0, 0, 0));
+            System.exit(compile(args[0], null, 0, 0, 0, 0));
         }
 	}
 
-	public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc) throws Exception
+	public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc, int optimization) throws Exception
 	{
     	SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
 		compilationTime = sdf.format(Calendar.getInstance().getTime());
+
+		optimize = optimization;
 
 		Snippet.Init();
 		// Optimizer.DropComments(true);
@@ -159,10 +162,30 @@ public class SmallCC
 			autocoderFile = "";
 		}
 
+		if(codeMem > 0)
+		{
+			if(dataMem < codeMem)
+			{
+				System.out.println("Data: " + dataMem);
+				System.out.println("Code: " + codeMem);
+			}
+			else
+			{
+				System.out.println("Code: " + codeMem);
+				System.out.println("Data: " + dataMem);
+			}
+		}
+		else
+		{
+			System.out.println("Data: " + dataMem);
+			System.out.println("Code: immediately after data");
+		}
+
 		System.out.println("Stack: " + stackMem);
-		System.out.println("Code: " + codeMem);
-		System.out.println("Data: " + dataMem);
+
 		System.out.println("Reuse String Constants: " + (reuseStringLiterals ? "YES" : "NO"));
+
+        System.out.println("Optimization: " + (optimize > 0 ? "YES" : "NO"));
 
 		File inFile = new File(inputFile);
 		Reader sr = new FileReader(inFile);
@@ -203,7 +226,7 @@ public class SmallCC
 							File outFile = new File(outputFile);
 							Writer wr = new FileWriter(outFile);
 
-							if(SmallCC.optimize)
+							if(SmallCC.optimize > 0)
 							{											
 								wr.write(Optimizer.GenerateCode());
 							}

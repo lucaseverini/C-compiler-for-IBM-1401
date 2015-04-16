@@ -84,7 +84,7 @@ public class Program
 		
 		code += FOOTER();
 		
-		if(!SmallCC.optimize)
+		if(SmallCC.optimize == 0)
 		{
 			code += INS("End of program code.", null, "END", "START");
 		}
