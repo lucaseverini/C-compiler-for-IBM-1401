@@ -25,6 +25,9 @@ all:
 	
 	make compile; \
 	
+	# copy produced java files back into src/compiler folder
+	find temp/compiler -type f -mmin -3 -exec cp {} src/compiler \;
+	
 	cp -p -r snippets build; \
 	cp -p -r nonstdlib build; \
 	

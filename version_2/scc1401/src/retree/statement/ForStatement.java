@@ -13,35 +13,25 @@ import compiler.SmallCC;
 import retree.expression.Expression;
 import static retree.RetreeUtils.*;
 
-public class ForStatement implements Statement
+public class ForStatement extends LoopStatement
 {
-	private Expression init = null, condition = null, post = null;
-	private final Statement body;	
-	private final String topLabel;
-	private final String bottomLabel;
-	private final String continueLabel;
+	private Expression init = null;
+	private Expression post = null;
 	
 	public ForStatement(Expression init, Expression condition, Expression post, Statement body) 
 	{
+		super(condition, body);
+		
 		if (init != null) 
 		{
 			this.init = init.collapse();
 		}
-		
-		if (condition != null) 
-		{
-			this.condition = condition.collapse();
-		}
-		
+				
 		if (post != null) 
 		{
 			this.post = post.collapse();
 		}
 		
-		this.body = body;
-		
-		topLabel = label(SmallCC.nextLabelNumber());
-		bottomLabel = label(SmallCC.nextLabelNumber());
 		continueLabel = label(SmallCC.nextLabelNumber());
 	}
 

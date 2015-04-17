@@ -3,7 +3,7 @@
 
     The Small-C cross-compiler for IBM 1401.
 
-	April-12-2015
+	April-16-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -37,7 +37,7 @@ public class SmallC_PreProcessor
 		if (verbose != 0 || printOutput)
 		{
 			System.out.println("Small-C Cross-Compiler for IBM 1401");
-			System.out.println("Version 1.0 - April 12 2015");
+			System.out.println("Version 1.0 - April 16 2015");
 			System.out.println("Working Directory: " + System.getProperty("user.dir"));
 		}
 		

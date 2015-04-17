@@ -11,11 +11,13 @@ package retree.statement;
 
 public class EmptyStatement implements Statement
 {
+	@Override
 	public String generateCode() 
 	{
 		return "";
 	}
 	
+	@Override
 	public String toString()
     {
         return "[]";

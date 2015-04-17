@@ -10,7 +10,6 @@
 package retree.program;
 
 import compiler.SmallCC;
-import java.util.Iterator;
 import java.util.Objects;
 import static retree.RetreeUtils.*;
 import retree.statement.*;
@@ -18,8 +17,8 @@ import retree.expression.*;
 
 public class FunctionDefinition implements Comparable<FunctionDefinition>
 {
-	private ConstantExpression declaration;
-	private BlockStatement block;
+	private final ConstantExpression declaration;
+	private final BlockStatement block;
 	
 	public FunctionDefinition(ConstantExpression declaration, BlockStatement block)
 	{
@@ -90,5 +89,10 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 	{
 		int lastCmp = toString().compareTo(f.toString());
         return (lastCmp != 0 ? lastCmp : toString().compareTo(f.toString()));
+	}
+
+	public BlockStatement getBlock()
+	{
+		return block;
 	}
 }

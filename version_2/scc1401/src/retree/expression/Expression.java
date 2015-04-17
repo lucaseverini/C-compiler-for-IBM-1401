@@ -2,21 +2,18 @@
 	Expression.java
 
     Small-C compiler - SJSU
-	March-1-2015
+	April-12-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
 package retree.expression;
 
-import java.util.*;
-import retree.program.Initializer;
 import retree.type.Type;
-import static retree.RetreeUtils.*;
 
 public abstract class Expression 
 {
-	private Type type;
+	private final Type type;
 	
 	public Expression(Type type) 
 	{

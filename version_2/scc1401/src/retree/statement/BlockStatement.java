@@ -16,18 +16,18 @@ import retree.expression.VariableExpression;
 
 public class BlockStatement implements Statement 
 {
-	private final List<Initializer> initializers;
-	private final List<Statement> statements;
-	private final int stackOffset;
-	private final String returnLabel, parentReturnLabel;
+	private final String returnLabel;
+	private final String parentReturnLabel;
+	private final BlockStatement containerBlock;
+	private List<Initializer> initializers;
+	private List<Statement> statements;
+	private int stackFrameSize;
 		
-	public BlockStatement(List<Initializer> initializers, List<Statement> statements, int stackOffset, String returnLabel, String parentReturnLabel)
+	public BlockStatement(String returnLabel, String parentReturnLabel, BlockStatement containerBlock)
 	{
-		this.initializers = initializers;
-		this.statements = statements;
-		this.stackOffset = stackOffset;
 		this.returnLabel = returnLabel;
 		this.parentReturnLabel = parentReturnLabel;
+		this.containerBlock = containerBlock;
 	}
 	
 	@Override
@@ -55,25 +55,25 @@ public class BlockStatement implements Statement
 			code += i.generateCode();
 		}
 		
-		if (stackOffset < 0) 
+		if (stackFrameSize < 0) 
 		{
 			throw new Exception("BlockStatement " + this.toString() + " : stack offset can't be negative");
 		}
 		
-		code += PUSH(stackOffset);
-		
+		code += PUSH(stackFrameSize);
+
 		for (Statement s : statements) 
 		{
 			code += s.generateCode();
 		}
-		
+
 		// if we call return from the function, we jump here
 		if (returnLabel != null) 
 		{
 			code += INS("Last block instruction", returnLabel, "NOP");
 		}
 		
-		code += POP(stackOffset);
+		code += POP(stackFrameSize);
 		
 		for (Initializer i : initializers)
 		{
@@ -103,5 +103,40 @@ public class BlockStatement implements Statement
     public String toString()
     {
         return "[Block ending at " + returnLabel + "]";
+    }
+		
+	public List<Statement> getStatements()
+	{
+		return statements;
+	}
+
+	public List<Initializer> getInitializers()
+	{
+		return initializers;
+	}
+
+	public int getStackFrameSize()
+	{
+		return stackFrameSize;
+	}
+
+	public BlockStatement getContainerBlock()
+	{
+		return containerBlock;
+	}
+
+	public void setInitializers(List<Initializer> initializers)
+    {
+        this.initializers = initializers;
+    }
+
+	public void setStatements(List<Statement> statements)
+    {
+        this.statements = statements;
+    }
+
+	public void setStackFrameSize(int stackFrameSize)
+    {
+        this.stackFrameSize = stackFrameSize;
     }
 }

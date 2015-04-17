@@ -13,24 +13,11 @@ import compiler.SmallCC;
 import retree.expression.Expression;
 import static retree.RetreeUtils.*;
 
-public class DoWhileStatement implements Statement 
-{
-	private final Expression condition;
-	private final Statement body;
-	private final String topLabel, bottomLabel;
-	private final int size;
-	
+public class DoWhileStatement extends LoopStatement 
+{	
 	public DoWhileStatement(Expression condition, Statement body)
 	{
-		this.condition = condition.collapse();
-		this.body = body;
-		this.size = condition.getType().sizeof();
-		
-		// the single label jumped to if the condition is false
-		this.topLabel = label(SmallCC.nextLabelNumber());
-		
-		// the single label jumped to if the condition is true
-		this.bottomLabel = label(SmallCC.nextLabelNumber());
+		super(condition, body);
 	}
 
 	public String generateCode() throws Exception

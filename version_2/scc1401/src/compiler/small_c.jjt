@@ -44,6 +44,7 @@ public class SmallCC
 	private static HashSet<FunctionDefinition> includedFunctions;
 	public static HashMap<String, String> labelTable;
 	public static List<Pair<String, String>> arrMemberLabelTable;
+	private static BlockStatement currentBlock;
 
 	public static String autocoderFile = null;
 	public static String compilationTime = null;
@@ -570,6 +571,9 @@ FunctionDefinition functionDefinition() : {
 	FunctionType type;
 	String name;
 	BlockStatement block;
+
+	SmallCC.currentBlock = null;	
+
 	variableTable.push();
 
 	try {
@@ -577,7 +581,9 @@ FunctionDefinition functionDefinition() : {
 		//stored under an empty identifier, so no variable can collide with it
 		//the value will be assigned automatically.
 		variableTable.add("", new PointerType(Type.charType), false);
-	} catch(Exception e) {
+	} 
+	catch(Exception e) 
+	{
 		reportError("we should never be here 1", token);
 	}
 }
@@ -621,6 +627,7 @@ FunctionDefinition functionDefinition() : {
         block = blockStatement(true, null)
 		{
 			variableTable.pop();
+			
 			return new FunctionDefinition(dec, block);
 		}
 }
@@ -649,10 +656,18 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 	List<Initializer> initList;
 	String newReturnLabel = label(nextLabelNumber());
 	Statement s;
-	if (isFunction) {
-		try {
+
+	BlockStatement bs = new BlockStatement(newReturnLabel, returnLabel, SmallCC.currentBlock);
+	SmallCC.currentBlock = bs;
+
+	if (isFunction) 
+	{
+		try 
+		{
 			initializers.add(new Initializer(variableTable.searchStack(""), (Expression) null, false));
-		} catch (Exception e) {
+		} 
+		catch (Exception e) 
+		{
 			reportError("We should never be here 0", token);
 		}
 	}
@@ -662,15 +677,20 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 		if (!isFunction) variableTable.push();
 	}
 	"{" (initList=localVariableDeclaration() {
-		for (Initializer init : initList) {
+		for (Initializer init : initList) 
+		{
 			initializers.add(init);
 		}
 	})* (s = statement(newReturnLabel, returnLabel) {
 		statements.add(s);
 	})* "}"
 	{
-		//System.out.println(variableTable.peek().getStackOffset());
-		BlockStatement bs = new BlockStatement(initializers, statements, variableTable.peek().getLocalSize(), newReturnLabel, returnLabel);
+		bs.setStackFrameSize(variableTable.peek().getLocalSize());
+		bs.setInitializers(initializers);
+		bs.setStatements(statements);
+
+		SmallCC.currentBlock = bs.getContainerBlock();
+
 		if (!isFunction) {
 			variableTable.pop();
 		}
@@ -681,15 +701,16 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 Statement statement(String returnLabel, String parentReturnlabel)  : {
 	Statement stat, stat2 = null;
 	Expression exp=null, exp2=null, exp3=null;
+	String str;
 }
 {
-		";" {
+	";" {
 			return new EmptyStatement();
 		}
-		| exp=expression() ";" {
+	| exp=expression() ";" {
 			return new ExpressionStatement(exp);
 		}
-		| stat = blockStatement(false, returnLabel) {
+	| stat = blockStatement(false, returnLabel) {
 			return stat;
 		}
     | "if" "(" exp=expression() ")" stat=statement(returnLabel, parentReturnlabel) ("else" stat2=statement(returnLabel, parentReturnlabel))?  {
@@ -704,17 +725,25 @@ Statement statement(String returnLabel, String parentReturnlabel)  : {
     | "do" stat=statement(returnLabel, parentReturnlabel) "while" "(" exp=expression() ")" ";" {
 			return new DoWhileStatement(exp, stat);
 		}
+    | "return" (exp=expression())? ";" {
+			return new ReturnStatement(exp, variableTable.searchStack("return"), parentReturnlabel);
+		}
+    | "break" ";" {
+			return new BreakStatement(SmallCC.currentBlock);
+		}
+    | "continue" ";" {
+			return new ContinueStatement(SmallCC.currentBlock);
+		}
+    | str = Identifier() ":" {
+			return new IdentifierStatement(str);
+		}
+    | "goto" str = Identifier() ";" {
+			return new GotoStatement(str, SmallCC.currentBlock);
+		}
+
     /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
      * make another production rule for a switch statement body that looks like a block statement with cases. */
     //TODO| "switch" "(" expression() ")" CaseBlock()
-    //TODO| "break" ";"
-    //TODO| "continue" ";"
-    | "return" (exp=expression())? ";" {
-			return new ReturnStatement(exp, variableTable.searchStack("return"), parentReturnlabel);
-
-		}
-    //TODO| Identifier() ":" Statement()
-    //TODO| "goto" Identifier() ";"
 }
 /*
 void CaseStatement() : {}
@@ -1332,7 +1361,6 @@ void Left_Shift() : {}
 void Right_Shift() : {}
 {
     <RIGHT_SHIFT>
-
 }
 
 void R_Paren() : {}
@@ -1368,7 +1396,6 @@ void Minus_Minus() : {}
 void Star(): {}
 {
     <STAR>
-
 }
 
 void Mod() : {}

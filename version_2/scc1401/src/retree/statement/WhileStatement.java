@@ -14,15 +14,12 @@ import compiler.SmallCC;
 import retree.expression.Expression;
 import static retree.RetreeUtils.*;
 
-public class WhileStatement implements Statement
-{
-	private final Expression condition;
-	private final Statement body;
-	private final String topLabel, bottomLabel;
-	private final int size;
-		
+public class WhileStatement extends LoopStatement
+{		
 	public WhileStatement(Expression condition, Statement body) 
 	{
+		super(condition, body);
+/*		
 		this.condition = condition.collapse();
 		this.body = body;
 		// the single label jumped to if the condition is false
@@ -30,8 +27,10 @@ public class WhileStatement implements Statement
 		// the single label jumped to if the condition is true
 		this.bottomLabel = label(SmallCC.nextLabelNumber());
 		this.size = condition.getType().sizeof();
+*/
 	}
 
+	@Override
 	public String generateCode() throws Exception 
 	{		
 		String code = COM("While " + this.toString());
@@ -58,6 +57,7 @@ public class WhileStatement implements Statement
 		return code;
 	}
 
+	@Override
     public String toString()
     {
 		return "[while (" + condition + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + "]";
