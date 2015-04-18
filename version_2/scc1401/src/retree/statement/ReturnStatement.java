@@ -1,7 +1,8 @@
 /*
 	ReturnStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -10,7 +11,6 @@
 package retree.statement;
 
 import retree.expression.*;
-import retree.exceptions.*;
 import static retree.RetreeUtils.*;
 
 public class ReturnStatement implements Statement 
@@ -26,6 +26,7 @@ public class ReturnStatement implements Statement
 		this.returnLabel = returnLabel;
 	}
 	
+	@Override
 	public String generateCode() 
 	{
 		String code = "";

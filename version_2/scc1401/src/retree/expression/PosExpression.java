@@ -1,7 +1,8 @@
 /*
 	PosExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -9,12 +10,7 @@
 
 package retree.expression;
 
-import retree.exceptions.TypeMismatchException;
 import static retree.RetreeUtils.*;
-import retree.expression.Expression;
-import retree.expression.LValue;
-import retree.type.PointerType;
-import retree.type.Type;
 
 // a unary plus sign -- acts as an identity function
 public class PosExpression extends Expression 
@@ -24,20 +20,23 @@ public class PosExpression extends Expression
 	public PosExpression(Expression child) 
 	{
 		super(child.getType());
+		
 		this.child = child;
 	}
 
+	@Override
 	public Expression collapse() 
 	{
 		return child.collapse();
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
-		return COM("PosExpression " + this.toString())
-					+ child.generateCode(valueNeeded);
+		return COM("PosExpression " + this.toString()) + child.generateCode(valueNeeded);
 	}
 
+	@Override
 	public String toString()
 	{
 		return "(" + "+" + child + ")";

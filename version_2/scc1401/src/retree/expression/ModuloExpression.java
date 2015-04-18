@@ -1,7 +1,8 @@
 /*
 	ModuloExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -30,6 +31,7 @@ public class ModuloExpression extends Expression
 		this.r = r;
 	}
 	
+	@Override
 	public Expression collapse() 
 	{
 		try 
@@ -51,6 +53,7 @@ public class ModuloExpression extends Expression
 		}
 	}
 	
+	@Override
 	public String generateCode(boolean valueNeeded)
 	{
 		String code = COM("Modulo (%) " + this.toString());
@@ -65,6 +68,7 @@ public class ModuloExpression extends Expression
 		return code;
 	}
 
+	@Override
     public String toString()
     {
         return "(" + l + " % " + r + ")";

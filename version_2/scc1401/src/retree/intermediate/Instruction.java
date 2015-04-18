@@ -1,7 +1,8 @@
 /*
 	Instruction.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-9-2015
 
 	By Matt Pleva, Luca Severini
@@ -9,14 +10,12 @@
 
 package retree.intermediate;
 
-import java.util.*;
-
 public class Instruction
 {
     private boolean comment;
     private String label;
-    private String mnemonic;
-    private String[] operands;
+    private final String mnemonic;
+    private final String[] operands;
     private int numOperands;
 	
     public Instruction(String label, String mnemonic, String ... args)

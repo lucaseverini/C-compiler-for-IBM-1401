@@ -1,7 +1,8 @@
 /*
 	ArrayType.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -27,11 +28,13 @@ public class ArrayType extends Type
 		return arrayBaseType;
 	}
 	
+	@Override
 	public String toString() 
 	{
 		return arrayBaseType.toString() + " [" + numElements + "]";
 	}
 
+	@Override
 	public Boolean isPointerType()
 	{
 		return true;

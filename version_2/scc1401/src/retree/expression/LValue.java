@@ -1,7 +1,8 @@
 /*
 	LValue.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -20,7 +21,8 @@ public abstract class LValue extends Expression
 
 	@Override
 	public abstract LValue collapse();
-	//like generateCode, but pushes the memory location to the stack instead
-	//side effects should still occur
+	
+	// like generateCode, but pushes the memory location to the stack instead
+	// side effects should still occur
 	public abstract String generateAddress();
 }

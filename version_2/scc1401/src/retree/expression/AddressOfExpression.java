@@ -1,7 +1,8 @@
 /*
 	TypeMismatchException.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -10,8 +11,6 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
-import retree.expression.LValue;
-import retree.expression.Expression;
 import retree.type.PointerType;
 
 public class AddressOfExpression extends Expression
@@ -24,6 +23,7 @@ public class AddressOfExpression extends Expression
 		this.child = child;
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		if (valueNeeded) 
@@ -36,11 +36,13 @@ public class AddressOfExpression extends Expression
 		}
 	}
 
+	@Override
 	public Expression collapse() 
 	{
 		return new AddressOfExpression(child.collapse());
 	}
 
+	@Override
 	public String toString()
 	{
 		return "( &" + child + " )";

@@ -1,7 +1,8 @@
 /*
 	SymbolTableStack.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -9,8 +10,6 @@
 
 package retree.symtab;
 
-import compiler.SmallCC;
-import retree.symtab.SymTab;
 import java.util.ArrayList;
 import retree.expression.*;
 import retree.type.*;
@@ -19,7 +18,7 @@ public class SymbolTableStack
 {
 	int staticOffset = 0;	// MUST BE CALCULATED ACCORDINGLY TO AVOID COLLISIONS WITH STACK OR CODE (Luca)
 
-	private ArrayList<SymTab> stack = new ArrayList<SymTab>();
+	private final ArrayList<SymTab> stack = new ArrayList<SymTab>();
 
 	public SymbolTableStack(int staticsPos) throws Exception 
 	{
@@ -29,6 +28,7 @@ public class SymbolTableStack
 		}
 		
 		staticOffset = staticsPos;
+		
 		stack.add(new SymTab(staticOffset, true));
 	}
 

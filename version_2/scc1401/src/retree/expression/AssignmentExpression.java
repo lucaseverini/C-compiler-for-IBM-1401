@@ -1,7 +1,8 @@
 /*
 	AssignmentExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -10,10 +11,6 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
-import retree.expression.LValue;
-import retree.expression.Expression;
-import retree.type.PointerType;
-import retree.type.Type;
 
 public class AssignmentExpression extends Expression 
 {
@@ -33,6 +30,7 @@ public class AssignmentExpression extends Expression
 		this.r = r;
 	}
 
+	@Override
 	public Expression collapse() 
 	{
 		try 
@@ -45,6 +43,7 @@ public class AssignmentExpression extends Expression
 		}
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		// no sequence point, so we can evaluate the right side first
@@ -83,6 +82,7 @@ public class AssignmentExpression extends Expression
 		return code;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "(" + l + " = " + r + ")";

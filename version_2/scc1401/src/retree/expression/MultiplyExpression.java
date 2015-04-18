@@ -1,7 +1,8 @@
 /*
 	MultiplyExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -10,7 +11,6 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
-import retree.exceptions.*;
 import retree.type.*;
 
 public class MultiplyExpression extends Expression
@@ -59,6 +59,7 @@ public class MultiplyExpression extends Expression
 		return a;
 	}
 
+	@Override
 	public Expression collapse()
 	{
 		try 
@@ -80,6 +81,7 @@ public class MultiplyExpression extends Expression
 		}
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		int size = r.getType().sizeof();
@@ -99,7 +101,7 @@ public class MultiplyExpression extends Expression
 		{
 			code += INS("Multiply stack at " + -size + " to stack at " + (size + 1), null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
 			
-			// this puts the product at size + 1 bits above the stack
+			// this puts the product at size + 1 bytes above the stack
 			// ###############
 			// ## WARNING!! ##
 			// ###############
@@ -114,6 +116,7 @@ public class MultiplyExpression extends Expression
 		return code;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "(" + l + " * " + r + ")";

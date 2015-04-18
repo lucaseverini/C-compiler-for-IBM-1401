@@ -1,7 +1,8 @@
 /*
 	GotoStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-16-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -10,6 +11,7 @@
 package retree.statement;
 
 import compiler.SmallCC;
+import java.util.List;
 import static retree.RetreeUtils.*;
 
 public class GotoStatement implements Statement
@@ -22,17 +24,27 @@ public class GotoStatement implements Statement
 	{
 		this.identifier = identifier;
 		this.containerBlock = containerBlock;
-		this.label = label(SmallCC.nextLabelNumber());
+		this.label = SmallCC.getLabelForIdentifier(identifier);
 	}
 	
 	@Override
 	public String generateCode() throws Exception
 	{
-		String code = "";	
+		String code = "";
 		
-		code += COM("Goto: " + identifier);
-		code += INS(null, null, "NOP");
-		code += "\r";
+		IdentifierStatement ident = findIdentifier();
+		if(ident == null)
+		{
+			throw new Exception("Identifier " + identifier + " not found");
+		}
+				
+		int frameSize = getStackFrameSize(ident);
+		if(frameSize != 0)
+		{
+			code += POP(frameSize);
+		}
+		
+		code += INS("Goto " + identifier, null, "B", label);
 		
 		return code;
 	}
@@ -42,4 +54,55 @@ public class GotoStatement implements Statement
     {
         return "[Goto: " + label + "]";
     }
+
+	public String getLabel()
+    {
+        return label;
+    }
+
+	public String getIdentifier()
+    {
+        return identifier;
+    }
+
+	IdentifierStatement findIdentifier()
+	{
+		BlockStatement block = containerBlock;
+		while(block != null)
+		{			
+			List<Statement> statements = block.getStatements();
+			for(Statement s : statements)
+			{
+				if(s instanceof IdentifierStatement && ((IdentifierStatement)s).getIdentifier().equals(identifier))
+				{
+					return (IdentifierStatement)s;
+				}
+			}
+			
+			block = block.getContainerBlock();
+		}
+		
+		return null;
+	}
+
+	int getStackFrameSize(IdentifierStatement identifier)
+	{
+		int frameSize = 0;
+
+		BlockStatement block = containerBlock;		
+		while(block != null)
+		{
+			List<Statement> statements = block.getStatements();
+			if(statements.contains(identifier))
+			{
+				return frameSize;
+			}
+						
+			frameSize += block.getStackFrameSize();
+			
+			block = block.getContainerBlock();
+		}
+		
+		return 0;
+	}
 }

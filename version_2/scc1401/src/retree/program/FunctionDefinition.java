@@ -1,7 +1,8 @@
 /*
 	FunctionDefinition.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -31,9 +32,8 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 		return declaration;
 	}
 
-	//As per our calling conventions, the caller is responsible for pushing
-	//the new stack frame down.  We are simply responsible for our return
-	//address.
+	// As per our calling conventions, the caller is responsible for pushing
+	// the new stack frame down.  We are simply responsible for our return address
 	public String generateCode() throws Exception
 	{
 		String code = "\n" + 

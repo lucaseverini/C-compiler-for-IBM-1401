@@ -1,7 +1,8 @@
 /*
 	Expression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-12-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini

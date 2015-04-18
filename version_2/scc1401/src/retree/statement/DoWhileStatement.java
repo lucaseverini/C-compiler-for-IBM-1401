@@ -1,7 +1,8 @@
 /*
 	DoWhileStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -9,7 +10,6 @@
 
 package retree.statement;
 
-import compiler.SmallCC;
 import retree.expression.Expression;
 import static retree.RetreeUtils.*;
 
@@ -20,6 +20,7 @@ public class DoWhileStatement extends LoopStatement
 		super(condition, body);
 	}
 
+	@Override
 	public String generateCode() throws Exception
 	{		
 		String code = COM("Do-While " + toString());
@@ -46,6 +47,7 @@ public class DoWhileStatement extends LoopStatement
 		return code;
 	}
 
+	@Override
     public String toString()
     {
 		return "[do-while (" + condition + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + "]";

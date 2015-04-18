@@ -1,7 +1,8 @@
 /*
 	AssemblyExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -12,7 +13,6 @@ package retree.expression;
 import compiler.SmallCC;
 import java.util.*;
 import static retree.RetreeUtils.*;
-import retree.exceptions.*;
 import retree.intermediate.Optimizer;
 import retree.type.*;
 
@@ -28,6 +28,7 @@ public class AssemblyExpression extends Expression
 		super(Type.intType);
 	}
 	
+	@Override
 	public Expression collapse() 
 	{
 		return this;
@@ -105,6 +106,7 @@ public class AssemblyExpression extends Expression
 // **
 // ***********************************************************************
 	
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		if(SmallCC.optimize > 0)
@@ -120,6 +122,7 @@ public class AssemblyExpression extends Expression
 		}
 	}
 	
+	@Override
 	public String toString() 
 	{
 		return "asm (" + args + ")";

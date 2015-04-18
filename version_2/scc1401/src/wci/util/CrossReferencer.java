@@ -33,7 +33,10 @@ public class CrossReferencer
 
     private static final StringBuilder INDENT = new StringBuilder(INDENT_WIDTH);
     static {
-        for (int i = 0; i < INDENT_WIDTH; ++i) INDENT.append(" ");
+        for (int i = 0; i < INDENT_WIDTH; ++i) 
+		{
+			INDENT.append(" ");
+		}
     }
 
     /**
@@ -65,6 +68,7 @@ public class CrossReferencer
 
 
         // Print any procedures and functions defined in the routine.
+		@SuppressWarnings("unchecked")
         ArrayList<SymTabEntry> routineIds =
             (ArrayList<SymTabEntry>) routineId.getAttribute(ROUTINE_ROUTINES);
         if (routineIds != null) {

@@ -1,7 +1,8 @@
 /*
 	MyNode.java
 
-    Assignment #7 - CS153 - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	November-18-2014
 
 	By Sean Papay, Matt Pleva, Luca Severini

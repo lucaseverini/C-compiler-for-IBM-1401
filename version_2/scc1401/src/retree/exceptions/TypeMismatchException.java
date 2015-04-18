@@ -14,8 +14,10 @@ import retree.type.Type;
 
 public class TypeMismatchException extends Exception
 {
-	private Expression exp;
-	private Type expected, found;
+	private static final long serialVersionUID = 1L;
+	private final Expression exp;
+	private final Type expected;
+	private final Type found;
 
 	public TypeMismatchException(Expression exp, Type expected, Type found) 
 	{
@@ -24,6 +26,7 @@ public class TypeMismatchException extends Exception
 		this.found = found;
 	}
 	
+	@Override
 	public String toString() 
 	{
 		return  "Type mismatch.  Expected: " + expected.toString() + ", found: " + found.toString();

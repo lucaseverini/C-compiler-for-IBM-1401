@@ -27,23 +27,23 @@ public interface SmallCCConstants {
   /** RegularExpression Id. */
   int GOTO = 12;
   /** RegularExpression Id. */
-  int IF = 13;
+  int SWITCH = 13;
   /** RegularExpression Id. */
-  int INT = 14;
+  int IF = 14;
   /** RegularExpression Id. */
-  int CHAR = 15;
+  int INT = 15;
   /** RegularExpression Id. */
-  int LONG = 16;
+  int CHAR = 16;
   /** RegularExpression Id. */
-  int RETURN = 17;
+  int LONG = 17;
   /** RegularExpression Id. */
-  int SHORT = 18;
+  int RETURN = 18;
   /** RegularExpression Id. */
-  int SIZEOF = 19;
+  int SHORT = 19;
   /** RegularExpression Id. */
-  int STATIC = 20;
+  int SIZEOF = 20;
   /** RegularExpression Id. */
-  int SWITCH = 21;
+  int STATIC = 21;
   /** RegularExpression Id. */
   int TYPEDEF = 22;
   /** RegularExpression Id. */
@@ -139,6 +139,7 @@ public interface SmallCCConstants {
     "\"else\"",
     "\"for\"",
     "\"goto\"",
+    "\"switch\"",
     "\"if\"",
     "\"int\"",
     "\"char\"",
@@ -147,7 +148,6 @@ public interface SmallCCConstants {
     "\"short\"",
     "\"sizeof\"",
     "\"static\"",
-    "\"switch\"",
     "\"typedef\"",
     "\"unsigned\"",
     "\"while\"",

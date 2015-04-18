@@ -1,7 +1,8 @@
 /*
 	PointerType.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -11,7 +12,7 @@ package retree.type;
 
 public class PointerType extends Type
 {
-	private Type refType;
+	private final Type refType;
 
 	public PointerType(Type refType) 
 	{
@@ -25,6 +26,7 @@ public class PointerType extends Type
 		return refType;
 	}
 
+	@Override
 	public boolean equals(Type t) 
 	{
 		if (t instanceof PointerType) 
@@ -38,11 +40,13 @@ public class PointerType extends Type
 		return false;
 	}
 	
+	@Override
 	public String toString() 
 	{
 		return "*" + refType.toString();
 	}
 	
+	@Override
 	public Boolean isPointerType()
 	{
 		return true;

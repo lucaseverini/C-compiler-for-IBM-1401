@@ -1,9 +1,9 @@
 /*
 	small_c.jjt
 
-    The Small-C cross-compiler for IBM 1401.
+    The Small-C cross-compiler for IBM 1401
 
-	April-12-2015
+	April-17-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -44,6 +44,7 @@ public class SmallCC
 	private static HashSet<FunctionDefinition> includedFunctions;
 	public static HashMap<String, String> labelTable;
 	public static List<Pair<String, String>> arrMemberLabelTable;
+	public static HashMap<String, String> identifierTable;
 	private static BlockStatement currentBlock;
 
 	public static String autocoderFile = null;
@@ -52,7 +53,7 @@ public class SmallCC
 	public static boolean inAsmFunc = false;
 
   	public static int stackMem = 400;
-  	public static int dataMem = 2000;
+  	public static int dataMem = 1000;
   	public static int codeMem = 0;					// if 0 then put the code immediately after the data
 	public static boolean reuseStringLiterals = false;
     public static int optimize = 0;
@@ -61,6 +62,21 @@ public class SmallCC
   	public static int nextLabelNumber()
   	{
 		return labelNumber++;
+	}
+
+	public static String getLabelForIdentifier(String identifier)
+	{
+		if(identifierTable.containsKey(identifier))
+		{
+				String label = identifierTable.get(identifier);
+				return label;
+		}
+		else
+		{
+				String label = label(nextLabelNumber());
+				identifierTable.put(identifier, label);
+				return label;
+		}
 	}
 
 	public static String getLabelForVariable(String var)
@@ -199,6 +215,7 @@ public class SmallCC
 		includedFunctions = new HashSet<FunctionDefinition>();
 		labelTable = new HashMap<String, String>();
 		arrMemberLabelTable = new ArrayList<Pair<String, String>>();
+		identifierTable = new HashMap<String, String>();
 
 		ArrayList<Type> tmp = new ArrayList<Type>();
 		tmp.add(new PointerType(Type.charType));
@@ -344,6 +361,7 @@ TOKEN :
   | <ELSE: "else">
   | <FOR: "for">
   | <GOTO: "goto">
+  | <SWITCH: "switch">
   | <IF: "if">
   | <INT: "int">
   | <CHAR: "char">
@@ -352,7 +370,6 @@ TOKEN :
   | <SHORT: "short">
   | <SIZEOF: "sizeof">
   | <STATIC: "static">
-  | <SWITCH: "switch">
   | <TYPEDEF: "typedef">
   | <UNSIGNED: "unsigned">
   | <WHILE: "while">
@@ -650,7 +667,8 @@ VariableExpression functionDefinitionParameter(int paramNum): {
 	}
 }
 
-BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
+BlockStatement blockStatement(boolean isFunction, String returnLabel) : 
+{
 	List<Initializer> initializers = new ArrayList<Initializer>();
 	List<Statement> statements = new ArrayList<Statement>();
 	List<Initializer> initList;
@@ -671,10 +689,14 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 			reportError("We should never be here 0", token);
 		}
 	}
-}{
+}
+{
 	{
-		//functions have already pushed, and will pop after
-		if (!isFunction) variableTable.push();
+		// functions have already pushed, and will pop after
+		if (!isFunction) 
+		{
+			variableTable.push();
+		}
 	}
 	"{" (initList=localVariableDeclaration() {
 		for (Initializer init : initList) 
@@ -691,17 +713,19 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {
 
 		SmallCC.currentBlock = bs.getContainerBlock();
 
-		if (!isFunction) {
+		if (!isFunction) 
+		{
 			variableTable.pop();
 		}
+
 		return bs;
 	}
 }
 
 Statement statement(String returnLabel, String parentReturnlabel)  : {
-	Statement stat, stat2 = null;
-	Expression exp=null, exp2=null, exp3=null;
-	String str;
+	Statement stat = null, stat2 = null;
+	Expression exp = null, exp2 = null, exp3 = null;
+	String str = null;
 }
 {
 	";" {
@@ -734,28 +758,46 @@ Statement statement(String returnLabel, String parentReturnlabel)  : {
     | "continue" ";" {
 			return new ContinueStatement(SmallCC.currentBlock);
 		}
-    | str = Identifier() ":" {
-			return new IdentifierStatement(str);
-		}
     | "goto" str = Identifier() ";" {
 			return new GotoStatement(str, SmallCC.currentBlock);
 		}
+    | str = Identifier() ":" {
+			return new IdentifierStatement(str);
+		}
+    | "switch" "(" exp=expression() ")" stat=statement(returnLabel, parentReturnlabel) {
+			return new SwitchStatement(exp, stat);
+		}
+	| ("case" exp=expression() | "default") ":" {
+			return new CaseStatement(exp, SmallCC.currentBlock);
+		}
 
-    /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
-     * make another production rule for a switch statement body that looks like a block statement with cases. */
+    /* There is an issue here, the block statement in the switch statement isn't taking on any children.
+       You might have to make another production rule for a switch statement body that looks like a block statement with cases. */
     //TODO| "switch" "(" expression() ")" CaseBlock()
 }
 /*
-void CaseStatement() : {}
+CaseStatement caseStatement() : 
 {
-	(("case" expression() | "default") ":" (CaseStatement() | statement()))
+	Expression exp = null;
+}
+{
+	("case" exp=expression() | "default") ":"
+	{
+		return new CaseStatement(exp);
+	}
 }
 
-void CaseBlock() : {}
+void caseBlock() : 
 {
-	"{" (localVariableDeclaration())* (statement() | CaseStatement()) * "}"
+	System.out.println("CaseBlock"); 
+
+	Statement stat = null;
 }
-*/
+{
+	"{" (localVariableDeclaration())* (stat = statement(null, null) | stat = caseStatement()) * "}"
+}
+*
+
 /** Left-to-right*/
 Expression expression() : {
 	Expression l = null;
@@ -766,7 +808,7 @@ Expression expression() : {
 			l = new CommaExpression(l, r);
 		})*
     {
-			return l;
+		return l;
 	}
 }
 
@@ -774,9 +816,13 @@ Expression expression() : {
 Expression assignmentExpression() : {
 	Expression l = null, r = null;
 	Token lToken = null;
-	try {
+
+	try 
+	{
 		lToken = getToken(1);
-	} catch(Exception e) {
+	} 
+	catch(Exception e) 
+	{
 		reportError("Unexpected end of file.", token);
 	}
 }
@@ -814,15 +860,25 @@ Expression assignmentExpression() : {
 			}
 			| "=" r = assignmentExpression())?
 		) {
-				if (r != null) {
+				if (r != null) 
+				{
 					if (l instanceof LValue)
-						try {
+					{
+						try 
+						{
 							return new AssignmentExpression((LValue)l, r);
-						} catch (TypeMismatchException e) {
+						} 
+						catch (TypeMismatchException e) 
+						{
 							reportError(e, lToken);
 						}
-					else reportError("Left side of assignment must be an lvalue.", lToken);
+					}
+					else 
+					{
+						reportError("Left side of assignment must be an lvalue.", lToken);
+					}
 				}
+
 				return l;
 			}
 }

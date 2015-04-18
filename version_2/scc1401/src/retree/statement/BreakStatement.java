@@ -1,13 +1,15 @@
 /*
 	BreakStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-16-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
 
 package retree.statement;
+
 import java.util.List;
 import static retree.RetreeUtils.*;
 
@@ -37,8 +39,7 @@ public class BreakStatement implements Statement
 			code += POP(frameSize);
 		}
 		
-		String label = loop.bottomLabel;
-		code += INS("Break out of the loop", null, "B", label);
+		code += INS("Break out of the " + loop.getLoopType() + " loop", null, "B", loop.bottomLabel);
 		
 		return code;
 	}

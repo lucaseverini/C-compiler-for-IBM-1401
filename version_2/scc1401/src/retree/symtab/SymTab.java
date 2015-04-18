@@ -1,7 +1,8 @@
 /*
 	SymTab.java
 
-    Small-C compiler - SJSU
+	The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -17,7 +18,8 @@ import retree.type.Type;
 public class SymTab 
 {
 	private final HashMap<String, VariableExpression> table = new HashMap<String, VariableExpression>();
-	private int topOffset, localOffset;
+	private int topOffset;
+	private int localOffset;
 	private int paramOffset;
 	private boolean isStatic = false;
 

@@ -1,7 +1,8 @@
 /*
 	ArrayNameExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -75,6 +76,7 @@ public class ArrayNameExpression extends Expression
 	
 	// For stack management reasons, address of a pointer variable is at the end
 	// of that variable we need to get a pointer to the beginning.
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = "";
@@ -131,6 +133,7 @@ public class ArrayNameExpression extends Expression
 		return array;
 	}
 
+	@Override
 	public Expression collapse() 
 	{
 		if (this.array.isStatic())
@@ -142,6 +145,7 @@ public class ArrayNameExpression extends Expression
 		return this;
 	}
 
+	@Override
 	public String toString() 
 	{
 		return array.toString();

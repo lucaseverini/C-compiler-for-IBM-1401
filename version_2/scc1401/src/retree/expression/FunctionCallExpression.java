@@ -1,7 +1,8 @@
 /*
 	FunctionCallExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -13,9 +14,7 @@ import compiler.SmallCC;
 import retree.exceptions.*;
 import java.util.*;
 import retree.type.*;
-import retree.program.*;
 import static retree.RetreeUtils.*;
-import wci.intermediate.SymTabEntry;
 
 public class FunctionCallExpression extends Expression 
 {
@@ -46,6 +45,7 @@ public class FunctionCallExpression extends Expression
 		this.arguments = arguments;
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = COM("Function Call " + this.toString());
@@ -95,6 +95,7 @@ public class FunctionCallExpression extends Expression
 		return code;
 	}
 
+	@Override
 	public String toString()
 	{
 		String s = "";

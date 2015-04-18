@@ -1,7 +1,8 @@
 /*
 	ExpressionStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -20,11 +21,13 @@ public class ExpressionStatement implements Statement
 		this.exp = exp.collapse();
 	}
 
+	@Override
 	public String generateCode()
 	{
 		return exp.generateCode(false);
 	}
 
+	@Override
 	public String toString()
     {
        return exp.toString();

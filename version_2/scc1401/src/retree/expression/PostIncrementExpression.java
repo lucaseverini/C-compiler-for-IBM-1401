@@ -1,7 +1,8 @@
 /*
 	PostIncrementExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -24,6 +25,7 @@ public class PostIncrementExpression extends Expression
 		this.l = l;
 	}
 
+	@Override
 	public Expression collapse()
 	{
 		try 
@@ -36,6 +38,7 @@ public class PostIncrementExpression extends Expression
 		}
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = COM("PostIncrement "+ this.toString());
@@ -62,6 +65,7 @@ public class PostIncrementExpression extends Expression
 		return code;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "(" + l + "++" + ")";

@@ -2,9 +2,9 @@
 /*@egen*//*
 	small_c.jjt
 
-    The Small-C cross-compiler for IBM 1401.
+    The Small-C cross-compiler for IBM 1401
 
-	April-12-2015
+	April-17-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
 */
@@ -48,6 +48,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
 	private static HashSet<FunctionDefinition> includedFunctions;
 	public static HashMap<String, String> labelTable;
 	public static List<Pair<String, String>> arrMemberLabelTable;
+	public static HashMap<String, String> identifierTable;
 	private static BlockStatement currentBlock;
 
 	public static String autocoderFile = null;
@@ -56,7 +57,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
 	public static boolean inAsmFunc = false;
 
   	public static int stackMem = 400;
-  	public static int dataMem = 2000;
+  	public static int dataMem = 1000;
   	public static int codeMem = 0;					// if 0 then put the code immediately after the data
 	public static boolean reuseStringLiterals = false;
     public static int optimize = 0;
@@ -65,6 +66,21 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
   	public static int nextLabelNumber()
   	{
 		return labelNumber++;
+	}
+
+	public static String getLabelForIdentifier(String identifier)
+	{
+		if(identifierTable.containsKey(identifier))
+		{
+				String label = identifierTable.get(identifier);
+				return label;
+		}
+		else
+		{
+				String label = label(nextLabelNumber());
+				identifierTable.put(identifier, label);
+				return label;
+		}
 	}
 
 	public static String getLabelForVariable(String var)
@@ -203,6 +219,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
 		includedFunctions = new HashSet<FunctionDefinition>();
 		labelTable = new HashMap<String, String>();
 		arrMemberLabelTable = new ArrayList<Pair<String, String>>();
+		identifierTable = new HashMap<String, String>();
 
 		ArrayList<Type> tmp = new ArrayList<Type>();
 		tmp.add(new PointerType(Type.charType));
@@ -348,6 +365,7 @@ TOKEN :
   | <ELSE: "else">
   | <FOR: "for">
   | <GOTO: "goto">
+  | <SWITCH: "switch">
   | <IF: "if">
   | <INT: "int">
   | <CHAR: "char">
@@ -356,7 +374,6 @@ TOKEN :
   | <SHORT: "short">
   | <SIZEOF: "sizeof">
   | <STATIC: "static">
-  | <SWITCH: "switch">
   | <TYPEDEF: "typedef">
   | <UNSIGNED: "unsigned">
   | <WHILE: "while">
@@ -1043,7 +1060,8 @@ VariableExpression functionDefinitionParameter(int paramNum): {/*@bgen(jjtree) f
 /*@egen*/
 }
 
-BlockStatement blockStatement(boolean isFunction, String returnLabel) : {/*@bgen(jjtree) blockStatement */
+BlockStatement blockStatement(boolean isFunction, String returnLabel) : 
+{/*@bgen(jjtree) blockStatement */
         SimpleNode jjtn000 = new SimpleNode(JJTBLOCKSTATEMENT);
         boolean jjtc000 = true;
         jjtree.openNodeScope(jjtn000);
@@ -1068,12 +1086,16 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {/*@bgen
 			reportError("We should never be here 0", token);
 		}
 	}
-}{/*@bgen(jjtree) blockStatement */
+}
+{/*@bgen(jjtree) blockStatement */
         try {
 /*@egen*/
 	{
-		//functions have already pushed, and will pop after
-		if (!isFunction) variableTable.push();
+		// functions have already pushed, and will pop after
+		if (!isFunction) 
+		{
+			variableTable.push();
+		}
 	}
 	"{" (initList=localVariableDeclaration() {
 		for (Initializer init : initList) 
@@ -1095,9 +1117,11 @@ BlockStatement blockStatement(boolean isFunction, String returnLabel) : {/*@bgen
 
 		SmallCC.currentBlock = bs.getContainerBlock();
 
-		if (!isFunction) {
+		if (!isFunction) 
+		{
 			variableTable.pop();
 		}
+
 		return bs;
 	}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
@@ -1127,9 +1151,9 @@ Statement statement(String returnLabel, String parentReturnlabel)  : {/*@bgen(jj
         boolean jjtc000 = true;
         jjtree.openNodeScope(jjtn000);
 /*@egen*/
-	Statement stat, stat2 = null;
-	Expression exp=null, exp2=null, exp3=null;
-	String str;
+	Statement stat = null, stat2 = null;
+	Expression exp = null, exp2 = null, exp3 = null;
+	String str = null;
 }
 {/*@bgen(jjtree) statement */
         try {
@@ -1214,6 +1238,14 @@ Statement statement(String returnLabel, String parentReturnlabel)  : {/*@bgen(jj
 /*@egen*/ {
 			return new ContinueStatement(SmallCC.currentBlock);
 		}
+    | "goto" str = Identifier() ";"/*@bgen(jjtree)*/
+                                    {
+                                      jjtree.closeNodeScope(jjtn000, true);
+                                      jjtc000 = false;
+                                    }
+/*@egen*/ {
+			return new GotoStatement(str, SmallCC.currentBlock);
+		}
     | str = Identifier() ":"/*@bgen(jjtree)*/
                              {
                                jjtree.closeNodeScope(jjtn000, true);
@@ -1222,13 +1254,21 @@ Statement statement(String returnLabel, String parentReturnlabel)  : {/*@bgen(jj
 /*@egen*/ {
 			return new IdentifierStatement(str);
 		}
-    | "goto" str = Identifier() ";"/*@bgen(jjtree)*/
-                                    {
-                                      jjtree.closeNodeScope(jjtn000, true);
-                                      jjtc000 = false;
-                                    }
+    | "switch" "(" exp=expression() ")" stat=statement(returnLabel, parentReturnlabel)/*@bgen(jjtree)*/
+                                                                                       {
+                                                                                         jjtree.closeNodeScope(jjtn000, true);
+                                                                                         jjtc000 = false;
+                                                                                       }
 /*@egen*/ {
-			return new GotoStatement(str, SmallCC.currentBlock);
+			return new SwitchStatement(exp, stat);
+		}
+	| ("case" exp=expression() | "default") ":"/*@bgen(jjtree)*/
+                                                    {
+                                                      jjtree.closeNodeScope(jjtn000, true);
+                                                      jjtc000 = false;
+                                                    }
+/*@egen*/ {
+			return new CaseStatement(exp, SmallCC.currentBlock);
 		}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -1251,21 +1291,33 @@ Statement statement(String returnLabel, String parentReturnlabel)  : {/*@bgen(jj
         }
 /*@egen*/
 
-    /* There is an issue here, the block statement in the switch statement isn't taking on any children.  You might have to
-     * make another production rule for a switch statement body that looks like a block statement with cases. */
+    /* There is an issue here, the block statement in the switch statement isn't taking on any children.
+       You might have to make another production rule for a switch statement body that looks like a block statement with cases. */
     //TODO| "switch" "(" expression() ")" CaseBlock()
 }
 /*
-void CaseStatement() : {}
+CaseStatement caseStatement() : 
 {
-	(("case" expression() | "default") ":" (CaseStatement() | statement()))
+	Expression exp = null;
+}
+{
+	("case" exp=expression() | "default") ":"
+	{
+		return new CaseStatement(exp);
+	}
 }
 
-void CaseBlock() : {}
+void caseBlock() : 
 {
-	"{" (localVariableDeclaration())* (statement() | CaseStatement()) * "}"
+	System.out.println("CaseBlock"); 
+
+	Statement stat = null;
 }
-*/
+{
+	"{" (localVariableDeclaration())* (stat = statement(null, null) | stat = caseStatement()) * "}"
+}
+*
+
 /** Left-to-right*/
 Expression expression() : {/*@bgen(jjtree) expression */
         SimpleNode jjtn000 = new SimpleNode(JJTEXPRESSION);
@@ -1287,7 +1339,7 @@ Expression expression() : {/*@bgen(jjtree) expression */
     }
 /*@egen*/
     {
-			return l;
+		return l;
 	}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -1319,9 +1371,13 @@ Expression assignmentExpression() : {/*@bgen(jjtree) assignmentExpression */
 /*@egen*/
 	Expression l = null, r = null;
 	Token lToken = null;
-	try {
+
+	try 
+	{
 		lToken = getToken(1);
-	} catch(Exception e) {
+	} 
+	catch(Exception e) 
+	{
 		reportError("Unexpected end of file.", token);
 	}
 }
@@ -1366,15 +1422,25 @@ Expression assignmentExpression() : {/*@bgen(jjtree) assignmentExpression */
                     jjtc000 = false;
                   }
 /*@egen*/ {
-				if (r != null) {
+				if (r != null) 
+				{
 					if (l instanceof LValue)
-						try {
+					{
+						try 
+						{
 							return new AssignmentExpression((LValue)l, r);
-						} catch (TypeMismatchException e) {
+						} 
+						catch (TypeMismatchException e) 
+						{
 							reportError(e, lToken);
 						}
-					else reportError("Left side of assignment must be an lvalue.", lToken);
+					}
+					else 
+					{
+						reportError("Left side of assignment must be an lvalue.", lToken);
+					}
 				}
+
 				return l;
 			}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {

@@ -1,7 +1,8 @@
 /*
 	Optimizer.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-9-2015
 
 	By Matt Pleva, Luca Severini
@@ -16,11 +17,11 @@ import retree.RetreeUtils;
 
 public class Optimizer
 {
-    private static HashSet<String> snippetsUsed = new HashSet<String>();
-    public static HashMap<String,String> constantLabelTransform = new HashMap<String,String>();
-    public static ArrayList<Instruction> instr = new ArrayList<Instruction>();
-    public static HashMap<String,String> labelTransform = new HashMap<String,String>();
-    public static HashMap<Integer,Instruction> commentsPlacement = new HashMap<Integer,Instruction>();
+    private final static HashSet<String> snippetsUsed = new HashSet<String>();
+    public final static HashMap<String,String> constantLabelTransform = new HashMap<String,String>();
+    public final static ArrayList<Instruction> instr = new ArrayList<Instruction>();
+    public final static HashMap<String,String> labelTransform = new HashMap<String,String>();
+    public final static HashMap<Integer,Instruction> commentsPlacement = new HashMap<Integer,Instruction>();
     private static boolean dropComments = false;
 
     public static void CollapseInstrcs()

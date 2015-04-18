@@ -1,7 +1,7 @@
 /*
 	SmallC_PreProcessor.java
 
-    The Small-C cross-compiler for IBM 1401.
+    The Small-C cross-compiler for IBM 1401
 
 	April-16-2015
 

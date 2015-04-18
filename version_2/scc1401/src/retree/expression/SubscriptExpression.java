@@ -1,7 +1,8 @@
 /*
 	SubscriptExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -12,7 +13,6 @@ package retree.expression;
 import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.type.*;
-import compiler.SmallCC;
 
 public class SubscriptExpression extends LValue 
 {
@@ -36,6 +36,7 @@ public class SubscriptExpression extends LValue
         this.r = r;
     }
 
+	@Override
     public String generateCode(boolean valueNeeded)
 	{
         String code = "";
@@ -53,6 +54,7 @@ public class SubscriptExpression extends LValue
         return code;
     }
 
+	@Override
     public String generateAddress() 
 	{
         String code = COM("SubScript " + this.toString());
@@ -111,11 +113,13 @@ public class SubscriptExpression extends LValue
         return code;
     }
 
+	@Override
     public String toString()
     {
         return "(" + l + "[" + r + "]" + ")";
     }
 
+	@Override
     public LValue collapse() 
 	{
 /* Broken for now.

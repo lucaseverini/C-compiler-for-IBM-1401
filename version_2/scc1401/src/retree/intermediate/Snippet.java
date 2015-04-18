@@ -1,7 +1,8 @@
 /*
 	Snippet.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-9-2015
 
 	By Matt Pleva, Luca Severini
@@ -14,7 +15,7 @@ import java.util.*;
 
 public class Snippet
 {
-    private static HashMap<String, ArrayList<Instruction>> snips = new HashMap<String, ArrayList<Instruction>>();
+    private static final HashMap<String, ArrayList<Instruction>> snips = new HashMap<String, ArrayList<Instruction>>();
     private static final HashMap<String, String> snippetLabels = new HashMap<String, String>();
 
     private static int countStars(String in)

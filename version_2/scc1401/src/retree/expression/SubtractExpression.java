@@ -1,7 +1,8 @@
 /*
 	SubtractExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -10,7 +11,6 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
-import retree.exceptions.*;
 import retree.type.*;
 
 public class SubtractExpression extends Expression 
@@ -89,6 +89,7 @@ public class SubtractExpression extends Expression
 		return a;
 	}
 	
+	@Override
 	public Expression collapse()
 	{
 		if (getType() instanceof PointerType) 
@@ -110,6 +111,7 @@ public class SubtractExpression extends Expression
 		}
 	}
 	
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = COM("Subtract " + this.toString());
@@ -137,6 +139,7 @@ public class SubtractExpression extends Expression
 		return code;
 	}
 	
+	@Override
 	public String toString() 
 	{
 		return "(" + l + " - " + r + ")";

@@ -1,7 +1,8 @@
 /*
 	Type.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -11,8 +12,11 @@ package retree.type;
 
 public class Type 
 {
+	private final int size;
+
 	public static final Type intType = new Type(5) 
 	{
+		@Override
 		public String toString() 
 		{
 			return "int";
@@ -21,13 +25,12 @@ public class Type
 	
 	public static final Type charType = new Type(1) 
 	{
+		@Override
 		public String toString() 
 		{
 			return "char";
 		}
 	};
-
-	private int size;
 
 	public Type(int size)
 	{

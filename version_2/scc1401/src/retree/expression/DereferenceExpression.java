@@ -1,7 +1,8 @@
 /*
 	DereferenceExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -11,15 +12,12 @@ package retree.expression;
 
 import retree.exceptions.TypeMismatchException;
 import static retree.RetreeUtils.*;
-import retree.expression.Expression;
-import retree.expression.LValue;
 import retree.type.PointerType;
 import retree.type.Type;
-import retree.exceptions.*;
 
 public class DereferenceExpression extends LValue 
 {
-	private Expression child;
+	private final Expression child;
 
 	public DereferenceExpression(Expression child) throws TypeMismatchException 
 	{
@@ -38,6 +36,7 @@ public class DereferenceExpression extends LValue
 		return ((PointerType) exp.getType()).getRefType();
 	}
 
+	@Override
 	public LValue collapse() 
 	{
 		try {
@@ -50,6 +49,7 @@ public class DereferenceExpression extends LValue
 		}
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		try 
@@ -119,11 +119,13 @@ public class DereferenceExpression extends LValue
 		}
 	}
 
+	@Override
 	public String generateAddress()
 	{
 		return child.generateCode(true);
 	}
 
+	@Override
 	public String toString() 
 	{
 		return "(" + "*" + child +")";

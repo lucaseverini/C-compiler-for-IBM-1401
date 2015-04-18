@@ -1,7 +1,8 @@
 /*
 	Program.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -11,7 +12,6 @@ package retree.program;
 
 import compiler.SmallCC;
 import static retree.RetreeUtils.*;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;

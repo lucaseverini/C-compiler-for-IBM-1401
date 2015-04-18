@@ -1,7 +1,8 @@
 /*
 	NegExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -9,16 +10,12 @@
 
 package retree.expression;
 
-import retree.exceptions.TypeMismatchException;
 import static retree.RetreeUtils.*;
-import retree.expression.Expression;
-import retree.expression.LValue;
 import retree.type.PointerType;
-import retree.type.Type;
 
 public class NegExpression extends Expression 
 {
-	private Expression child;
+	private final Expression child;
 
 	public NegExpression(Expression child) 
 	{
@@ -27,6 +24,7 @@ public class NegExpression extends Expression
 		this.child = child;
 	}
 
+	@Override
 	public Expression collapse()
 	{
 		Expression collapsedChild = child.collapse();
@@ -41,6 +39,7 @@ public class NegExpression extends Expression
 		}
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded)
 	{
 		String code = COM("Negate " + this.toString());
@@ -63,6 +62,7 @@ public class NegExpression extends Expression
 		return code;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "(" + "-" + child + ")";

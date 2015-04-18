@@ -1,7 +1,8 @@
 /*
 	IdentifierStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-16-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -20,7 +21,7 @@ public class IdentifierStatement implements Statement
 	public IdentifierStatement(String identifier) 
 	{
 		this.identifier = identifier;
-		this.label = label(SmallCC.nextLabelNumber());
+		this.label = SmallCC.getLabelForIdentifier(identifier);
 	}
 	
 	@Override
@@ -28,8 +29,7 @@ public class IdentifierStatement implements Statement
 	{
 		String code = "";	
 		
-		code += COM("Label: " + identifier);
-		code += INS(null, label, "NOP");
+		code += INS(identifier + ":", label, "NOP");
 		code += "\r";
 		
 		return code;
@@ -39,5 +39,15 @@ public class IdentifierStatement implements Statement
 	public String toString()
     {
         return "[identifier: " + label + "]";
+    }
+	
+	public String getLabel()
+    {
+        return label;
+    }
+
+	public String getIdentifier()
+    {
+        return identifier;
     }
 }

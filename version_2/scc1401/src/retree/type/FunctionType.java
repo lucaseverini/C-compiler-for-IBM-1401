@@ -1,7 +1,8 @@
 /*
 	FunctionType.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -71,6 +72,7 @@ public class FunctionType extends Type
 		return variadic == f.variadic;
 	}
 
+	@Override
 	public String toString() 
 	{
 		String str = returnType.toString() + " (";
@@ -88,6 +90,7 @@ public class FunctionType extends Type
 		return str + ")";
 	}
 
+	@Override
 	public Boolean isPointerType()
 	{
 		return true;

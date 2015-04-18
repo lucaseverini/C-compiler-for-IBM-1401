@@ -1,7 +1,8 @@
 /*
 	ConstantExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -15,7 +16,7 @@ import retree.type.*;
 public class ConstantExpression extends Expression
 {
 	private final int val; // everything should fit into an int.
-	private Boolean blank;
+	private final Boolean blank;
 
 	public ConstantExpression(Type type) 
 	{
@@ -33,6 +34,7 @@ public class ConstantExpression extends Expression
 		this.blank = false;
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		if (valueNeeded) 
@@ -83,6 +85,7 @@ public class ConstantExpression extends Expression
 		return val;
 	}
 	
+	@Override
 	public String toString() 
 	{
 		if (getType().equals(Type.intType)) 

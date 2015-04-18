@@ -17,12 +17,50 @@ int main ()
 {
 	int i = 0;
 
-	do {
+	switch(i)
+	{
+		case 1:
+			i += 1;
+			i += 2;
+			break;
+
+		case 2:
+			i += 1;
+			i += 2;
+			break;
+			
+		default:
+			i += 1;
+			i += 3;
+			break;
+	}
+
+LOOP:
+	if(i < 10)
+	{
+		int vvv = 3;
+		
+		i += vvv;
+		printf("%d\n", i);
+		
+		goto LOOP;
+	}
+	
+	do 
+	{
+BEGIN:
 		i++;
 		
 		if(i == 2)
 		{
 			break;
+		}
+		
+		if(i == 3)
+		{			
+			i = 1 + 1;
+			
+			goto BEGIN;
 		}
 	}
 	while(i < 10);

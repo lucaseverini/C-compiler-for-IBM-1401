@@ -1,7 +1,8 @@
 /*
 	LessThanExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -40,6 +41,7 @@ public class LessThanExpression extends Expression
         this.r = r;
     }
 
+	@Override
     public Expression collapse() 
 	{
 		Expression l2 = l.collapse();
@@ -53,6 +55,7 @@ public class LessThanExpression extends Expression
 		return new LessThanExpression(l2, r2);
     }
 
+	@Override
     public String generateCode(boolean valueNeeded) 
 	{
 		//l = B, r = A
@@ -86,6 +89,7 @@ public class LessThanExpression extends Expression
 		}
 	} 
 
+	@Override
     public String toString()
     {
         return "(" + l + " < " + r + ")";

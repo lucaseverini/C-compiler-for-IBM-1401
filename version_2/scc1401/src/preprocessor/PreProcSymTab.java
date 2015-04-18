@@ -1,7 +1,8 @@
 /*
 	PreProcSymTab.java
 
-    Assignment #6 - CS153 - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	November-10-2014
 
 	By Sean Papay, Matt Pleva, Luca Severini

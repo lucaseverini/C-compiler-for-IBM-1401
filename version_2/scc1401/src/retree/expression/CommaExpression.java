@@ -1,7 +1,8 @@
 /*
 	CommaExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -21,6 +22,7 @@ public class CommaExpression extends Expression
 		this.r = r;
 	}
 	
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		return l.generateCode(false) + r.generateCode(valueNeeded);

@@ -1,7 +1,8 @@
 /*
 	ForStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -35,9 +36,10 @@ public class ForStatement extends LoopStatement
 		continueLabel = label(SmallCC.nextLabelNumber());
 	}
 
+	@Override
 	public String generateCode() throws Exception
 	{
-		int size = condition.getType().sizeof();	
+		int typeSize = condition.getType().sizeof();	
 
 		String code = COM("For " + this.toString());
 
@@ -52,8 +54,8 @@ public class ForStatement extends LoopStatement
 		{
 			code += condition.generateCode(true);
 			code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
-			code += POP(size);
-			code += INS("Jump to bottom of For", null, "BCE", bottomLabel, STACK_OFF(size), " ");
+			code += POP(typeSize);
+			code += INS("Jump to bottom of For", null, "BCE", bottomLabel, STACK_OFF(typeSize), " ");
 			code += "\n";
 		}
 		
@@ -76,6 +78,7 @@ public class ForStatement extends LoopStatement
 		return code;
 	}
 	
+	@Override
     public String toString()
     {
 		return "[for (" + init + "; " + condition + "; " + post + ") " +

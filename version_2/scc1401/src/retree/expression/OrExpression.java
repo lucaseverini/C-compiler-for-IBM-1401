@@ -1,7 +1,8 @@
 /*
 	OrExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -31,6 +32,7 @@ public class OrExpression extends Expression
         this.r = r;
     }
 
+	@Override
     public Expression collapse() 
 	{
         try 
@@ -52,6 +54,7 @@ public class OrExpression extends Expression
         }
     }
 
+	@Override
     public String generateCode(boolean valueNeeded)
 	{
         String labelSecond = label(SmallCC.nextLabelNumber());
@@ -78,6 +81,7 @@ public class OrExpression extends Expression
         return code;
     }
 
+	@Override
     public String toString()
     {
         return "(" + l + " || " + r + ")";

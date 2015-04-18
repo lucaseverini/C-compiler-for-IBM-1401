@@ -1,7 +1,8 @@
 /*
 	CastExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -10,13 +11,12 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
-import retree.expression.Expression;
 import retree.type.PointerType;
 import retree.type.Type;
 
 public class CastExpression extends Expression 
 {
-	private Expression child;
+	private final Expression child;
 
 	public CastExpression(Type castType, Expression child) 
 	{
@@ -24,6 +24,7 @@ public class CastExpression extends Expression
 		this.child = child;
 	}
 
+	@Override
 	public Expression collapse() 
 	{
 		if (child.getType().equals(getType())) 
@@ -44,6 +45,7 @@ public class CastExpression extends Expression
 		}
 	}
 
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = child.generateCode(valueNeeded);
@@ -94,6 +96,7 @@ public class CastExpression extends Expression
 		return code;
 	}
 	
+	@Override
 	public String toString() 
 	{
 		return "((" + getType() + ") "  + child + ")";	

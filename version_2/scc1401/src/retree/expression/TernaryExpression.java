@@ -1,7 +1,8 @@
 /*
 	TernaryExpression.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	March-1-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -32,6 +33,7 @@ public class TernaryExpression extends Expression
 	}
 	
 	
+	@Override
 	public Expression collapse() 
 	{
 		Expression c2 = condition.collapse();
@@ -52,6 +54,7 @@ public class TernaryExpression extends Expression
 		}
 	}
 	
+	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
 		String negLabel = label(SmallCC.nextLabelNumber());
@@ -72,6 +75,7 @@ public class TernaryExpression extends Expression
 		return code;
 	}
 
+	@Override
 	public String toString()
 	{
 		return "(" + condition + " ? " + positive + " : " + negative + ")";

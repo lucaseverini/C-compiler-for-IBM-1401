@@ -1,7 +1,8 @@
 /*
 	LoopStatement.java
 
-    Small-C compiler - SJSU
+    The Small-C cross-compiler for IBM 1401
+
 	April-16-2015
 
 	By Sean Papay, Matt Pleva, Luca Severini
@@ -41,5 +42,25 @@ public abstract class LoopStatement implements Statement
 	Statement getBody()
 	{
 		return body;
+	}
+	
+	String getLoopType()
+	{
+		String type = "";
+		
+		if(this instanceof WhileStatement)
+		{
+			type = "While";
+		}
+		else if(this instanceof DoWhileStatement)
+		{
+			type = "Do-While";
+		}
+		else if(this instanceof ForStatement)
+		{
+			type = "For";
+		}
+		
+		return type;
 	}
 }
