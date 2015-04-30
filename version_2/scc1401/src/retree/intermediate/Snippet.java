@@ -165,7 +165,7 @@ public class Snippet
         snippetLabels.put("SNIP_DIV","SNPDIV");
 
 	    loadSnippet("number_to_char");
-        snippetLabels.put("number_to_char", "NUMCHR");
+        snippetLabels.put("number_to_char", "NMNCHR");
 	}
 
     public static String getSnippetLabel(String snippet)
