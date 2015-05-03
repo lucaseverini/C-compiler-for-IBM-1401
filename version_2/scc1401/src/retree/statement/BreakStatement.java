@@ -26,20 +26,41 @@ public class BreakStatement implements Statement
 	public String generateCode() throws Exception
 	{
 		String code = "";
+		String bottomlabel;
 		
-		LoopStatement loop = findEnclosingLoop();
-		if(loop == null)
+		Statement stat = findEnclosingStatement();
+		if(stat == null)
 		{
-			throw new Exception("Break outside of loop error");
+			throw new Exception("Break outside of valid statement body error");
+		}
+		
+		if(stat instanceof LoopStatement)
+		{
+			bottomlabel = ((LoopStatement)stat).bottomLabel;
+		}
+		else if(stat instanceof SwitchStatement)
+		{
+			bottomlabel = ((SwitchStatement)stat).getBottomLabel();
+		}
+		else
+		{
+			throw new Exception("Break outside of valid statement body error");
 		}
 				
-		int frameSize = getStackFrameSize(loop);
+		int frameSize = getStackFrameSize(stat);
 		if(frameSize != 0)
 		{
 			code += POP(frameSize);
 		}
 		
-		code += INS("Break out of the " + loop.getLoopType() + " loop", null, "B", loop.bottomLabel);
+		if(stat instanceof SwitchStatement)
+		{
+			code += INS("Break out of the switch block", null, "B", bottomlabel);
+		}
+		else if(stat instanceof LoopStatement)
+		{
+			code += INS("Break out of the loop block", null, "B", bottomlabel);
+		}
 		
 		return code;
 	}
@@ -50,7 +71,7 @@ public class BreakStatement implements Statement
         return "[break]";
     }
 	
-	LoopStatement findEnclosingLoop()
+	Statement findEnclosingStatement()
 	{
 		BlockStatement block = containerBlock;
 		BlockStatement parentBlock = block.getContainerBlock();
@@ -62,7 +83,12 @@ public class BreakStatement implements Statement
 			{
 				if(s instanceof LoopStatement && ((LoopStatement)s).getBody() == block)
 				{
-					return (LoopStatement)s;
+					return s;
+				}
+				
+				if(s instanceof SwitchStatement && ((SwitchStatement)s).getBody() == block)
+				{
+					return s;
 				}
 			}
 			
@@ -73,7 +99,7 @@ public class BreakStatement implements Statement
 		return null;
 	}
 	
-	int getStackFrameSize(LoopStatement loop)
+	int getStackFrameSize(Statement loop)
 	{
 		BlockStatement block = containerBlock;
 		int frameSize = block.getStackFrameSize();

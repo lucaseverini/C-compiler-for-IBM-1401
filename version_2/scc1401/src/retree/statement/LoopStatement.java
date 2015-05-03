@@ -63,4 +63,9 @@ public abstract class LoopStatement implements Statement
 		
 		return type;
 	}
+
+	String getBottomLabel()
+	{
+		return bottomLabel;
+	}
 }

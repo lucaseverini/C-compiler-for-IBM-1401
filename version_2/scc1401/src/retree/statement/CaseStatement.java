@@ -10,6 +10,8 @@
 
 package retree.statement;
 
+import compiler.SmallCC;
+import static retree.RetreeUtils.*;
 import retree.expression.Expression;
 
 public class CaseStatement implements Statement
@@ -17,6 +19,7 @@ public class CaseStatement implements Statement
 	private final Expression expression;
 	private final boolean defaultExpression;
 	private final BlockStatement containerBlock;
+	private String label;
 
 	public CaseStatement(Expression expression, BlockStatement containerBlock) 
 	{
@@ -33,13 +36,25 @@ public class CaseStatement implements Statement
 			this.defaultExpression = true;
 		}
 		
-		System.out.println("Case expression: " + (defaultExpression ? "default" : expression));
+		// System.out.println("Case expression: " + (defaultExpression ? "default" : expression));
 	}
 	
 	@Override
 	public String generateCode() throws Exception
 	{
 		String code = "";
+			
+		if(defaultExpression)
+		{
+			code += COM("Default");
+			code += INS(null, label, "NOP");
+		}
+		else
+		{
+			code += COM("Case: " + expression);
+			code += INS(null, label, "NOP");
+		}
+
 		return code;
 	}
 	
@@ -48,4 +63,24 @@ public class CaseStatement implements Statement
     {
         return "[case + " + expression + "]";
     }
+	
+	public boolean isDefault()
+	{
+		return defaultExpression;
+	}
+
+	public Expression getExpression()
+	{
+		return expression;
+	}
+	
+	public String getLabel()
+	{
+		if(label == null)
+		{
+			label = label(SmallCC.nextLabelNumber());
+		}
+		
+		return label;
+	}
 }

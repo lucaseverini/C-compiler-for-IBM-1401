@@ -15,123 +15,40 @@ int x = 0;
 
 int main ()
 {
-	int i = 0;
+	int i = 4;
 
-	switch(i)
+	switch(++i)
 	{
 		case 1:
 			i += 1;
-			i += 2;
 			break;
 
 		case 2:
-			i += 1;
 			i += 2;
 			break;
 			
-		default:
-			i += 1;
+		case 3:
 			i += 3;
 			break;
+
+		default:
+			i += 4;
+			break;
 	}
 
-LOOP:
-	if(i < 10)
-	{
-		int vvv = 3;
-		
-		i += vvv;
-		printf("%d\n", i);
-		
-		goto LOOP;
-	}
+	printf("%d\n", i);
 	
-	do 
+	while(i < 20)
 	{
-BEGIN:
-		i++;
+		printf("%d\n", i++);
 		
-		if(i == 2)
+		if(i == 15)
 		{
 			break;
 		}
-		
-		if(i == 3)
-		{			
-			i = 1 + 1;
-			
-			goto BEGIN;
-		}
-	}
-	while(i < 10);
-		
-	while(i < 10)
-	{
-		i++;
-		
-		if(i == 5)
-		{
-			int a = 0;
-			char *s2 = "XXXXXX";
-		
-			x = i;
-			
-			printf("%s\n", s2);
-			
-			break;
-		}
-		
-		if(i == 3)
-		{
-			i = i;
-		}
-		else
-		{
-			continue;
-		}
-		
-		x = i;
 	}
 	
-	//break;
-	//continue;
-	
-	for(i = 0; i < 10; i++)
-	{
-		char *aaaa;
-		char *d;
-
-		if(i == 5)
-		{
-			break;
-		}
-
-		if(i == 7)
-		{
-			int b = 100;
-			
-			{
-				int f = 1000;
-				
-				{
-				
-					int a = 10;
-				
-					printf("%d\n", f + b + a + i);
-				
-					continue;
-				}
-			}
-		}
-		
-		goto END;
-		
-		printf("Never printed: %d\n", i);
-END:		
-		x = i;		
-	}
-
-	printf("%d\n", x);
+	printf("%d\n", i);
 /*
 	char *num = "12345";
 
