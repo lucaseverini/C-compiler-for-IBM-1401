@@ -44,9 +44,9 @@ function recompile()
     fi
 }
 
-if [[ -f hashes.md5 ]]; then
-    if [[ -n $(md5sum -c hashes.md5 | awk '{if ($2 != "OK"){print $1}}') ]]; then
-        for i in $(md5sum -c hashes.md5 | awk '{if ($2 != "OK"){print $1}}');
+if [[ -f hashes.sha ]]; then
+    if [[ -n $(shasum -c hashes.sha | awk '{if ($2 != "OK"){print $1}}') ]]; then
+        for i in $(shasum -c hashes.sha | awk '{if ($2 != "OK"){print $1}}');
         do
             i=$(echo $i | sed 's/:$//g')
             i=$(echo $i | sed 's/src\///g')
@@ -57,10 +57,10 @@ if [[ -f hashes.md5 ]]; then
     fi
 
     if [[ $FAILED -ne 1 ]]; then
-        printf "" > hashes.md5
+        printf "" > hashes.sha
         for i in $(find src snippets -type f);
         do
-            md5sum $i >> hashes.md5
+            shasum $i >> hashes.sha
         done
     fi
 else
