@@ -1,7 +1,7 @@
      ****************************************************************
      ** CAST INTEGER TO CHAR SNIPPET                               **
      ****************************************************************
-     
+
      NMNCHR    SBR  X1
      * Casts a 5-digit number to a 1-digit char
      * Copy the byte in last position of integer in the first position
@@ -12,6 +12,5 @@
      * Jumps back to caller
                SBR  X2,15998+X2
                B    0+X1
-               
+
      ****************************************************************
-     

@@ -286,11 +286,14 @@ public class Optimizer
 		
         System.out.println("Starting to generate code ...");
         String code = "";
+        int size = 0;
         for (Instruction i: instr)
         {
+            size += i.getSize();
             code += i.generateCode();
+            // System.out.println(i);
         }
-		
+		System.out.println("Size: " + size);
         return code;
     }
 }

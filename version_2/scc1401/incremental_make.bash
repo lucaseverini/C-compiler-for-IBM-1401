@@ -58,7 +58,7 @@ if [[ -f hashes.sha ]]; then
 
     if [[ $FAILED -ne 1 ]]; then
         printf "" > hashes.sha
-        for i in $(find src snippets -type f);
+        for i in $(find src snippets -type f ! -name '*.swp');
         do
             shasum $i >> hashes.sha
         done

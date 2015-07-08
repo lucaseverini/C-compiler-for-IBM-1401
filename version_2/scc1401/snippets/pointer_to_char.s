@@ -2,7 +2,7 @@
      ** CAST NUMBER TO POINTER SNIPPET                             **
      ****************************************************************
 
-     PTRCHR   SBR  X1
+     PTRCHR    SBR  X1
      * Casts a 3-digit address to a 1-digit number
      * We will get the last char only and use that
 
@@ -11,7 +11,7 @@
      * LUCA 15-FEB-2015
      ********
 
-               H                      * HALT
+               H
 
      ********
 

@@ -1,7 +1,7 @@
      ****************************************************************
      ** CLEAN NUMBER SNIPPET                                       **
      ****************************************************************
-     
+
      * Normalizes the zone bits of a number, leaving either A=0B=0
      * for a positive or A=0B=1 for a negative
      CLNNMN    SBR  X1

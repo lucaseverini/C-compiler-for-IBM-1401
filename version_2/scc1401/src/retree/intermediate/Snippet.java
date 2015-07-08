@@ -1,11 +1,11 @@
 /*
-	Snippet.java
+    Snippet.java
 
     The Small-C cross-compiler for IBM 1401
 
-	April-9-2015
+    April-9-2015
 
-	By Matt Pleva, Luca Severini
+    By Matt Pleva, Luca Severini
 */
 
 package retree.intermediate;
@@ -17,119 +17,28 @@ public class Snippet
 {
     private static final HashMap<String, ArrayList<Instruction>> snips = new HashMap<String, ArrayList<Instruction>>();
     private static final HashMap<String, String> snippetLabels = new HashMap<String, String>();
-
-    private static int countStars(String in)
-    {
-        int count = 0;
-        for (int i = 0; i < in.length(); i++)
-        {
-            if(in.charAt(i) == '*') 
-			{
-				count++;
-			}
-        }
-		
-        return count;
-    }
+    private static final ArrayList<ISnippetParser> stages = new ArrayList<ISnippetParser>();
 
     private static void loadSnippet(String snippet)
     {
         try {
-            ArrayList<Instruction> list = new ArrayList<Instruction>();
+            ArrayList<Instruction> list;
             File f = new File("snippets/"+snippet+".s");
             ArrayList<String> filecon = new ArrayList<String>();
             Scanner s = new Scanner(f);
             while (s.hasNextLine())
             {
-                String line = s.nextLine().trim().replaceAll(" +", " ");
-                if (line.length() > 0)
+                String line = s.nextLine();
+                if (!line.equals(""))
                 {
-                    if (line.charAt(0) == '*')
-                    {
-                        list.add(new Instruction("","     "+line + "\n"));
-                    } else {
-                        String[] parts;
-                        String[] comparts;
-                        // Handles the case where we have a constant space
-                        // otherwise it will split incorrectly and lead to bad code
-                        if (line.contains("@ @"))
-                        {
-                            char[] tmp = line.toCharArray();
-                            int posAt = line.indexOf('@');
-                            tmp[posAt + 1] = '_';
-                            line = new String(tmp);
-                            int commentpos = line.lastIndexOf("*");
-                            if (commentpos != -1)
-                            {
-                                if (countStars(line) == 1)
-                                {
-                                    comparts = line.split("\\*");
-                                } else {
-                                    String part1 = line.substring(0,commentpos);
-                                    String part2 = line.substring(commentpos);
-                                    comparts = new String[2];
-                                    comparts[0] = part1;
-                                    comparts[1] = part2;
-                                }
-                            } else {
-                                comparts = new String[1];
-                                comparts[0] = line;
-                            }
-                            parts = comparts[0].split(" ");
-                            for(int i = 0; i < parts.length; i++)
-                            {
-                                if (parts[i].contains("@_@"))
-                                {
-                                    parts[i] = parts[i].replace("@_@","@ @");
-                                }
-                            }
-                        } else {
-                            int commentpos = line.lastIndexOf("*");
-                            if (commentpos != -1)
-                            {
-                                if (countStars(line) == 1)
-                                {
-                                    comparts = line.split("\\*");
-                                } else {
-                                    String part1 = line.substring(0,commentpos);
-                                    String part2 = line.substring(commentpos+2);
-                                    comparts = new String[2];
-                                    comparts[0] = part1;
-                                    comparts[1] = part2;
-                                }
-                            } else {
-                                comparts = new String[1];
-                                comparts[0] = line;
-                            }
-                            parts = comparts[0].split(" ");
-                        }
-						
-                        if (parts.length > 2)
-                        {
-                            String[] instrArgs = new String[comparts.length > 1 ? parts.length - 1 : parts.length - 2];
-                            for (int i = 0; i < instrArgs.length - (comparts.length > 1 ? 1 : 0); i++)
-                            {
-                                instrArgs[i] = parts[i+2];
-                            }
-							
-                            if (comparts.length > 1)
-                            {
-                                instrArgs[instrArgs.length-1] = "* " + comparts[1];
-                            }
-                            list.add(new Instruction(parts[0],parts[1],instrArgs));
-                        }
-                        else if (parts.length == 2)
-                        {
-                            list.add(new Instruction("",parts[0],parts[1], comparts.length > 1 ? "* " + comparts[1] : "" ));
-                        }
-                        else if (parts.length == 1)
-                        {
-                            list.add(new Instruction("",parts[0], comparts.length > 1 ? "* " + comparts[1] : ""));
-                        }
-                    }
+                    filecon.add(line+"\n");
                 }
             }
-			
+            list = startParser(filecon);
+            if (list == null)
+            {
+                throw new Exception("Snippet: "+snippet);
+            }
             snips.put(snippet, list);
         }
         catch (Exception e)
@@ -139,34 +48,57 @@ public class Snippet
         }
     }
 
+    public static ArrayList<Instruction> startParser(ArrayList<String> filecon) {
+        
+        ArrayList<Instruction> list = new ArrayList<Instruction>();
+        for (int i = 0; i < filecon.size(); i++) {
+            Instruction in = new Instruction();
+            String line = filecon.get(i);
+            for (int j = 0; j < stages.size(); j++) {
+                if (line == null)
+                {
+                    return null;
+                }
+                line = stages.get(j).parse(in, line);
+            }
+            list.add(in);
+        }
+        return list;
+    }
+
+
     public static void Init()
-    {		
+    {
+        stages.add(new LabelParser());
+        stages.add(new MnemonicParser());
+        stages.add(new ArgumentParser());
         loadSnippet("header");
 
-	    loadSnippet("char_to_number");
+        loadSnippet("char_to_number");
         snippetLabels.put("char_to_number", "CHRNMN");
  
-		loadSnippet("char_to_pointer");
+        loadSnippet("char_to_pointer");
         snippetLabels.put("char_to_pointer", "CHRPTR");
-		
+        
         loadSnippet("clean_number");
         snippetLabels.put("clean_number", "CLNNMN");
-		
+        
         loadSnippet("number_to_pointer");
         snippetLabels.put("number_to_pointer", "NMNPTR");
-		
+        
         loadSnippet("pointer_to_number");
         snippetLabels.put("pointer_to_number", "PTRNMN");
 
-		loadSnippet("pointer_to_char");
+        loadSnippet("pointer_to_char");
         snippetLabels.put("pointer_to_char", "PTRCHR");
 
         loadSnippet("SNIP_DIV");
         snippetLabels.put("SNIP_DIV","SNPDIV");
 
-	    loadSnippet("number_to_char");
+        loadSnippet("number_to_char");
         snippetLabels.put("number_to_char", "NMNCHR");
-	}
+        System.out.println("Finished init");
+    }
 
     public static String getSnippetLabel(String snippet)
     {
