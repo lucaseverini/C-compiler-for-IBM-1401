@@ -10,7 +10,7 @@ public class MnemonicParser implements ISnippetParser {
         // full line comments handler
         if (line.charAt(index) == '*')
         {
-            i.setMnemonic("     "+line);
+            i.setLineComment("     " + line.substring(1));
             return "";
         }
         while(Character.isUpperCase(line.charAt(index)))

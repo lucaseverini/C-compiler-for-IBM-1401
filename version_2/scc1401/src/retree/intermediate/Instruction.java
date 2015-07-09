@@ -10,46 +10,49 @@
 
 package retree.intermediate;
 
-import java.util.*;
-
 public class Instruction
 {
-    private boolean comment;
-    private String label;
-    private String mnemonic;
-    private String[] operands;
-    private int numOperands;
+    private boolean hasComment = false;
+    private boolean lineComment = false;
+    private String label = "";
+    private String mnemonic = "";
+    private String commentStr = "";
+    private String[] operands = new String[0];
+    private int numOperands = 0;
 
-    public Instruction(){
-        operands = new String[0];
+    public Instruction(){}
+
+    // Use this to create only line comments with no code
+    public Instruction(String comm)
+    {
+        lineComment = true;
+        commentStr = comm;
     }
-    
-    public Instruction(String label, String mnemonic, String ... args)
+
+    // use this to create code with a comment at the end
+    public Instruction(String lineComment,String label, String mnemonic, String... args)
     {
         this.label = label;
         this.mnemonic = mnemonic;
-        
-        if (mnemonic.contains("*"))
-        {
-            comment = true;
+
+        if (lineComment != null && !lineComment.isEmpty()) {
+            commentStr = lineComment;
+            hasComment = true;
         }
 
         operands = args;
         numOperands = args.length;
-        for(int i = 0 ; i < operands.length; i++)
-        {
-            if (operands[i].contains("* "))
-            {
-                numOperands --;
-            }
-        }
     }
-    
+
     public int getSize()
     {
-        if (this.mnemonic.contains("*"))
+        if ((this.lineComment) || this.mnemonic.equals("ORG") || this.mnemonic.equals("END") || this.mnemonic.equals("EQU"))
         {
             return 0;
+        }
+        if (this.mnemonic.equals("DSA"))
+        {
+            return 3;
         }
         if (this.mnemonic.contains("DC"))
         {
@@ -60,11 +63,17 @@ public class Instruction
                 return operands[0].length();
             }
         }
-        if (this.mnemonic.contains("B"))
+        if (this.mnemonic.charAt(0) == 'B')
         {
+
             if (numOperands > 2)
             {
                 return 1 + 3 * (numOperands-1) + 1;
+            }
+            if (this.mnemonic.length() > 1)
+            {
+                // 1 for the B, 3 for the address, 1 for the d-character
+                return 1 + 3 + 1;
             }
             return 1 + 3 * numOperands;
         }
@@ -73,10 +82,6 @@ public class Instruction
     
     public void setMnemonic(String m)
     {
-        if (m.contains("*"))
-        {
-            comment = true;
-        }
         this.mnemonic = m;
     }
 
@@ -88,14 +93,35 @@ public class Instruction
             newOperands[i] = operands[i];
         }
         newOperands[operands.length] = arg;
-        if (!arg.contains("* "))
-            numOperands ++;
         this.operands = newOperands;
+        this.numOperands = this.operands.length;
     }
     
     public boolean isComment()
     {
-        return this.comment;
+        return this.lineComment || this.hasComment;
+    }
+
+    public boolean isLineComment()
+    {
+        return this.lineComment;
+    }
+
+    public void setLineComment(String comm)
+    {
+        this.commentStr = comm;
+        this.lineComment = true;
+    }
+
+    public void addComment(String comm)
+    {
+        this.hasComment = true;
+        this.commentStr = comm;
+    }
+
+    public boolean containsComment()
+    {
+        return this.hasComment;
     }
 
     public String getLabel()
@@ -130,9 +156,9 @@ public class Instruction
 
     public String generateCode()
     {
-        if (comment)
+        if (lineComment)
         {
-            return mnemonic;
+            return commentStr.contains("*") ? commentStr : "     * " + commentStr.replace("     ","");
         }
         String line = "     ";
         line += label;
@@ -153,28 +179,20 @@ public class Instruction
             line += " ";
         }
         
-        String ops = "";
         for (int i = 0 ; i < operands.length; i++)
         {
-            if (operands[i] != null)
+            if (i + 1 < operands.length)
             {
-                if (operands[i].contains("* ") && i == operands.length - 1)
-                {
-                    line = line.substring(0,line.length() - 1);
-                    while(line.length() < 38)
-                    {
-                        line += " ";
-                    }
-                    line += operands[i];
-                } else {
-                    line += operands[i]+",";
-                }
+                line += operands[i]+",";
+            } else {
+                line += operands[i];
             }
         }
-        
-        if (line.charAt(line.length() - 1) == ',')
+
+        if(hasComment)
         {
-            line = line.substring(0,line.length()-1);
+            while(line.length() < 39) line += " ";
+            line += "*" + commentStr;
         }
         
         return line + "\n" ;
@@ -191,7 +209,7 @@ public class Instruction
                 op += " op"+i +": "+ operands[i] + ",";
             }
         }        
-        return "lbl: " + label + ", mnemonic: " + mnemonic + (op.length() > 0 ? op.substring(0,op.length() - 1):"") +", is comment: " + comment + " , size: " + getSize();
+        return "comment: "+commentStr+", lbl: " + label + ", mnemonic: " + mnemonic + (op.length() > 0 ? op.substring(0,op.length() - 1):"") + ", hasComment: "+hasComment+" , line_com: "+lineComment+" , size: " + getSize();
     }
 
 }

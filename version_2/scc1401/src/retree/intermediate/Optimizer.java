@@ -1,11 +1,11 @@
 /*
-	Optimizer.java
+    Optimizer.java
 
     The Small-C cross-compiler for IBM 1401
 
-	April-9-2015
+    April-9-2015
 
-	By Matt Pleva, Luca Severini
+    By Matt Pleva, Luca Severini
 */
 
 package retree.intermediate;
@@ -21,8 +21,18 @@ public class Optimizer
     public final static HashMap<String,String> constantLabelTransform = new HashMap<String,String>();
     public final static ArrayList<Instruction> instr = new ArrayList<Instruction>();
     public final static HashMap<String,String> labelTransform = new HashMap<String,String>();
-    public final static HashMap<Integer,Instruction> commentsPlacement = new HashMap<Integer,Instruction>();
+    private static Instruction codeAndDataPosition = new Instruction();
     private static boolean dropComments = false;
+
+    public static void setORGPosition(Instruction i)
+    {
+        codeAndDataPosition = i;
+    }
+
+    public static Instruction getLastInstruction()
+    {
+        return instr.get(instr.size()-1);
+    }
 
     public static void CollapseInstrcs()
     {
@@ -58,7 +68,7 @@ public class Optimizer
                     break;
                 }
             }
-            if (instr.get(i).getMnemonic().contains("*") && !instr.get(i).getLabel().equals(""))
+            if (instr.get(i).isLineComment() && !instr.get(i).getLabel().equals(""))
             {
                 if (!instr.get(i+1).getLabel().equals(""))
                 {
@@ -69,7 +79,6 @@ public class Optimizer
                     instr.get(i+1).setLabel(instr.get(i).getLabel());
                     instr.get(i).setLabel("");
                 }
-
             }
         }
     }
@@ -125,7 +134,7 @@ public class Optimizer
                     }
                 }
             }
-            else if (instr.get(i).getLabel().equals("START"))
+            else if (instr.get(i).getLabel() != null && instr.get(i).getLabel().equals("START"))
             {
                 afterStart = true;
             }
@@ -142,31 +151,14 @@ public class Optimizer
         instr.add(i);
     }
 
-    public static void addInstruction(String comment, String label, String op, String ... args)
-    {
-		if (comment.length() > 0 && !(label.length() > 0 && op.length() > 0))
-        {
-            instr.add(new Instruction("", RetreeUtils.makeLineComment(comment)));
+    public static void addInstruction(String comment, String label, String op, String ... args) {
+        if ((label.length() > 0 || op.length() > 0)) {
+
+            instr.add(new Instruction(comment, label, op, args));
+        } else if (comment.length() > 0 && !(label.length() > 0 && op.length() > 0)) {
+            instr.add(new Instruction(RetreeUtils.makeLineComment(comment)));
         }
-		
-        if ((label.length() > 0 || op.length() > 0))
-        {
-            if (comment.length() > 0)
-            {
-                String[] newArgs = new String[args.length + 1];
-                for (int i = 0; i < args.length; i++)
-                {
-                    newArgs[i] = args[i];
-                }
-				
-                newArgs[args.length] = "* " + comment;
-                instr.add(new Instruction(label, op, newArgs));
-            } 
-			else 
-			{
-                instr.add(new Instruction(label, op, args));
-            }
-        }
+
     }
 
     public static void addInstructionAtPos(int pos, Instruction i)
@@ -177,9 +169,9 @@ public class Optimizer
     public static void addSnippet(String snippetName)
     {
         if (!snippetsUsed.contains(snippetName))
-		{
+        {
             snippetsUsed.add(snippetName);
-		}
+        }
     }
 
     private static void addSnippetInstructions(String snippetName)
@@ -214,9 +206,15 @@ public class Optimizer
             if (item instanceof String)
             {
                 String s = (String)item;
-                addSnippetInstructions(s);
+                if (!s.equals("SNIP_DIV"))
+                    addSnippetInstructions(s);
             }
         }
+    }
+
+    private static void PutDivSnippet()
+    {
+        addSnippetInstructions("SNIP_DIV");
     }
 
     private static void PutConstants()
@@ -230,7 +228,7 @@ public class Optimizer
             {
                 String key = (String) keyobj;
                 String value = constantLabelTransform.get(key);
-                addInstruction(new Instruction(value,"DCW",key));
+                addInstruction(new Instruction("",value,"DCW",key));
             }
         }
     }
@@ -260,30 +258,50 @@ public class Optimizer
         }
     }
 
+    private static int findCodePosition()
+    {
+        int ret = 0;
+        int len = 0;
+        String pos = codeAndDataPosition.getOperand(0);
+        while(len < pos.length())
+        {
+            ret += pos.charAt(len++)-'0';
+            ret *= 10;
+        }
+        return ret/10;
+    }
+
     public static String GenerateCode()
     {
         if (dropComments)
         {
             removeComments();
         }
-		
+        
         System.out.println("Collapse instructions");
         CollapseInstrcs();
-		
+
         System.out.println("Moving labels");
         ReLabel();
-		
-        System.out.println("Labeling constants");
-        ConstantLabel();
-		
+
         System.out.println("Adding snippets");
         PutSnippets();
-		
+
+        System.out.println("Labeling constants");
+        ConstantLabel();
+
+        System.out.println("Adding position sensitive snippets");
+        PutDivSnippet();
+
         System.out.println("Putting labels and constants in");
         PutConstants();
-		
-        addInstruction(new Instruction("", "END", "START", "* End of program code."));
-		
+
+        addInstruction(new Instruction("End of program code.", "","END", "START"));
+
+        int codePosition = 0;
+        int initalCodePosition = codePosition = findCodePosition();
+        System.out.println(codePosition);
+        
         System.out.println("Starting to generate code ...");
         String code = "";
         int size = 0;
@@ -291,9 +309,13 @@ public class Optimizer
         {
             size += i.getSize();
             code += i.generateCode();
-            // System.out.println(i);
+            if(i.getSize() > 0) {
+                codePosition += i.getSize();
+                System.out.println(i + " Pos: " + (codePosition - 23));
+            }
         }
-		System.out.println("Size: " + size);
+        // 23 is the size of the header which is not placed at the code location
+        System.out.println("Size: " + (size - 23));
         return code;
     }
 }

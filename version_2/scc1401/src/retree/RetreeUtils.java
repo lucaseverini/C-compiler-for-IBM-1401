@@ -32,15 +32,8 @@ public class RetreeUtils
 		{
 			if(lineComment != null && !lineComment.isEmpty())
 			{
-				String[] newArgs = new String[args.length + 1];
 				
-				for(int idx = 0; idx < args.length; idx++)
-				{
-					newArgs[idx] = args[idx];
-				}
-				newArgs[args.length] = "* " + lineComment;
-				
-				Optimizer.addInstruction("", label != null ? label : "", operation, newArgs);
+				Optimizer.addInstruction(lineComment, label != null ? label : "", operation, args);
 			}
 			else
 			{
@@ -581,7 +574,7 @@ public class RetreeUtils
 		{
 			code += INS(null, null, "ORG", Integer.toString(SmallCC.codeMem));
 		}
-
+		Optimizer.setORGPosition(Optimizer.getLastInstruction());
 		code += INS("Program starts here", "START", "NOP");
 		code += "\n";
 
