@@ -589,7 +589,7 @@ FunctionDefinition functionDefinition() : {
 	String name;
 	BlockStatement block;
 
-	SmallCC.currentBlock = null;	
+	SmallCC.currentBlock = null;
 
 	variableTable.push();
 
@@ -1328,6 +1328,7 @@ Expression AtomicExpression()  : {
 				if (str.length() != 1)
 				{
 					//invalid char constant.
+					throw
 					return null;
 				}
 				val = Character.toUpperCase(str.charAt(0));

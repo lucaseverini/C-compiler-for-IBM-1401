@@ -206,15 +206,20 @@ public class Optimizer
             if (item instanceof String)
             {
                 String s = (String)item;
-                if (!s.equals("SNIP_DIV"))
+                if (!s.equals("SNIP_DIV") && !s.equals("header"))
                     addSnippetInstructions(s);
             }
         }
     }
 
-    private static void PutDivSnippet()
+    private static void PutPosSensitivSnippets()
     {
         addSnippetInstructions("SNIP_DIV");
+    }
+
+    private static void PutHeader()
+    {
+        addSnippetInstructions("header");
     }
 
     private static void PutConstants()
@@ -271,6 +276,18 @@ public class Optimizer
         return ret/10;
     }
 
+    private static int parseORGPos(String orgpos)
+    {
+        int ret = 0;
+        int len = 0;
+        while(len < orgpos.length())
+        {
+            ret += orgpos.charAt(len++)-'0';
+            ret *= 10;
+        }
+        return ret/10;
+    }
+
     public static String GenerateCode()
     {
         if (dropComments)
@@ -291,31 +308,43 @@ public class Optimizer
         ConstantLabel();
 
         System.out.println("Adding position sensitive snippets");
-        PutDivSnippet();
+        PutPosSensitivSnippets();
 
         System.out.println("Putting labels and constants in");
         PutConstants();
 
         addInstruction(new Instruction("End of program code.", "","END", "START"));
 
-        int codePosition = 0;
-        int initalCodePosition = codePosition = findCodePosition();
-        System.out.println(codePosition);
-        
         System.out.println("Starting to generate code ...");
         String code = "";
         int size = 0;
         for (Instruction i: instr)
         {
             size += i.getSize();
-            code += i.generateCode();
-            if(i.getSize() > 0) {
-                codePosition += i.getSize();
-                System.out.println(i + " Pos: " + (codePosition - 23));
-            }
         }
-        // 23 is the size of the header which is not placed at the code location
-        System.out.println("Size: " + (size - 23));
+
+        System.out.println("Size: " + (size));
+        boolean aboveStart = true;
+        // set all of the orgs above the code org to have correct values
+//        for (Instruction i: instr)
+//        {
+//            if (i.getLabel().equals("START"))
+//                break;
+//            if (aboveStart && i.getMnemonic().equals("ORG"))
+//            {
+//                i.setArgument(0,""+(15999 - (size)));
+//            }
+//            size -= i.getSize();
+//        }
+
+        System.out.println("Adding in header");
+        PutHeader();
+
+        for (Instruction i : instr)
+        {
+            code += i.generateCode();
+        }
+
         return code;
     }
 }

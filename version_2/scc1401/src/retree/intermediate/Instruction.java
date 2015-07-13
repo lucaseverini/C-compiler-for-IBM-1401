@@ -96,6 +96,12 @@ public class Instruction
         this.operands = newOperands;
         this.numOperands = this.operands.length;
     }
+
+    public void setArgument(int pos, String arg)
+    {
+        if (pos < this.operands.length)
+            this.operands[pos] = arg;
+    }
     
     public boolean isComment()
     {

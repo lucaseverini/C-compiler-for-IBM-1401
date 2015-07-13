@@ -18,6 +18,8 @@ import static retree.RetreeUtils.*;
 
 public class FunctionCallExpression extends Expression 
 {
+
+	private static HashMap<String,Boolean> functionCalls = new HashMap<String,Boolean>();
 	private final ConstantExpression function;
 	private final List<Expression> arguments;
 
@@ -45,9 +47,35 @@ public class FunctionCallExpression extends Expression
 		this.arguments = arguments;
 	}
 
+
+	public static boolean isCalledAndNotProcessed(String name)
+	{
+		if (functionCalls.keySet().contains(name))
+			return !functionCalls.get(name);
+		return false;
+	}
+
+	public static boolean finishedProcessing() {
+		boolean ret = false;
+		for (String s : functionCalls.keySet())
+		{
+			if (functionCalls.get(s) == false)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
 	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
+
+		if (!functionCalls.keySet().contains(SmallCC.getFunctionNameFromExpression(function)))
+		{
+			functionCalls.put(SmallCC.getFunctionNameFromExpression(function),false);
+		}
+
 		String code = COM("Function Call " + this.toString());
 		
 		// First, push room for our return address to the stack.
@@ -114,5 +142,9 @@ public class FunctionCallExpression extends Expression
 		}
 		
 		return name + "(" + s + ")";
+	}
+
+	public static void removeCall(String s) {
+		functionCalls.put(s,true);
 	}
 }
