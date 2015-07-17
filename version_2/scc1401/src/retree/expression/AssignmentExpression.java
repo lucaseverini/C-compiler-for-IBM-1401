@@ -21,7 +21,7 @@ public class AssignmentExpression extends Expression
 	{
 		super(l.getType());
 		
-		if (! l.getType().equals(r.getType())) 
+		if (!l.getType().equals(r.getType())) 
 		{
 			throw new retree.exceptions.TypeMismatchException(r, l.getType(), r.getType());
 		}

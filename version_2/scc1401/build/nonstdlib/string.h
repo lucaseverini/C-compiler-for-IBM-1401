@@ -63,13 +63,38 @@ char *itoa(int value, char *str, int base)
 	return start;
 }
 
-/*
+int atoi(char *str)
+{
+	char *p;
+	int val = 0;
+	int mul = 1;
+	int idx = 0;
+	int neg = 0;
+	
+	if(str[0] == '-')
+	{
+		neg = 1;
+		str++;
+	}
+	
+	p = str + strlen(str) - 1;
+	while (p >= str && idx++ < 5)
+	{
+		val += ((int)*p) * mul;
+		mul *= 10;
+		p--;
+	}
+	
+	if(neg)
+	{
+		val *= -1;
+	}
+	
+	return val;
+}
+
 int sprintf(char *str, char *cformat_str, ...)
 {
-	// NOTE
-	// integers, pointers and chars can't be intermixed freely if cformat_str prints more than one argument 
-	// Needs to implement varsize() which returns the real length of the variable (1, 3 or 5)
-	
 	char *arg;
 	char c;
 	
@@ -84,44 +109,47 @@ int sprintf(char *str, char *cformat_str, ...)
 		{
 			c = *cformat_str++;
 			
-			if (c == '%')
+			if (c == '%')						// Prints '%'
 			{
 				*str++ = '%';
 			}
-			else if (c == 'c')
+			else if (c == 'c')					// Prints char
 			{
 				*str++ = *arg;
 				
 				arg -= sizeof(char);
 			}
-			else if (c == 's')
+			else if (c == 's')					// Prints string
 			{
 				char *s;
-				s = *((char **)arg)
+				s = *((char **)arg);
+				
 				while(*s != '\0')
 				{
-					*str++ = *s;
+					*str++ = *s++;
 				}
-
+				
 				arg -= sizeof(char*);
 			}
-			else if (c == 'd')					// Prints 5-digit integer 
+			else if (c == 'd')					// Prints 5-digit integer
 			{
-				char a[7];
-				itoa(*((int*)arg), a, 10);
-
-				while(*a != '\0')
+				char a[10];
+				char *s;
+				s = itoa(*((int*)arg), a, 10);
+				
+				while(*s != '\0')
 				{
-					*str++ = *a;
+					*str++ = *s++;
 				}
 				
 				arg -= sizeof(int);
 			}
-			else
+			else								// Prints everything else
 			{
-				return;
+				*str++ = c;
 			}
 		}
 	}
+	
+	*str = '\0';
 }
-*/

@@ -21,6 +21,7 @@ public class CastExpression extends Expression
 	public CastExpression(Type castType, Expression child) 
 	{
 		super(castType);
+		
 		this.child = child;
 	}
 
@@ -49,6 +50,7 @@ public class CastExpression extends Expression
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = child.generateCode(valueNeeded);
+		
 		if (valueNeeded) 
 		{
 			if (getType() instanceof PointerType && (!(child.getType() instanceof PointerType) && child.getType().equals(Type.intType))) 

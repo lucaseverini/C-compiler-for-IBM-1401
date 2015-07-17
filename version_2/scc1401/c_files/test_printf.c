@@ -15,7 +15,7 @@ int x = 0;
 
 int main ()
 {
-	int i = 4;
+	int i = 1;
 
 	switch(++i)
 	{
@@ -37,18 +37,13 @@ int main ()
 	}
 
 	printf("%d\n", i);
-	
+
 	while(i < 20)
 	{
-		printf("%d\n", i++);
-		
-		if(i == 15)
-		{
-			break;
-		}
+		printf("%d\n", i);		
 	}
-	
-	printf("%d\n", i);
+
+	printf("%d\n", 20000);
 /*
 	char *num = "12345";
 
