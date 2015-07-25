@@ -21,6 +21,8 @@ public class ExpressionStatement implements Statement
 		this.exp = exp.collapse();
 	}
 
+	public Expression getExpression(){return exp;}
+
 	@Override
 	public String generateCode()
 	{

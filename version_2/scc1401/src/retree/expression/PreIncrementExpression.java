@@ -21,7 +21,7 @@ public class PreIncrementExpression extends Expression
 	public PreIncrementExpression(LValue l) throws TypeMismatchException 
 	{
 		super(l.getType());
-		
+		associativity = false;
 		this.l = l;
 	}
 
@@ -63,6 +63,16 @@ public class PreIncrementExpression extends Expression
 		}
 		
 		return code;
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return l;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
 	}
 
 	@Override

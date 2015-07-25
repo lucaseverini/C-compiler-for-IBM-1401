@@ -87,7 +87,17 @@ public class LessThanExpression extends Expression
 		{
 			return l.generateCode(false) + r.generateCode(false);
 		}
-	} 
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return l;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return r;
+	}
 
 	@Override
     public String toString()

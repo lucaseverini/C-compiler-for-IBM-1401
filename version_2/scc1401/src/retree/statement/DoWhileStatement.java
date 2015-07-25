@@ -52,5 +52,9 @@ public class DoWhileStatement extends LoopStatement
     {
 		return "[do-while (" + condition + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + "]";
 	}
+
+	public Expression getCondition() {
+		return condition;
+	}
 }
 

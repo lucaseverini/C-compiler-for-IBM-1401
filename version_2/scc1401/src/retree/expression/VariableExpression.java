@@ -206,6 +206,16 @@ public class VariableExpression extends LValue
 		return code;
 	}
 
+	@Override
+	public Expression getLeftExpression() {
+		return null;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
+	}
+
 	public boolean isStatic() 
 	{
 		return isStatic;

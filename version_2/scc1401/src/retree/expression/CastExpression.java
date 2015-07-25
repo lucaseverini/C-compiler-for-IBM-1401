@@ -21,6 +21,7 @@ public class CastExpression extends Expression
 	public CastExpression(Type castType, Expression child) 
 	{
 		super(castType);
+		associativity = false;
 		this.child = child;
 	}
 
@@ -95,7 +96,17 @@ public class CastExpression extends Expression
 		
 		return code;
 	}
-	
+
+	@Override
+	public Expression getLeftExpression() {
+		return child;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
+	}
+
 	@Override
 	public String toString() 
 	{

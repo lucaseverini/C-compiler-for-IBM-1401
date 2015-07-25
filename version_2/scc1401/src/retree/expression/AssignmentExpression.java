@@ -20,7 +20,7 @@ public class AssignmentExpression extends Expression
 	public AssignmentExpression(LValue l, Expression r) throws Exception 
 	{
 		super(l.getType());
-		
+		associativity = false;
 		if (! l.getType().equals(r.getType())) 
 		{
 			throw new retree.exceptions.TypeMismatchException(r, l.getType(), r.getType());
@@ -80,6 +80,16 @@ public class AssignmentExpression extends Expression
 		code += "\n";
 		
 		return code;
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return l;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return r;
 	}
 
 	@Override

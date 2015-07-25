@@ -81,33 +81,55 @@ public class FunctionCallExpression extends Expression
 		// First, push room for our return address to the stack.
 		FunctionType functionType = (FunctionType)function.getType();
 		code += PUSH(functionType.getReturnType().sizeof());
-		
-		// Push all our parameters in reverse order
-		int i = arguments.size();
-		while (i --> 0) 
-		{
-			code += arguments.get(i).generateCode(true);
+
+		if (SmallCC.NO_STACK) {
+			// save the scratch regs
+			code += PUSH(5,"SCRT1");
+			code += PUSH(5,"SCRT2");
+			code += PUSH(5,"SCRT3");
+			// if no stack push arguments on in order
+			int i = 0;
+			while(i < arguments.size()) {
+				code += arguments.get(i++).generateCode(true);
+			}
+		} else {
+			// Push all our parameters in reverse order
+			int i = arguments.size();
+			while (i-- > 0) {
+				code += arguments.get(i).generateCode(true);
+			}
+			// Make a new frame
+			code += COM("Create a stack frame with X3 pointer to it");
+			code += PUSH(3, "X3");
+			code += INS("Move X2 in X3", null, "MCW", "X2", "X3");
+			code += "\n";
 		}
 		
-		// Make a new frame
-		code += COM("Create a stack frame with X3 pointer to it");
-		code += PUSH(3, "X3");
-		code += INS("Move X2 in X3", null, "MCW", "X2", "X3");
-		code += "\n";
+
 		
 		// Branch
 		String name = SmallCC.getFunctionNameFromExpression(function);
 		code += INS("Jump to function " + name, null, "B", label(function.getValue()));
-		code += "\n";
-		
-		// AFTER THE CALL:
-		// Restore our frame
-		code += POP(3, "X3");
+		if (!SmallCC.NO_STACK)
+		{
+			code += "\n";
+
+			// AFTER THE CALL:
+			// Restore our frame
+			code += POP(3, "X3");
+		}
 		
 		// Pop off all the arguments
 		for (Expression e: arguments) 
 		{
 			code += POP(e.getType().sizeof());
+		}
+
+		if (SmallCC.NO_STACK)
+		{
+			code += POP(5,"SCRT1");
+			code += POP(5,"SCRT2");
+			code += POP(5,"SCRT3");
 		}
 		
 		// Now our return address should be at the top of the stack.
@@ -142,6 +164,16 @@ public class FunctionCallExpression extends Expression
 		}
 		
 		return name + "(" + s + ")";
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return null;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
 	}
 
 	public static void removeCall(String s) {

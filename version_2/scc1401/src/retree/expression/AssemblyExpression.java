@@ -13,7 +13,7 @@ package retree.expression;
 import compiler.SmallCC;
 import java.util.*;
 import static retree.RetreeUtils.*;
-import retree.intermediate.Optimizer;
+//import retree.intermediate.Optimizer;
 import retree.type.*;
 
 public class AssemblyExpression extends Expression
@@ -111,8 +111,8 @@ public class AssemblyExpression extends Expression
 	{
 		if(SmallCC.optimize > 0)
 		{
-			Optimizer.addInstruction("Start asm block", "", operation, arguments);
-			Optimizer.addInstruction("End asm block", "", "");
+//			Optimizer.addInstruction("Start asm block", "", operation, arguments);
+//			Optimizer.addInstruction("End asm block", "", "");
 			
 			return "";	// We don't need instruction if optimizer is active
 		}
@@ -121,7 +121,18 @@ public class AssemblyExpression extends Expression
 			return COM("Start asm block") + asmInstructions + COM("End asm block");
 		}
 	}
-	
+
+
+	@Override
+	public Expression getLeftExpression() {
+		return null;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
+	}
+
 	@Override
 	public String toString() 
 	{

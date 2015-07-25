@@ -42,6 +42,11 @@ public class IfStatement implements Statement
 		}
 	}
 
+	public Expression getCondition()
+	{
+		return condition;
+	}
+
 	public String generateCode() throws Exception 
 	{		
 		String code = COM("If " + this.toString());

@@ -22,7 +22,7 @@ public class NotExpression extends Expression
     public NotExpression(Expression l) throws TypeMismatchException
 	{
         super(Type.intType);
-		
+		associativity = false;
         this.l = l;
     }
 
@@ -63,6 +63,16 @@ public class NotExpression extends Expression
         code += INS("End of Not", labelEnd, "NOP");
 		
         return code;
+    }
+
+    @Override
+    public Expression getLeftExpression() {
+        return l;
+    }
+
+    @Override
+    public Expression getRightExpression() {
+        return null;
     }
 
 	@Override

@@ -61,5 +61,9 @@ public class WhileStatement extends LoopStatement
     {
 		return "[while (" + condition + ") " + body + " top:" + topLabel + " bottom:" + bottomLabel + "]";
 	}
+
+	public Expression getCondition() {
+		return condition;
+	}
 }
 

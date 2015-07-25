@@ -21,6 +21,16 @@ public class CommaExpression extends Expression
 		this.l = l;
 		this.r = r;
 	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return l;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return r;
+	}
 	
 	@Override
 	public String generateCode(boolean valueNeeded) 

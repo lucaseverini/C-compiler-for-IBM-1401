@@ -63,6 +63,16 @@ public class NegExpression extends Expression
 	}
 
 	@Override
+	public Expression getLeftExpression() {
+		return child;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "(" + "-" + child + ")";

@@ -20,6 +20,7 @@ public class AddressOfExpression extends Expression
 	public AddressOfExpression(LValue child) 
 	{
 		super(new PointerType(child.getType()));
+		associativity = false;
 		this.child = child;
 	}
 
@@ -40,6 +41,17 @@ public class AddressOfExpression extends Expression
 	public Expression collapse() 
 	{
 		return new AddressOfExpression(child.collapse());
+	}
+
+
+	@Override
+	public Expression getLeftExpression() {
+		return child;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
 	}
 
 	@Override

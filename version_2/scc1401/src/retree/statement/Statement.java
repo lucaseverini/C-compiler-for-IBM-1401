@@ -10,7 +10,10 @@
 
 package retree.statement;
 
-public interface Statement 
+import retree.exceptions.RegisterAllocationException;
+
+public interface Statement
 {
 	public String generateCode() throws Exception;
+//	public void registerAlloc() throws RegisterAllocationException;
 }

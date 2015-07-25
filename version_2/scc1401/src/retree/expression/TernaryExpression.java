@@ -21,7 +21,7 @@ public class TernaryExpression extends Expression
 	public TernaryExpression(Expression condition, Expression positive, Expression negative) throws TypeMismatchException 
 	{
 		super(positive.getType());
-		
+		associativity = false;
 		if (!positive.getType().equals(negative.getType()))
 		{
 			throw new TypeMismatchException(negative, positive.getType(), negative.getType());
@@ -73,6 +73,16 @@ public class TernaryExpression extends Expression
 		code += INS("End of Ternary", endLabel, "NOP");
 		
 		return code;
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return positive;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return negative;
 	}
 
 	@Override

@@ -22,7 +22,7 @@ public class DereferenceExpression extends LValue
 	public DereferenceExpression(Expression child) throws TypeMismatchException 
 	{
 		super(getReferenceType(child));
-		
+		associativity = false;
 		this.child = child;
 	}
 
@@ -117,6 +117,16 @@ public class DereferenceExpression extends LValue
 		{
 			return null;
 		}
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return child;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
 	}
 
 	@Override

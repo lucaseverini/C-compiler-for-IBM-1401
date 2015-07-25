@@ -150,4 +150,8 @@ public class SwitchStatement implements Statement
     {
         return "[switch (" + expression + ")]";
     }
+
+	public Expression getExpression() {
+		return expression;
+	}
 }

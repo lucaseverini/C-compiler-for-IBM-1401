@@ -21,7 +21,7 @@ public class PreDecrementExpression extends Expression
 	public PreDecrementExpression(LValue l) throws TypeMismatchException 
 	{
 		super(l.getType());
-		
+		associativity = false;
 		this.l = l;
 	}
 
@@ -62,6 +62,16 @@ public class PreDecrementExpression extends Expression
 		}
 		
 		return code;
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return l;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
 	}
 
 	@Override

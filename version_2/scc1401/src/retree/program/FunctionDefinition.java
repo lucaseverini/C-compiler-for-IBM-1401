@@ -1,7 +1,7 @@
 /*
 	FunctionDefinition.java
 
-    The Small-C cross-compiler for IBM 1401
+	The Small-C cross-compiler for IBM 1401
 
 	March-1-2015
 
@@ -69,14 +69,14 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 	@Override
 	public boolean equals(Object o) 
 	{
-        if (!(o instanceof FunctionDefinition))
+		if (!(o instanceof FunctionDefinition))
 		{
-            return false;
+			return false;
 		}
 		
-        FunctionDefinition f = (FunctionDefinition)o;
-        return f.toString().equals(toString());
-    }
+		FunctionDefinition f = (FunctionDefinition)o;
+		return f.toString().equals(toString());
+	}
 
 	@Override
 	public int hashCode()
@@ -88,7 +88,7 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 	public int compareTo(FunctionDefinition f)
 	{
 		int lastCmp = toString().compareTo(f.toString());
-        return (lastCmp != 0 ? lastCmp : toString().compareTo(f.toString()));
+		return (lastCmp != 0 ? lastCmp : toString().compareTo(f.toString()));
 	}
 
 	public BlockStatement getBlock()

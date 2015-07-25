@@ -85,5 +85,17 @@ public class ForStatement extends LoopStatement
 				body + " top:" + topLabel + " bottom:" + bottomLabel + 
 				" continue:" + continueLabel + "]";
 	}
+
+	public Expression getPost() {
+		return post;
+	}
+
+	public Expression getCondition() {
+		return condition;
+	}
+
+	public Expression getInit() {
+		return init;
+	}
 }
 

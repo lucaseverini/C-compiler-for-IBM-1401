@@ -65,4 +65,8 @@ public class ReturnStatement implements Statement
 		
 		return code;
 	}
+
+	public Expression getExpression() {
+		return exp;
+	}
 }

@@ -11,8 +11,8 @@
 package retree.program;
 
 import compiler.SmallCC;
-import jdk.nashorn.internal.ir.FunctionCall;
 import retree.expression.FunctionCallExpression;
+import retree.regalloc.RegisterAllocator;
 
 import static retree.RetreeUtils.*;
 import java.util.List;
@@ -21,6 +21,10 @@ import java.util.Collections;
 
 public class Program 
 {
+	// Number of registers to have
+	private final int numRegs = 16;
+	private RegisterAllocator registerAllocator = new RegisterAllocator(numRegs);
+
 	private final List<Initializer> initializers;
 	private final List<FunctionDefinition> functions;
 	private int mainLabelNumber = -1;
@@ -49,6 +53,7 @@ public class Program
 	// TODO - call main
 	public String generateCode() throws Exception
 	{
+
 		if (mainLabelNumber < 0) 
 		{
 			return null;
@@ -86,6 +91,7 @@ public class Program
 
 		// generate the code for the main method which has a side effect of
 		// setting up the functions main calls
+		registerAllocator.calculatePlacements(main.getBlock());
 		mainFunc += main.generateCode();
 
 		// now the we know what functions main calls lets start generating code for those functions
@@ -96,6 +102,7 @@ public class Program
 				System.out.println(FunctionCallExpression.isCalledAndNotProcessed(func.toString()) + " " + func.toString());
 				if (FunctionCallExpression.isCalledAndNotProcessed(func.toString())) {
 					// now generate the code and restart searching for the functions
+					registerAllocator.calculatePlacements(func.getBlock());
 					funcs += func.generateCode();
 					FunctionCallExpression.removeCall(func.toString());
 					break;

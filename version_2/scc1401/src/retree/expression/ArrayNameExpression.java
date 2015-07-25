@@ -146,6 +146,16 @@ public class ArrayNameExpression extends Expression
 	}
 
 	@Override
+	public Expression getLeftExpression() {
+		return null;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
+	}
+
+	@Override
 	public String toString() 
 	{
 		return array.toString();

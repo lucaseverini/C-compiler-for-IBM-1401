@@ -64,6 +64,16 @@ public class PostDecrementExpression extends Expression
 	}
 
 	@Override
+	public Expression getLeftExpression() {
+		return l;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "(" + l + "--" + ")";

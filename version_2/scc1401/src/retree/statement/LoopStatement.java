@@ -39,7 +39,7 @@ public abstract class LoopStatement implements Statement
 		return "";
 	}
 	
-	Statement getBody()
+	public Statement getBody()
 	{
 		return body;
 	}

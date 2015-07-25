@@ -113,6 +113,16 @@ public class SubscriptExpression extends LValue
         return code;
     }
 
+    @Override
+    public Expression getLeftExpression() {
+        return l;
+    }
+
+    @Override
+    public Expression getRightExpression() {
+        return r;
+    }
+
 	@Override
     public String toString()
     {

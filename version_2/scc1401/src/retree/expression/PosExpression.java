@@ -20,7 +20,7 @@ public class PosExpression extends Expression
 	public PosExpression(Expression child) 
 	{
 		super(child.getType());
-		
+		associativity = false;
 		this.child = child;
 	}
 
@@ -34,6 +34,16 @@ public class PosExpression extends Expression
 	public String generateCode(boolean valueNeeded) 
 	{
 		return COM("PosExpression " + this.toString()) + child.generateCode(valueNeeded);
+	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return child;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
 	}
 
 	@Override

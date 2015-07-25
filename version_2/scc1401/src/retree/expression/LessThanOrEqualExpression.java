@@ -84,6 +84,16 @@ public class LessThanOrEqualExpression extends Expression
 	}
 
 	@Override
+	public Expression getLeftExpression() {
+		return l;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return r;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "(" + l + " <= " + r + ")";

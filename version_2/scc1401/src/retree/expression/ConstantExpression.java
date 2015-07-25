@@ -111,4 +111,14 @@ public class ConstantExpression extends Expression
 			return Integer.toString(val);
 		}
 	}
+
+	@Override
+	public Expression getLeftExpression() {
+		return null;
+	}
+
+	@Override
+	public Expression getRightExpression() {
+		return null;
+	}
 }
