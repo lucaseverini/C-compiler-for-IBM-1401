@@ -10,10 +10,13 @@
 
 package retree.statement;
 
-import retree.exceptions.RegisterAllocationException;
+import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
 
-public interface Statement
+import java.util.ArrayList;
+
+public abstract class Statement implements IStatement
 {
-	public String generateCode() throws Exception;
+	public ArrayList<Expression> expressionList = new ArrayList<>();
 //	public void registerAlloc() throws RegisterAllocationException;
 }

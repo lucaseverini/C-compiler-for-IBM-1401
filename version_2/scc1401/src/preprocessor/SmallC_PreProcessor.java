@@ -27,6 +27,7 @@ public class SmallC_PreProcessor
 	static boolean keepComments = false;
 	static boolean printOutput = false;
 	static boolean keepPreprocessedFile = false;
+	static boolean nostack = false;
 
     public static void main(String[] args) throws Exception
     {
@@ -102,7 +103,7 @@ public class SmallC_PreProcessor
 				value = symTable.getValue("DATA");
 				int dataVal = value == null ? 0 : Integer.parseInt(value);
 
-				result = SmallCC.compile(preprocFile, outputFile, stackVal, codeVal, dataVal, optimization);
+				result = SmallCC.compile(preprocFile, outputFile, stackVal, codeVal, dataVal, optimization, nostack);
 				
 				if(result == 0 && outputFile != null)
 				{
@@ -183,6 +184,10 @@ public class SmallC_PreProcessor
 
 				case "-o":	// Output file
 					status = 3;
+					break;
+
+				case "-ns":
+					nostack = true;
 					break;
 
 				default:

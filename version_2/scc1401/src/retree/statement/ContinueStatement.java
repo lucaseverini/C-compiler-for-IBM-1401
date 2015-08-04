@@ -9,10 +9,12 @@
 */
 
 package retree.statement;
+import retree.regalloc.RegisterAllocator;
+
 import java.util.List;
 import static retree.RetreeUtils.*;
 
-public class ContinueStatement implements Statement
+public class ContinueStatement extends Statement
 {
 	private final BlockStatement containerBlock;
 
@@ -22,7 +24,7 @@ public class ContinueStatement implements Statement
 	}
 	
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
 		String code = "";
 		

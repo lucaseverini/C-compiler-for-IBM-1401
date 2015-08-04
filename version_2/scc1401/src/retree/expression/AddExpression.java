@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.type.*;
 
 public class AddExpression extends Expression
@@ -110,21 +112,33 @@ public class AddExpression extends Expression
 		
 		code += l.generateCode(valueNeeded); 
 		code += r.generateCode(valueNeeded);
-		
-		if (valueNeeded) 
-		{
-			int size = -r.getType().sizeof();
 
-			if (l.getType() instanceof PointerType) 
+		if (SmallCC.nostack)
+		{
+			if (l.getType() instanceof  PointerType)
 			{
-				code += INS("Add stack to stack at " + size, null, "MA", STACK_OFF(0), STACK_OFF(size));
+				code += INS("Adding left to right", null, "MA", REG(l), REG(r));
+			} else {
+				code += INS("Add left to right", null, "A", REG(l), REG(r));
+				code += INS("Move result to " + REG(this), null, "LCA", REG(r), REG(this));
 			}
-			else 
+		} else {
+
+			if (valueNeeded)
 			{
-				code += INS("Add stack to stack at " + size, null, "A", STACK_OFF(0), STACK_OFF(size));
+				int size = -r.getType().sizeof();
+
+				if (l.getType() instanceof PointerType)
+				{
+					code += INS("Add stack to stack at " + size, null, "MA", STACK_OFF(0), STACK_OFF(size));
+				}
+				else
+				{
+					code += INS("Add stack to stack at " + size, null, "A", STACK_OFF(0), STACK_OFF(size));
+				}
+
+				code += POP(r.getType().sizeof());
 			}
-			
-			code += POP(r.getType().sizeof());
 		}
 		
 		return code;

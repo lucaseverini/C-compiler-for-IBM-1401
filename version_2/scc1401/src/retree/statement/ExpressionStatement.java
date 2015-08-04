@@ -11,10 +11,15 @@
 package retree.statement;
 
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
 
-public class ExpressionStatement implements Statement
+import java.util.ArrayList;
+
+public class ExpressionStatement extends Statement
 {
 	private final Expression exp;
+
+	private ArrayList<Expression> list = new ArrayList<>();
 	
 	public ExpressionStatement(Expression exp)
 	{
@@ -23,9 +28,12 @@ public class ExpressionStatement implements Statement
 
 	public Expression getExpression(){return exp;}
 
+	public ArrayList<Expression> getList(){return list;}
+
 	@Override
-	public String generateCode()
+	public String generateCode(RegisterAllocator registerAllocator)
 	{
+		registerAllocator.linearScanRegisterAllocation(expressionList);
 		return exp.generateCode(false);
 	}
 

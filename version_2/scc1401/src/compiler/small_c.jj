@@ -53,6 +53,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
 
 	public static String autocoderFile = null;
 	public static String compilationTime = null;
+	public static boolean nostack = false;
 
 	public static boolean inAsmFunc = false;
 
@@ -144,12 +145,13 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants/*@egen*/
         }
         else
         {
-            System.exit(compile(args[0], null, 0, 0, 0, 0));
+            System.exit(compile(args[0], null, 0, 0, 0, 0, false));
         }
 	}
 
-	public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc, int optimization) throws Exception
+	public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc, int optimization, boolean no_stack) throws Exception
 	{
+		nostack = no_stack;
     	SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
 		compilationTime = sdf.format(Calendar.getInstance().getTime());
 
@@ -924,7 +926,7 @@ FunctionDefinition functionDefinition() : {/*@bgen(jjtree) functionDefinition */
 	String name;
 	BlockStatement block;
 
-	SmallCC.currentBlock = null;	
+	SmallCC.currentBlock = null;
 
 	variableTable.push();
 
@@ -1386,7 +1388,7 @@ Expression assignmentExpression() : {/*@bgen(jjtree) assignmentExpression */
 /*@egen*/
     (l = ternaryExpression()
 			( "+=" r = assignmentExpression() {
-				r = new AddExpression(l, r);
+				r = new AddExpression(r, l);
 			}
 			| "-=" r = assignmentExpression() {
 				r = new SubtractExpression(l, r);

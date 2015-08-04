@@ -11,10 +11,12 @@
 package retree.statement;
 
 import compiler.SmallCC;
+import retree.regalloc.RegisterAllocator;
+
 import java.util.List;
 import static retree.RetreeUtils.*;
 
-public class GotoStatement implements Statement
+public class GotoStatement extends Statement
 {
 	private final String identifier;
 	private final String label;
@@ -28,7 +30,7 @@ public class GotoStatement implements Statement
 	}
 	
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
 		String code = "";
 		

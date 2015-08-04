@@ -16,10 +16,11 @@ import java.util.List;
 import static retree.RetreeUtils.*;
 import retree.expression.ConstantExpression;
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
 import retree.type.PointerType;
 import retree.type.Type;
 
-public class SwitchStatement implements Statement
+public class SwitchStatement extends Statement
 {
 	private final Expression expression;
 	private final BlockStatement body;
@@ -40,9 +41,10 @@ public class SwitchStatement implements Statement
 		
 		this.bottomLabel = label(SmallCC.nextLabelNumber());
 	}
-	
+
+	// TODO a lot of reg alloc stuff
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
 		String code = "\r";
 		
@@ -124,7 +126,7 @@ public class SwitchStatement implements Statement
 				code += INS("Jump to End of Switch block", null, "B", bottomLabel);
 			}
 						
-			code += body.generateCode();
+			code += body.generateCode(registerAllocator);
 		}
 		
 		code += INS("Last switch block instruction", bottomLabel, "NOP");

@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.type.*;
 
 public class ConstantExpression extends Expression
@@ -37,42 +39,71 @@ public class ConstantExpression extends Expression
 	@Override
 	public String generateCode(boolean valueNeeded) 
 	{
-		if (valueNeeded) 
+		if (SmallCC.nostack)
 		{
-			if (getType() instanceof PointerType) 
-			{
-				String constVal = ADDR_CONST(val, false);					
-				String code = COM("Constant (" + this.toString() + " : " + constVal + ")"); 
-				code += PUSH(getType().sizeof(), constVal);
-				
-				return code;
-			} 
-			else if (getType().equals(Type.intType)) 
-			{
-				String constVal = NUM_CONST(val, false);
-				String code = COM("Constant (" + this.toString() + " : " + constVal + ")"); 
-				code += PUSH(getType().sizeof(), constVal);
-				
-				return code;
-			} 
-			else if (getType().equals(Type.charType)) 
-			{
-				String constVal = CHAR_CONST(val, false);
-				String code = COM("Constant (" + this.toString() + " : " + constVal + ")"); 
-				code += PUSH(getType().sizeof(), constVal);
-				
-				return code;
-			} 
-			else 
-			{
-				// oops!
-				return null;
+			if (valueNeeded) {
+				if (getType() instanceof PointerType)
+				{
+					String constVal = ADDR_CONST(val, false);
+					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
+					code += INS("Put pointer at " + REG(this), null, "MCW", constVal, REG(this));
+					return code;
+				}
+				else if (getType().equals(Type.intType))
+				{
+					String constVal = NUM_CONST(val, false);
+					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
+					code += INS("Put int at " + REG(this), null, "MCW", constVal, REG(this));
+					return code;
+				}
+				else if (getType().equals(Type.charType))
+				{
+					String constVal = CHAR_CONST(val, false);
+					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
+					code += INS("Put char at " + REG(this), null, "MCW", constVal, REG(this));
+					return code;
+				}
+				else
+				{
+					// oops!
+					return null;
+				}
 			}
-		} 
-		else 
-		{
-			return "";
+		} else {
+			if (valueNeeded)
+			{
+				if (getType() instanceof PointerType)
+				{
+					String constVal = ADDR_CONST(val, false);
+					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
+					code += PUSH(getType().sizeof(), constVal);
+
+					return code;
+				}
+				else if (getType().equals(Type.intType))
+				{
+					String constVal = NUM_CONST(val, false);
+					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
+					code += PUSH(getType().sizeof(), constVal);
+
+					return code;
+				}
+				else if (getType().equals(Type.charType))
+				{
+					String constVal = CHAR_CONST(val, false);
+					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
+					code += PUSH(getType().sizeof(), constVal);
+
+					return code;
+				}
+				else
+				{
+					// oops!
+					return null;
+				}
+			}
 		}
+			return "";
 	}
 
 	public Boolean isBlank() 

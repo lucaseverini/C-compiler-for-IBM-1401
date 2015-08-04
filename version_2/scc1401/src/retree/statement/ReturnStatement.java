@@ -10,10 +10,13 @@
 
 package retree.statement;
 
+import compiler.SmallCC;
 import retree.expression.*;
+import retree.regalloc.RegisterAllocator;
+
 import static retree.RetreeUtils.*;
 
-public class ReturnStatement implements Statement 
+public class ReturnStatement extends Statement
 {
 	private final Expression exp;
 	private final VariableExpression returnLocation;
@@ -25,11 +28,13 @@ public class ReturnStatement implements Statement
 		this.returnLocation = returnLocation;
 		this.returnLabel = returnLabel;
 	}
-	
+
+	// TODO reg alloc stuff
 	@Override
-	public String generateCode() 
+	public String generateCode(RegisterAllocator registerAllocator)
 	{
 		String code = "";
+		registerAllocator.linearScanRegisterAllocation(expressionList);
 		
 		if(returnLabel != null)
 		{
@@ -50,7 +55,13 @@ public class ReturnStatement implements Statement
 
 			int offset = returnLocation.getOffset();
 			code += exp.generateCode(true);
-			code += POP(exp.getType().sizeof(), OFF(offset));
+			if (SmallCC.nostack)
+			{
+				code += INS("Move X3 back to return addr", null, "MA", "@"+ADDR_COD(offset)+"@", "X3");
+				code += INS("Copy ret value to return value location",null,"LCA", REG(exp), "0+X3");
+			} else {
+				code += POP(exp.getType().sizeof(), OFF(offset));
+			}
 		}
 		
 		//code += COM("Set the return flag, so we know to deallocate our stack");
@@ -64,6 +75,10 @@ public class ReturnStatement implements Statement
 		code += "\n";
 		
 		return code;
+	}
+
+	public VariableExpression getReturnLocation() {
+		return returnLocation;
 	}
 
 	public Expression getExpression() {

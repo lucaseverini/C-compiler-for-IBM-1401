@@ -14,7 +14,7 @@ import static retree.RetreeUtils.*;
 import retree.exceptions.*;
 import retree.type.*;
 
-public class SubscriptExpression extends LValue 
+public class SubscriptExpression extends LValue
 {
     private Expression l, r;
 
@@ -129,7 +129,13 @@ public class SubscriptExpression extends LValue
         return "(" + l + "[" + r + "]" + ")";
     }
 
-	@Override
+    @Override
+    public void setOffset(int offset)
+    {
+
+    }
+
+    @Override
     public LValue collapse() 
 	{
 /* Broken for now.

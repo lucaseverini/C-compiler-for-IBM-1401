@@ -11,8 +11,11 @@
 package retree.expression;
 
 import compiler.SmallCC;
+import retree.RetreeUtils;
 import retree.exceptions.*;
 import java.util.*;
+
+import retree.program.FunctionDefinition;
 import retree.type.*;
 import static retree.RetreeUtils.*;
 
@@ -56,7 +59,6 @@ public class FunctionCallExpression extends Expression
 	}
 
 	public static boolean finishedProcessing() {
-		boolean ret = false;
 		for (String s : functionCalls.keySet())
 		{
 			if (functionCalls.get(s) == false)
@@ -76,23 +78,34 @@ public class FunctionCallExpression extends Expression
 			functionCalls.put(SmallCC.getFunctionNameFromExpression(function),false);
 		}
 
+		String name = SmallCC.getFunctionNameFromExpression(function);
+
 		String code = COM("Function Call " + this.toString());
-		
+
+		// move x3 forward to x2 position?
+//		code += INS("Move X2 to X3", null, "MCW", "X2", "X3");
+
 		// First, push room for our return address to the stack.
 		FunctionType functionType = (FunctionType)function.getType();
-		code += PUSH(functionType.getReturnType().sizeof());
-
-		if (SmallCC.NO_STACK) {
-			// save the scratch regs
-			code += PUSH(5,"SCRT1");
-			code += PUSH(5,"SCRT2");
-			code += PUSH(5,"SCRT3");
-			// if no stack push arguments on in order
+		if (SmallCC.nostack) {
+			// put args inorder
+			// get label for function
+			String lbl = FunctionDefinition.getFunctionLabel(name);
+			int offset = functionType.getReturnType().getSize() + (16 * Type.intType.getSize());
 			int i = 0;
-			while(i < arguments.size()) {
-				code += arguments.get(i++).generateCode(true);
+			while (i < arguments.size()) {
+				code += arguments.get(i).generateCode(true);
+				code += INS("", null, "MCW", REG(arguments.get(i)), lbl + "+" + (offset + arguments.get(i).getType().getSize()));
+				if (arguments.get(i) instanceof VariableExpression)
+				{
+					VariableExpression variableExpression = (VariableExpression)arguments.get(i);
+					variableExpression.setOffset(offset + variableExpression.getType().getSize());
+				}
+				offset += arguments.get(i++).getType().getSize();
 			}
+			code += INS("Jump to function " + name, null, "B", label(function.getValue()));
 		} else {
+			code += PUSH(functionType.getReturnType().sizeof());
 			// Push all our parameters in reverse order
 			int i = arguments.size();
 			while (i-- > 0) {
@@ -103,41 +116,21 @@ public class FunctionCallExpression extends Expression
 			code += PUSH(3, "X3");
 			code += INS("Move X2 in X3", null, "MCW", "X2", "X3");
 			code += "\n";
+			code += INS("Jump to function " + name, null, "B", label(function.getValue()));
+			// Pop off all the arguments
+			for (Expression e: arguments)
+			{
+				code += POP(e.getType().sizeof());
+			}
+			// Now our return address should be at the top of the stack.
+			// If we don't want a value, pop it
+			if (!valueNeeded)
+			{
+				code += POP(functionType.getReturnType().sizeof());
+			}
 		}
 		
 
-		
-		// Branch
-		String name = SmallCC.getFunctionNameFromExpression(function);
-		code += INS("Jump to function " + name, null, "B", label(function.getValue()));
-		if (!SmallCC.NO_STACK)
-		{
-			code += "\n";
-
-			// AFTER THE CALL:
-			// Restore our frame
-			code += POP(3, "X3");
-		}
-		
-		// Pop off all the arguments
-		for (Expression e: arguments) 
-		{
-			code += POP(e.getType().sizeof());
-		}
-
-		if (SmallCC.NO_STACK)
-		{
-			code += POP(5,"SCRT1");
-			code += POP(5,"SCRT2");
-			code += POP(5,"SCRT3");
-		}
-		
-		// Now our return address should be at the top of the stack.
-		// If we don't want a value, pop it
-		if (!valueNeeded) 
-		{
-			code += POP(functionType.getReturnType().sizeof());
-		}
 
 		code += COM("End Function Call " + this.toString());
 		code += "\n";
@@ -174,6 +167,11 @@ public class FunctionCallExpression extends Expression
 	@Override
 	public Expression getRightExpression() {
 		return null;
+	}
+
+	public List<Expression> getArguments()
+	{
+		return arguments;
 	}
 
 	public static void removeCall(String s) {

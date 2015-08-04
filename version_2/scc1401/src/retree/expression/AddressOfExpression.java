@@ -54,6 +54,7 @@ public class AddressOfExpression extends Expression
 		return null;
 	}
 
+
 	@Override
 	public String toString()
 	{

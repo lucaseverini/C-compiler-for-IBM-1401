@@ -12,9 +12,11 @@ package retree.statement;
 
 import compiler.SmallCC;
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
+
 import static retree.RetreeUtils.*;
 
-public class IfStatement implements Statement 
+public class IfStatement extends Statement
 {
 	private final Expression condition;
 	private final Statement ifClause, elseClause;
@@ -47,7 +49,8 @@ public class IfStatement implements Statement
 		return condition;
 	}
 
-	public String generateCode() throws Exception 
+	// TODO reg alloc stuff
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{		
 		String code = COM("If " + this.toString());
 		
@@ -57,13 +60,13 @@ public class IfStatement implements Statement
 		code += POP(size);
 		code += INS("Jump when False", null, "BCE", falseLabel, STACK_OFF(size), " ");
 		
-		code += ifClause.generateCode();
+		code += ifClause.generateCode(registerAllocator);
 		
 		if (elseClause != null) 
 		{
 			code += INS("Jump when true", null, "B", trueLabel);
 			code += INS("Executed when False", falseLabel, "NOP");
-			code += elseClause.generateCode();
+			code += elseClause.generateCode(registerAllocator);
 			code += INS("Executed when True", trueLabel, "NOP");
 		} 
 		else 

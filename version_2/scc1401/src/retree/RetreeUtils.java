@@ -14,9 +14,12 @@ import compiler.*;
 import java.util.*;
 import java.util.regex.*;
 import java.io.*;
+
+import retree.expression.Expression;
 import retree.expression.VariableExpression;
 import retree.program.Initializer;
 import retree.intermediate.*;
+import retree.type.Type;
 
 public class RetreeUtils
 {
@@ -89,6 +92,11 @@ public class RetreeUtils
 		}
 		
 		return line + "\n";
+	}
+
+	public static String REG(Expression e)
+	{
+		return "REG"+e.scopeInterval.getAssignedRegister();
 	}
 
 	public static String COM(String comment)
@@ -551,9 +559,14 @@ public class RetreeUtils
 		String code = "";
 
 		code += COM("SET X2 TO BE THE STACK POINTER (STACK GROWS UPWARD)");
-		
 		// The stack pointer must point to last used location or the previous one
 		code += INS("Set X2 to stack pointer value", null, "SBR", "X2", Integer.toString(SmallCC.stackMem - 1));
+
+		if (SmallCC.nostack)
+		{
+			code += INS("Copy stack pointer in X3", null, "MCW", "X2", "X1");
+			code += INS("Make room for int value of main function", null, "MA", "@005@", "X2");
+		}
 		code += INS("Copy stack pointer in X3", null, "MCW", "X2", "X3");
 		code += "\n";
 
@@ -578,6 +591,17 @@ public class RetreeUtils
 		code += INS("Program starts here", "START", "NOP");
 		code += "\n";
 
+		return code;
+	}
+
+	public static String SET_REGS()
+	{
+		String code = "";
+		code += INS("Set Reg position", null, "ORG", "333");
+		for (int i = 0; i < 16; i++)
+		{
+			code += INS("Reg" + i, "REG" + i, "DCW", "@00000@");
+		}
 		return code;
 	}
 

@@ -158,7 +158,7 @@ public class Initializer
 		else if (variable.getType().equals(Type.intType))
 		{
 			if(variable.isStatic())
-			{			
+			{
 				if(!isArrayMember)
 				{
 					code += "\n";

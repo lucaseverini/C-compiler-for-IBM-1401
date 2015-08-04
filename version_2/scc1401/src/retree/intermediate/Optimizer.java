@@ -212,9 +212,19 @@ public class Optimizer
         }
     }
 
-    private static void PutPosSensitivSnippets()
+    private static void PutPosSensitiveSnippets()
     {
-        addSnippetInstructions("SNIP_DIV");
+        Iterator i = snippetsUsed.iterator();
+        while(i.hasNext())
+        {
+            Object item = i.next();
+            if (item instanceof String)
+            {
+                String s = (String)item;
+                if (s.equals("SNIP_DIV"))
+                    addSnippetInstructions(s);
+            }
+        }
     }
 
     private static void PutHeader()
@@ -308,7 +318,7 @@ public class Optimizer
         ConstantLabel();
 
         System.out.println("Adding position sensitive snippets");
-        PutPosSensitivSnippets();
+        PutPosSensitiveSnippets();
 
         System.out.println("Putting labels and constants in");
         PutConstants();
@@ -323,9 +333,9 @@ public class Optimizer
             size += i.getSize();
         }
 
-        System.out.println("Size: " + (size));
-        boolean aboveStart = true;
-        // set all of the orgs above the code org to have correct values
+//        System.out.println("Size: " + (size));
+//        boolean aboveStart = true;
+//        // set all of the orgs above the code org to have correct values
 //        for (Instruction i: instr)
 //        {
 //            if (i.getLabel().equals("START"))

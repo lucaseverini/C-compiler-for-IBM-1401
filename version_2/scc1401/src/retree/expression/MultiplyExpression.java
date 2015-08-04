@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.type.*;
 
 public class MultiplyExpression extends Expression
@@ -95,22 +97,27 @@ public class MultiplyExpression extends Expression
 		}
 		
 		String code = COM("Multiply " + this.toString());
-		code += l.generateCode(valueNeeded) + r.generateCode(valueNeeded);	
+		code += l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
 		
 		if (valueNeeded) 
 		{
-			code += INS("Multiply stack at " + -size + " to stack at " + (size + 1), null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
-			
-			// this puts the product at size + 1 bytes above the stack
-			// ###############
-			// ## WARNING!! ##
-			// ###############
-			// DO WE NEED THIS SW ??
-			code += INS("Set WM in stack at 2", null, "SW", STACK_OFF(2));
-			
-			code += INS("Load stack at " + (size + 1) + " to stack at " + -size, null, "LCA", STACK_OFF(size + 1), STACK_OFF(-size));
-			
-			code += POP(size);
+			if (SmallCC.nostack) {
+				code += INS("Multiply " +REG(l)+ " to " + REG(r), null, "M", REG(l), REG(r));
+				code += INS("Move result to "+REG(this), null, "MCW", REG(r), REG(this));
+			} else {
+				code += INS("Multiply stack at " + -size + " to stack at " + (size + 1), null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
+
+				// this puts the product at size + 1 bytes above the stack
+				// ###############
+				// ## WARNING!! ##
+				// ###############
+				// DO WE NEED THIS SW ??
+				code += INS("Set WM in stack at 2", null, "SW", STACK_OFF(2));
+
+				code += INS("Load stack at " + (size + 1) + " to stack at " + -size, null, "LCA", STACK_OFF(size + 1), STACK_OFF(-size));
+
+				code += POP(size);
+			}
 		}
 		
 		return code;

@@ -11,9 +11,11 @@
 package retree.statement;
 
 import compiler.SmallCC;
+import retree.regalloc.RegisterAllocator;
+
 import static retree.RetreeUtils.*;
 
-public class IdentifierStatement implements Statement
+public class IdentifierStatement extends Statement
 {
 	private final String identifier;
 	private final String label;
@@ -25,7 +27,7 @@ public class IdentifierStatement implements Statement
 	}
 	
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
 		String code = "";	
 		

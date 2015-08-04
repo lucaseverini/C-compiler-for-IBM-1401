@@ -10,12 +10,14 @@
 
 package retree.statement;
 
+import compiler.SmallCC;
 import retree.program.*;
 import java.util.*;
 import static retree.RetreeUtils.*;
 import retree.expression.VariableExpression;
+import retree.regalloc.RegisterAllocator;
 
-public class BlockStatement implements Statement 
+public class BlockStatement extends Statement
 {
 	private final String returnLabel;
 	private final String parentReturnLabel;
@@ -32,7 +34,7 @@ public class BlockStatement implements Statement
 	}
 	
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
 		String code = "\n";
 		
@@ -60,12 +62,13 @@ public class BlockStatement implements Statement
 		{
 			throw new Exception("BlockStatement " + this.toString() + " : stack offset can't be negative");
 		}
-		
-		code += PUSH(stackFrameSize);
+
+		//code += PUSH(stackFrameSize);
 
 		for (Statement s : statements) 
 		{
-			code += s.generateCode();
+			registerAllocator.calculatePlacements(s);
+			code += s.generateCode(registerAllocator);
 		}
 
 		// if we call return from the function, we jump here
@@ -73,7 +76,7 @@ public class BlockStatement implements Statement
 		{
 			code += INS("Last block instruction", returnLabel, "NOP");
 		}
-		
+
 		code += POP(stackFrameSize);
 		
 		for (Initializer i : initializers)

@@ -10,10 +10,12 @@
 
 package retree.statement;
 
-public class EmptyStatement implements Statement
+import retree.regalloc.RegisterAllocator;
+
+public class EmptyStatement extends Statement
 {
 	@Override
-	public String generateCode() 
+	public String generateCode(RegisterAllocator registerAllocator)
 	{
 		return "";
 	}

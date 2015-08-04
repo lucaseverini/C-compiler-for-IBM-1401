@@ -13,8 +13,9 @@ package retree.statement;
 import compiler.SmallCC;
 import static retree.RetreeUtils.*;
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
 
-public class CaseStatement implements Statement
+public class CaseStatement extends Statement
 {
 	private final Expression expression;
 	private final boolean defaultExpression;
@@ -40,7 +41,7 @@ public class CaseStatement implements Statement
 	}
 	
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
 		String code = "";
 			

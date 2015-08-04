@@ -11,6 +11,10 @@
 package retree.statement;
 
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
+
+import java.util.ArrayList;
+
 import static retree.RetreeUtils.*;
 
 public class DoWhileStatement extends LoopStatement 
@@ -21,13 +25,14 @@ public class DoWhileStatement extends LoopStatement
 	}
 
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{		
 		String code = COM("Do-While " + toString());
 		
 		code += INS("Top of Do-While", topLabel, "NOP");
 		
-		code += body.generateCode();	
+		code += body.generateCode(registerAllocator);
+		registerAllocator.linearScanRegisterAllocation(expressionList);
 		code += condition.generateCode(true);
 		
 		code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));

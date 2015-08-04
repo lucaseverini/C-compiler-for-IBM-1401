@@ -54,6 +54,11 @@ public class Program
 	public String generateCode() throws Exception
 	{
 
+		if (SmallCC.nostack){
+			// starts the "stack" at 450
+			SmallCC.stackMem = 480;
+		}
+
 		if (mainLabelNumber < 0) 
 		{
 			return null;
@@ -62,7 +67,8 @@ public class Program
 		String code = "";
 		
 		code += HEADER();
-		
+		if (SmallCC.nostack)
+			code += SET_REGS();
 		code += SET_VARDATA(initializers);
 		code += SET_CODE();
 		code += SET_STACK();
@@ -91,8 +97,7 @@ public class Program
 
 		// generate the code for the main method which has a side effect of
 		// setting up the functions main calls
-		registerAllocator.calculatePlacements(main.getBlock());
-		mainFunc += main.generateCode();
+		mainFunc += main.generateCode(registerAllocator);
 
 		// now the we know what functions main calls lets start generating code for those functions
 		while(!FunctionCallExpression.finishedProcessing()) {
@@ -103,7 +108,7 @@ public class Program
 				if (FunctionCallExpression.isCalledAndNotProcessed(func.toString())) {
 					// now generate the code and restart searching for the functions
 					registerAllocator.calculatePlacements(func.getBlock());
-					funcs += func.generateCode();
+					funcs += func.generateCode(registerAllocator);
 					FunctionCallExpression.removeCall(func.toString());
 					break;
 				}

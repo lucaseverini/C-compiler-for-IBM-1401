@@ -10,6 +10,8 @@
 
 package retree.expression;
 
+import compiler.SmallCC;
+
 import static retree.RetreeUtils.*;
 
 public class AssignmentExpression extends Expression 
@@ -62,24 +64,30 @@ public class AssignmentExpression extends Expression
 			System.out.println("Right " + r + " is pointer to " + ((PointerType)rType).getRefType());
 		}
 */
-		String code = COM("Assignment " + this.toString()); 
+		String code = COM("Assignment " + this.toString());
 		code += rightCode;
 		code += leftCode;
-		code += POP(3, "X1");	
-		
-		if (valueNeeded) 
+		if (SmallCC.nostack)
 		{
-			code += INS("Load stack in memory X1", null, "LCA", STACK_OFF(0), "0+X1");
+			code += INS("Move " + REG(l) + " to X1", null, "MCW", REG(l), "X1");
+			code += INS("Move right result to left addr", null, "LCA", REG(r), "0+X1");
+			if (valueNeeded) {
+				// TODO figure out what to do here
+//				code += INS("Move right result to left addr", null, "MCW", REG(r), l.generateAddress());
+			}
+
+		} else {
+			code += POP(3, "X1");
+
+			if (valueNeeded) {
+				code += INS("Load stack in memory X1", null, "LCA", STACK_OFF(0), "0+X1");
+			} else {
+				code += POP(r.getType().sizeof(), "0+X1");
+			}
+
+			code += COM("End Assignment " + this.toString());
 		}
-		else 
-		{
-			code += POP(r.getType().sizeof(), "0+X1");
-		}
-		
-		code += COM("End Assignment " + this.toString());
-		code += "\n";
-		
-		return code;
+		return code+"\n";
 	}
 
 	@Override

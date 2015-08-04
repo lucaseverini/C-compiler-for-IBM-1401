@@ -120,6 +120,12 @@ public class DereferenceExpression extends LValue
 	}
 
 	@Override
+	public void setOffset(int offset)
+	{
+
+	}
+
+	@Override
 	public Expression getLeftExpression() {
 		return child;
 	}

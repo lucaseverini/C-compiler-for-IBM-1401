@@ -10,7 +10,10 @@
 
 package retree.statement;
 
+import compiler.SmallCC;
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
+
 import static retree.RetreeUtils.*;
 
 public class WhileStatement extends LoopStatement
@@ -29,28 +32,41 @@ public class WhileStatement extends LoopStatement
 */
 	}
 
+	// reg alloc stuff
 	@Override
-	public String generateCode() throws Exception 
-	{		
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
+	{
+		registerAllocator.linearScanRegisterAllocation(expressionList);
 		String code = COM("While " + this.toString());
 
 		code += INS("Top of While", topLabel, "NOP");
-		
+
+
 		code += condition.generateCode(true);
-		
-		code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
-		
-		code += POP(size);
-		code += INS("Jump to bottom of While", null, "BCE", bottomLabel, STACK_OFF(size), " ");
-	
-		code += body.generateCode();
-		
-		code += INS("Jump to top of While", null, "B", topLabel);
-		code += "\n";
-		
-		code += INS("Bottom of While", bottomLabel, "NOP");
-		
-		code += COM("End While " + this.toString());
+
+		if (SmallCC.nostack)
+		{
+			code += INS("Jump to bottom of While", null, "BCE", bottomLabel, "0+X1", " ");
+
+			code += body.generateCode(registerAllocator);
+
+			code += INS("Jump to top of While", null, "B", topLabel);
+			code += "\n";
+
+			code += INS("Bottom of While", bottomLabel, "NOP");
+		}
+		else {
+			code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+			code += POP(size);
+			code += INS("Jump to bottom of While", null, "BCE", bottomLabel, STACK_OFF(size), " ");
+
+			code += body.generateCode(registerAllocator);
+
+			code += INS("Jump to top of While", null, "B", topLabel);
+			code += "\n";
+
+			code += INS("Bottom of While", bottomLabel, "NOP");
+		}
 		code += "\n";
 		
 		return code;

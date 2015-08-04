@@ -13,8 +13,9 @@ package retree.statement;
 import compiler.SmallCC;
 import static retree.RetreeUtils.label;
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
 
-public abstract class LoopStatement implements Statement
+public abstract class LoopStatement extends Statement
 {
 	protected Expression condition = null;
 	protected Statement body = null;
@@ -34,7 +35,7 @@ public abstract class LoopStatement implements Statement
 	}
 
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
 		return "";
 	}

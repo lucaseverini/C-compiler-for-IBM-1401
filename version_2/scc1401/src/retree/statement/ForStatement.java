@@ -12,10 +12,17 @@ package retree.statement;
 
 import compiler.SmallCC;
 import retree.expression.Expression;
+import retree.regalloc.RegisterAllocator;
+
+import java.util.ArrayList;
+
 import static retree.RetreeUtils.*;
 
 public class ForStatement extends LoopStatement
 {
+	public ArrayList<Expression> initList;
+	public ArrayList<Expression> postList;
+
 	private Expression init = null;
 	private Expression post = null;
 	
@@ -36,15 +43,17 @@ public class ForStatement extends LoopStatement
 		continueLabel = label(SmallCC.nextLabelNumber());
 	}
 
+	// TODO register alloc
 	@Override
-	public String generateCode() throws Exception
+	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{
-		int typeSize = condition.getType().sizeof();	
+		int typeSize = condition.getType().sizeof();
 
 		String code = COM("For " + this.toString());
 
 		if (init!= null) 
 		{
+			registerAllocator.linearScanRegisterAllocation(initList);
 			code += init.generateCode(false);
 		}
 		
@@ -52,18 +61,26 @@ public class ForStatement extends LoopStatement
 		
 		if (condition != null) 
 		{
+			registerAllocator.linearScanRegisterAllocation(expressionList);
 			code += condition.generateCode(true);
-			code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
-			code += POP(typeSize);
-			code += INS("Jump to bottom of For", null, "BCE", bottomLabel, STACK_OFF(typeSize), " ");
-			code += "\n";
+			if (SmallCC.nostack)
+			{
+				code += INS("Clear condition if empty", null, "MCS", REG(condition),REG(condition));
+				code += INS("Jump to bottom of For", null, "BCE", bottomLabel, REG(condition), " ");
+			} else {
+				code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+				code += POP(typeSize);
+				code += INS("Jump to bottom of For", null, "BCE", bottomLabel, STACK_OFF(typeSize), " ");
+				code += "\n";
+			}
 		}
 		
-		code += body.generateCode();
+		code += body.generateCode(registerAllocator);
 		code += INS("Continue of For", continueLabel, "NOP");
 		
 		if (post != null) 
 		{
+			registerAllocator.linearScanRegisterAllocation(postList);
 			code += post.generateCode(false);
 		}
 		

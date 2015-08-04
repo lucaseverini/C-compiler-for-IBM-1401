@@ -31,6 +31,7 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
 
         public static String autocoderFile = null;
         public static String compilationTime = null;
+        public static boolean nostack = false;
 
         public static boolean inAsmFunc = false;
 
@@ -122,12 +123,13 @@ public class SmallCC/*@bgen(jjtree)*/implements SmallCCTreeConstants, SmallCCCon
         }
         else
         {
-            System.exit(compile(args[0], null, 0, 0, 0, 0));
+            System.exit(compile(args[0], null, 0, 0, 0, 0, false));
         }
         }
 
-        public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc, int optimization) throws Exception
+        public static int compile(String inputFile, String outputFile, int stackLoc, int codeLoc, int dataLoc, int optimization, boolean no_stack) throws Exception
         {
+                nostack = no_stack;
         SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-y h:mm:ss a");  // 24 hours -> "d-MMM-y hh:mm:ss";
                 compilationTime = sdf.format(Calendar.getInstance().getTime());
 
@@ -1344,7 +1346,7 @@ if (jjtc000) {
         if (jj_2_56(99999)) {
           jj_consume_token(67);
           r = assignmentExpression();
-r = new AddExpression(l, r);
+r = new AddExpression(r, l);
         } else if (jj_2_57(99999)) {
           jj_consume_token(68);
           r = assignmentExpression();
@@ -3726,20 +3728,6 @@ if (jjtc000) {
     finally { jj_save(115, xla); }
   }
 
-  static private boolean jj_3_50()
- {
-    if (jj_scan_token(CONTINUE)) return true;
-    if (jj_scan_token(SEMI_COLON)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_32()
- {
-    if (jj_3R_29()) return true;
-    if (jj_scan_token(SEMI_COLON)) return true;
-    return false;
-  }
-
   static private boolean jj_3_49()
  {
     if (jj_scan_token(BREAK)) return true;
@@ -5104,6 +5092,20 @@ if (jjtc000) {
  {
     if (jj_scan_token(GOTO)) return true;
     if (jj_3R_30()) return true;
+    if (jj_scan_token(SEMI_COLON)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_50()
+ {
+    if (jj_scan_token(CONTINUE)) return true;
+    if (jj_scan_token(SEMI_COLON)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_32()
+ {
+    if (jj_3R_29()) return true;
     if (jj_scan_token(SEMI_COLON)) return true;
     return false;
   }

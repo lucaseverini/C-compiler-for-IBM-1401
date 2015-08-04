@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.exceptions.*;
 import retree.type.*;
 
@@ -42,24 +44,39 @@ public class PostDecrementExpression extends Expression
 	public String generateCode(boolean valueNeeded)
 	{
 		String code = COM("PostDecrement "+ this.toString());
-		code += l.generateAddress();		
-		code += POP(3, "X1");
-		
-		if (valueNeeded)
-		{
-			code += PUSH(l.getType().sizeof(), "0+X1");
+		code += l.generateAddress();
+		if ( ! SmallCC.nostack) {
+			code += POP(3, "X1");
 		}
-		
-		if (getType() instanceof PointerType) 
-		{
-			PointerType pt = (PointerType) getType();
-			code += INS("Postdecrement pointer at X1", null, "MA", ADDR_CONST(-pt.getRefType().sizeof(), false), "0+X1");
-		} 
-		else 
-		{
-			code += INS("Postdecrement memory at X1", null, "S", NUM_CONST(1, false), "0+X1");
+		if (SmallCC.nostack) {
+			code += INS("Move addr to X1", null, "MCW", REG(l), "X1");
+			if (getType() instanceof PointerType)
+			{
+				PointerType pt = (PointerType) getType();
+				code += INS("Postdecrement pointer at X1", null, "MA", ADDR_CONST(-pt.getRefType().sizeof(), false), "0+X1");
+				code += INS("Move result to " + REG(this), null, "MCW", "X1", REG(this));
+			}
+			else
+			{
+				code += INS("Postdecrement memory at X1", null, "S", NUM_CONST(1, false), "0+X1");
+			}
+		} else {
+			if (valueNeeded)
+			{
+				code += PUSH(l.getType().sizeof(), "0+X1");
+			}
+			if (getType() instanceof PointerType)
+			{
+				PointerType pt = (PointerType) getType();
+				code += INS("Postdecrement pointer at X1", null, "MA", ADDR_CONST(-pt.getRefType().sizeof(), false), "0+X1");
+			}
+			else
+			{
+				code += INS("Postdecrement memory at X1", null, "S", NUM_CONST(1, false), "0+X1");
+			}
+
 		}
-		
+
 		return code;
 	}
 

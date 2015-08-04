@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.type.*;
 
 public class SubtractExpression extends Expression 
@@ -116,23 +118,40 @@ public class SubtractExpression extends Expression
 	{
 		String code = COM("Subtract " + this.toString());
 
-		if (l.getType() instanceof PointerType) 
+		if (SmallCC.nostack)
 		{
-			Expression r2 = new CastExpression(r.getType(), new SubtractExpression(new ConstantExpression(Type.intType, 16000), new CastExpression(Type.intType, r)));
-			Expression exp = new AddExpression(l, r2).collapse();
-			
-			code += exp.generateCode(valueNeeded);
-		}
-		else
-		{
-			code += l.generateCode(valueNeeded);
-			code += r.generateCode(valueNeeded);
+			if (l.getType() instanceof PointerType) {
+				Expression r2 = new CastExpression(r.getType(), new SubtractExpression(new ConstantExpression(Type.intType, 16000), new CastExpression(Type.intType, r)));
+				Expression exp = new AddExpression(l, r2).collapse();
 
-			if (valueNeeded) 
-			{
-				int size = -r.getType().sizeof();
-				code += INS("Subtract stack to stack at " + size, null, "S", STACK_OFF(0), STACK_OFF(size));		
-				code += POP(r.getType().sizeof());
+				code += exp.generateCode(valueNeeded);
+				code += INS("Move result to "+REG(this), null, "LCA", REG(exp),REG(this));
+			} else {
+				code += l.generateCode(valueNeeded);
+				code += r.generateCode(valueNeeded);
+
+				if (valueNeeded) {
+					int size = -r.getType().sizeof();
+					code += INS("Subtract "+REG(l)+" from " + REG(r), null, "S", REG(l),REG(r));
+					code += INS("Move result to "+ REG(this), null, "LCA", REG(r), REG(this));
+				}
+			}
+		} else {
+
+			if (l.getType() instanceof PointerType) {
+				Expression r2 = new CastExpression(r.getType(), new SubtractExpression(new ConstantExpression(Type.intType, 16000), new CastExpression(Type.intType, r)));
+				Expression exp = new AddExpression(l, r2).collapse();
+
+				code += exp.generateCode(valueNeeded);
+			} else {
+				code += l.generateCode(valueNeeded);
+				code += r.generateCode(valueNeeded);
+
+				if (valueNeeded) {
+					int size = -r.getType().sizeof();
+					code += INS("Subtract stack to stack at " + size, null, "S", STACK_OFF(0), STACK_OFF(size));
+					code += POP(r.getType().sizeof());
+				}
 			}
 		}
 		
