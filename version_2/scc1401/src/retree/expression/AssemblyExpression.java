@@ -61,7 +61,7 @@ public class AssemblyExpression extends Expression
 					if(tmp.contains(","))
 					{
 						String[] parts = tmp.split(",");
-						for (String tmp1 : parts) 
+						for (String tmp1 : parts)
 						{
 							instructionPartsList.add(tmp1);
 						}
@@ -111,6 +111,7 @@ public class AssemblyExpression extends Expression
 	{
 		if(SmallCC.optimize > 0)
 		{
+			INS(null,null,operation,arguments);
 //			Optimizer.addInstruction("Start asm block", "", operation, arguments);
 //			Optimizer.addInstruction("End asm block", "", "");
 			

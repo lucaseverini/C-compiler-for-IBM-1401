@@ -115,21 +115,18 @@ public class Optimizer
             if (afterStart)
             {
                 Instruction in = instr.get(i);
-                for (int j = 0 ; j < in.getOperandListSize(); j++)
-                {
-                    if (in.getOperand(j) != null)
-                    {
-                        if (in.getOperand(j).length() > 0 && ((in.getOperand(j).charAt(0) == '@' && in.getOperand(j).charAt(in.getOperand(j).length() - 1) == '@')
-                                && !constantLabelTransform.containsKey(in.getOperand(j))))
-                        {
-                            String label = label(SmallCC.nextLabelNumber());
-                            constantLabelTransform.put(in.getOperand(j), label);
-                            in.setOperand(constantLabelTransform.get(in.getOperand(j)), j);
-                        }
-                        else if (in.getOperand(j).length() > 0 && ((in.getOperand(j).charAt(0) == '@' && in.getOperand(j).charAt(in.getOperand(j).length() - 1) == '@')
-                                && constantLabelTransform.containsKey(in.getOperand(j))))
-                        {
-                            in.setOperand(constantLabelTransform.get(in.getOperand(j)), j);
+                if (!(SmallCC.nostack && in.getMnemonic().equals("DCW"))) {
+                    for (int j = 0; j < in.getOperandListSize(); j++) {
+                        if (in.getOperand(j) != null) {
+                            if (in.getOperand(j).length() > 0 && ((in.getOperand(j).charAt(0) == '@' && in.getOperand(j).charAt(in.getOperand(j).length() - 1) == '@')
+                                    && !constantLabelTransform.containsKey(in.getOperand(j)))) {
+                                String label = label(SmallCC.nextLabelNumber());
+                                constantLabelTransform.put(in.getOperand(j), label);
+                                in.setOperand(constantLabelTransform.get(in.getOperand(j)), j);
+                            } else if (in.getOperand(j).length() > 0 && ((in.getOperand(j).charAt(0) == '@' && in.getOperand(j).charAt(in.getOperand(j).length() - 1) == '@')
+                                    && constantLabelTransform.containsKey(in.getOperand(j)))) {
+                                in.setOperand(constantLabelTransform.get(in.getOperand(j)), j);
+                            }
                         }
                     }
                 }

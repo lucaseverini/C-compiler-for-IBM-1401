@@ -59,10 +59,11 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 			getInitalizers(loopStatement.getBody());
 		}
 
-		if (s instanceof ReturnStatement)
+		if (s instanceof IfStatement)
 		{
-			ReturnStatement returnStatement = (ReturnStatement)s;
-			retVarExpression = returnStatement.getReturnLocation();
+			IfStatement ifStatement = (IfStatement)s;
+			getInitalizers(ifStatement.getIfClause());
+			getInitalizers(ifStatement.getElseClause());
 		}
 	}
 
@@ -89,7 +90,7 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 			String funcName = this.toString().toUpperCase();
 			String funcLbl = "F";
 			int returnSize = 0;
-			int offsetToLocals = 16 * Type.intType.getSize();
+			int offsetToLocals = 15;
 			FunctionType functionType = (FunctionType)declaration.getType();
 			for (int i = 0; i < 5; i++)
 			{
@@ -98,20 +99,25 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 				else
 					funcLbl += "A";
 			}
-			code += INS("Ret addr", funcLbl /*label(declaration.getValue())*/, "DSA", "000");
-			if (declaration.getType() instanceof FunctionType)
+			String retSize = "";
+			for (int i = 0; i < functionType.getReturnType().getSize(); i++)
 			{
-				offsetToLocals += functionType.getReturnType().getSize();
-				String retSize = "";
-				for (int i = 0; i < functionType.getReturnType().getSize(); i++)
-				{
-					retSize += "0";
-				}
-				if (functionType.getReturnType().getSize() > 0) {
-					code += INS("Ret value", null, "DCW", retSize);
-					returnSize = functionType.getReturnType().getSize();
-				}
+				retSize += "0";
 			}
+			code += INS("Ret addr", funcLbl, "DSA", "000");
+			code += INS("Previous function function header", "", "DCW", "000");
+			if (functionType.getReturnType().getSize() > 0) {
+				returnSize = functionType.getReturnType().getSize();
+			}
+			offsetToLocals += returnSize;
+			code += INS("Offset to REGS", "", "DCW", ADDR_CONST(offsetToLocals, false));
+			offsetToLocals += (16 * Type.intType.getSize());
+			code += INS("Offset to Params", "", "DCW", ADDR_CONST(offsetToLocals, false));
+			for (Type t : functionType.getParamTypes()) {
+				offsetToLocals += t.getSize();
+			}
+			code += INS("Offset to LocalVars", "", "DCW", ADDR_CONST(offsetToLocals, false));
+			code += INS("Ret value", null, "DCW", retSize);
 			for(int i = 0 ; i< registerAllocator.getNumberRegisters(); i ++)
 			{
 				code += INS("Register"+ i + " save pos", null, "DCW", "00000");
@@ -124,7 +130,7 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 				{
 					size += "0";
 				}
-				offsetToLocals += t.getSize();
+//				offsetToLocals += t.getSize();
 				code += INS("Arg " + t, null, "DCW", size);
 			}
 
@@ -139,23 +145,22 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 				}
 			}
 
-			if (retVarExpression != null)
-			{
-				// Sets the return position to the start of return val space
-				retVarExpression.setOffset(-offsetToLocals + 3 + returnSize);
-			}
-
 			code += COM("********************************************************************************") +
 					COM("Function : " + SmallCC.getFunctionNameFromExpression(declaration)) +
 					COM("********************************************************************************");
 			code += INS("Save return address in "+funcLbl, label(declaration.getValue()), "SBR", funcLbl);
 			code += INS("Save "+funcLbl+ " to X3", null, "SAR", "X3");
+			code += INS("Save X2 to "+funcLbl + "+3", null, "MCW", "X2", funcLbl + "+3");
 			for (int i = 0 ; i < registerAllocator.getNumberRegisters(); i++)
 			{
-				code += INS("Save REG" + i, null, "MCW", "REG" + i, funcLbl + "+" + (((i) * 5) + returnSize) );
+				code += INS("Save REG" + i, null, "LCA", "REG" + i, funcLbl + "+" + (((i+1) * 5) + returnSize + 12) );
 			}
-			code += INS("Move X3 to local vars",null,"MA","@"+ADDR_COD(offsetToLocals)+"@","X3");
+//			code += INS("Move X3 to local vars",null,"MA","@"+ADDR_COD(offsetToLocals)+"@","X3");
 			code += block.generateCode(registerAllocator);
+			for (int i = 0 ; i < registerAllocator.getNumberRegisters(); i++)
+			{
+				code += INS("Restore REG" + i, null, "LCA", funcLbl + "+" + (((i+1) * 5) + returnSize + 12), "REG" + i);
+			}
 			code += INS("Load return address in X1", null, "LCA", funcLbl, "X1") +
 					INS("Jump back to caller in X1", null, "B", "0+X1");
 			code += "\n";

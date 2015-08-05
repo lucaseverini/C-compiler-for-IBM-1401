@@ -57,8 +57,7 @@ public class ReturnStatement extends Statement
 			code += exp.generateCode(true);
 			if (SmallCC.nostack)
 			{
-				code += INS("Move X3 back to return addr", null, "MA", "@"+ADDR_COD(offset)+"@", "X3");
-				code += INS("Copy ret value to return value location",null,"LCA", REG(exp), "0+X3");
+				code += INS("Copy ret value to return value location",null,"LCA", REG(exp), ADDR_COD(15 + exp.getType().getSize()) + "+X3");
 			} else {
 				code += POP(exp.getType().sizeof(), OFF(offset));
 			}

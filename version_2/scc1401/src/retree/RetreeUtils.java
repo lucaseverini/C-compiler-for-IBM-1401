@@ -600,8 +600,20 @@ public class RetreeUtils
 		code += INS("Set Reg position", null, "ORG", "333");
 		for (int i = 0; i < 16; i++)
 		{
-			code += INS("Reg" + i, "REG" + i, "DCW", "@00000@");
+			String constSize = "";
+			for(int j =0 ; j < Type.intType.getSize(); j++)
+				constSize += "0";
+			code += INS("Reg" + i, "REG" + i, "DCW", constSize);
 		}
+		// Multiply registers
+		// results truncated to 5 digits
+		String constSize = "";
+		for(int j =0 ; j < Type.intType.getSize(); j++)
+			constSize += "0";
+		code += INS("MDRegA", "MDREGA", "DCW", constSize);
+		for(int j =0 ; j < Type.intType.getSize(); j++)
+			constSize += "0";
+		code += INS("MDRegB", "MDREGB", "DCW", constSize);
 		return code;
 	}
 

@@ -49,6 +49,14 @@ public class IfStatement extends Statement
 		return condition;
 	}
 
+	public Statement getIfClause() {
+		return ifClause;
+	}
+
+	public Statement getElseClause() {
+		return elseClause;
+	}
+
 	// TODO reg alloc stuff
 	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{		

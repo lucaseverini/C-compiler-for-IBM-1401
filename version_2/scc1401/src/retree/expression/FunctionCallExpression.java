@@ -91,19 +91,16 @@ public class FunctionCallExpression extends Expression
 			// put args inorder
 			// get label for function
 			String lbl = FunctionDefinition.getFunctionLabel(name);
-			int offset = functionType.getReturnType().getSize() + (16 * Type.intType.getSize());
+			int offset = functionType.getReturnType().getSize() + (16 * Type.intType.getSize()) + 12;
 			int i = 0;
 			while (i < arguments.size()) {
 				code += arguments.get(i).generateCode(true);
 				code += INS("", null, "MCW", REG(arguments.get(i)), lbl + "+" + (offset + arguments.get(i).getType().getSize()));
-				if (arguments.get(i) instanceof VariableExpression)
-				{
-					VariableExpression variableExpression = (VariableExpression)arguments.get(i);
-					variableExpression.setOffset(offset + variableExpression.getType().getSize());
-				}
 				offset += arguments.get(i++).getType().getSize();
 			}
+			code += INS("Save X3", null, "MCW", "X3", "X2");
 			code += INS("Jump to function " + name, null, "B", label(function.getValue()));
+			code += INS("Restore X3", null, "MCW", lbl + "+" +ADDR_COD(3), "X3");
 		} else {
 			code += PUSH(functionType.getReturnType().sizeof());
 			// Push all our parameters in reverse order
