@@ -70,7 +70,7 @@ public class AssignmentExpression extends Expression
 		if (SmallCC.nostack)
 		{
 			code += INS("Move " + REG(l) + " to X1", null, "MCW", REG(l), "X1");
-			code += INS("Move right result to left addr", null, "MCW", REG(r), "0+X1");
+			code += INS("Move right result to left addr", null, "LCA", REG(r), "0+X1");
 			if (valueNeeded) {
 				// TODO figure out what to do here
 //				code += INS("Move right result to left addr", null, "MCW", REG(r), l.generateAddress());

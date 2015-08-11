@@ -54,7 +54,7 @@ public class PostDecrementExpression extends Expression
 			{
 				PointerType pt = (PointerType) getType();
 				code += INS("Postdecrement pointer at X1", null, "MA", ADDR_CONST(-pt.getRefType().sizeof(), false), "0+X1");
-				code += INS("Move result to " + REG(this), null, "MCW", "X1", REG(this));
+				code += INS("Move result to " + REG(this), null, "LCA", "X1", REG(this));
 			}
 			else
 			{

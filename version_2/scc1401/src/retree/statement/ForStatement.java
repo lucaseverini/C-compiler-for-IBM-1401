@@ -20,8 +20,8 @@ import static retree.RetreeUtils.*;
 
 public class ForStatement extends LoopStatement
 {
-	public ArrayList<Expression> initList;
-	public ArrayList<Expression> postList;
+	public ArrayList<Expression> initList = new ArrayList<>();
+	public ArrayList<Expression> postList = new ArrayList<>();
 
 	private Expression init = null;
 	private Expression post = null;
@@ -65,8 +65,9 @@ public class ForStatement extends LoopStatement
 			code += condition.generateCode(true);
 			if (SmallCC.nostack)
 			{
-				code += INS("Clear condition if empty", null, "MCS", REG(condition),REG(condition));
-				code += INS("Jump to bottom of For", null, "BCE", bottomLabel, REG(condition), " ");
+				code += INS("Jump when False", null, "BCE", bottomLabel, REG(condition), "0");
+				code += INS("Jump when False", null, "BCE", bottomLabel, REG(condition), "?");
+				code += INS("Jump when False", null, "BCE", bottomLabel, REG(condition), "!");
 			} else {
 				code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
 				code += POP(typeSize);

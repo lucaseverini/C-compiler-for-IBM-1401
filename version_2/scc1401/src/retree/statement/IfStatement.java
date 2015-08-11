@@ -61,13 +61,18 @@ public class IfStatement extends Statement
 	public String generateCode(RegisterAllocator registerAllocator) throws Exception
 	{		
 		String code = COM("If " + this.toString());
-		
+		registerAllocator.linearScanRegisterAllocation(expressionList);
 		code += condition.generateCode(true);
-		
-		code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
-		code += POP(size);
-		code += INS("Jump when False", null, "BCE", falseLabel, STACK_OFF(size), " ");
-		
+
+		if (SmallCC.nostack) {
+			code += INS("Jump when False", null, "BCE", falseLabel, REG(condition), "0");
+			code += INS("Jump when False", null, "BCE", falseLabel, REG(condition), "?");
+			code += INS("Jump when False", null, "BCE", falseLabel, REG(condition), "!");
+		} else {
+			code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0)); // this removes the word mark
+			code += POP(size);
+			code += INS("Jump when False", null, "BCE", falseLabel, STACK_OFF(size), " ");
+		}
 		code += ifClause.generateCode(registerAllocator);
 		
 		if (elseClause != null) 

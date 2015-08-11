@@ -102,13 +102,16 @@ public class MultiplyExpression extends Expression
 		if (valueNeeded) 
 		{
 			if (SmallCC.nostack) {
-				// TODO fix multiply
-				code += COM("Definately incorrect code do not use");
 				code += COM("Move operands to MDREGS");
-				code += INS("", null, "MCW", REG(l), "MDREGA");
-				code += INS("", null, "MCW", REG(r), ADDR_COD(1 * Type.intType.getSize()) + "+MDREGB");
+				code += INS("", null, "LCA", REG(l), "MDREGA");
+				code += INS("Move addr of MDREGB to X1", null, "MCW", ADDR_CONST(442, false), "X1");
+				code += INS("", null, "MCW", REG(r), "15994+X1");
 				code += INS("Multiply MDREGA to MDREGB", null, "M", "MDREGA", "MDREGB");
-				code += INS("Move result to "+REG(this), null, "MCW", "MDREGB", REG(this));
+				code += INS("Move result to "+REG(this), null, "MN", "MDREGB", REG(this));
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
 			} else {
 				code += INS("Multiply stack at " + -size + " to stack at " + (size + 1), null, "M", STACK_OFF(-size), STACK_OFF(size + 1));
 

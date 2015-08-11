@@ -10,6 +10,8 @@
 
 package retree.intermediate;
 
+import compiler.SmallCC;
+
 import java.io.*;
 import java.util.*;
 
@@ -23,7 +25,7 @@ public class Snippet
     {
         try {
             ArrayList<Instruction> list;
-            File f = new File("snippets/"+snippet+".s");
+            File f = new File((SmallCC.nostack ? "snippets/nostack/" : "snippets/stack/")+snippet+".s");
             ArrayList<String> filecon = new ArrayList<String>();
             Scanner s = new Scanner(f);
             while (s.hasNextLine())
@@ -97,7 +99,7 @@ public class Snippet
 
         loadSnippet("number_to_char");
         snippetLabels.put("number_to_char", "NMNCHR");
-        System.out.println("Finished init");
+        System.out.println("Finished snippet init");
     }
 
     public static String getSnippetLabel(String snippet)

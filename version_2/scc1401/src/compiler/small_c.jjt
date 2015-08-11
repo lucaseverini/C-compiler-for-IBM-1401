@@ -635,7 +635,7 @@ FunctionDefinition functionDefinition() : {
 			if (dec != null) {
 				if (! dec.getType().equals(type)) {
 					throw new Error("Type mismatch: function " + name +
-						"was previously declared as type " + dec.getType());
+						" was previously declared as type " + dec.getType());
 				}
 			} else {
 				dec = new ConstantExpression(type, nextLabelNumber());

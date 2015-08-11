@@ -46,7 +46,9 @@ public class WhileStatement extends LoopStatement
 
 		if (SmallCC.nostack)
 		{
-			code += INS("Jump to bottom of While", null, "BCE", bottomLabel, "0+X1", " ");
+			code += INS("Jump to bottom of While", null, "BCE", bottomLabel, REG(condition), "0");
+			code += INS("Jump to bottom of While", null, "BCE", bottomLabel, REG(condition), "!");
+			code += INS("Jump to bottom of While", null, "BCE", bottomLabel, REG(condition), "?");
 
 			code += body.generateCode(registerAllocator);
 

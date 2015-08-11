@@ -62,15 +62,26 @@ public class TernaryExpression extends Expression
 		
 		String code = COM("Ternary (?:) " + this.toString()) +
 						condition.generateCode(true);
-		
-		code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
-		code += POP(condition.getType().sizeof());
-		code += INS("Jump if false", null, "BCE", negLabel, STACK_OFF(condition.getType().sizeof()), " ");
-		code += positive.generateCode(valueNeeded);
-		code += INS("Jump to end", null, "B", endLabel);
-		code += INS("Come here if False", negLabel, "NOP");
-		code += negative.generateCode(valueNeeded);
-		code += INS("End of Ternary", endLabel, "NOP");
+
+		if (SmallCC.nostack) {
+			code += INS("Jump if false", null, "BCE", negLabel, "0+"+REG(condition), "0");
+			code += INS("Jump if false", null, "BCE", negLabel, "0+"+REG(condition), "!");
+			code += INS("Jump if false", null, "BCE", negLabel, "0+"+REG(condition), "?");
+			code += positive.generateCode(valueNeeded);
+			code += INS("Jump to end", null, "B", endLabel);
+			code += INS("Come here if False", negLabel, "NOP");
+			code += negative.generateCode(valueNeeded);
+			code += INS("End of Ternary", endLabel, "NOP");
+		} else {
+			code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+			code += POP(condition.getType().sizeof());
+			code += INS("Jump if false", null, "BCE", negLabel, STACK_OFF(condition.getType().sizeof()), " ");
+			code += positive.generateCode(valueNeeded);
+			code += INS("Jump to end", null, "B", endLabel);
+			code += INS("Come here if False", negLabel, "NOP");
+			code += negative.generateCode(valueNeeded);
+			code += INS("End of Ternary", endLabel, "NOP");
+		}
 		
 		return code;
 	}

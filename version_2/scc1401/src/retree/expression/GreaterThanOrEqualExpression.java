@@ -62,25 +62,53 @@ public class GreaterThanOrEqualExpression extends Expression
 			String rCode = r.generateCode(valueNeeded);
 
 			String code = COM("GreaterOrEqual " + this.toString()) +
-			lCode + SNIP("clean_number") + rCode + SNIP("clean_number");
+			lCode;
+			if (SmallCC.nostack)
+			{
+				code += INS("Move child val to CAST reg", null, "MCW", REG(l), "CAST");
+			}
+			code += SNIP("clean_number");
+			if (SmallCC.nostack)
+			{
+				code += INS("Move result to " + REG(this), null, "LCA", "CAST", REG(this));
+			}
+
+			code += rCode;
+			if (SmallCC.nostack)
+			{
+				code += INS("Move child val to CAST reg", null, "MCW", REG(r), "CAST");
+			}
+			code += SNIP("clean_number");
+			if (SmallCC.nostack)
+			{
+				code += INS("Move result to " + REG(this), null, "LCA", "CAST", REG(this));
+			}
 
 			String labelLessThan = label(SmallCC.nextLabelNumber());
 			String labelEnd = label(SmallCC.nextLabelNumber());
+			if (SmallCC.nostack)
+			{
+				code += INS("Compare " + REG(l) + " to " + REG(r), null, "C", REG(r), REG(l));
+				code += INS("Move 1 in " + REG(this), null, "MCW", NUM_CONST(1, false), REG(this));
+				code += INS("Jump if greater or equal", null, "BL", labelLessThan);
+				code += INS("Jump to End", null, "B", labelEnd);
+				code += INS("Move 0 in " + REG(this), labelLessThan, "MCW", NUM_CONST(0, false), REG(this));
+				code += INS("End of GreaterOrEqual", labelEnd, "NOP");
+			} else {
+				// ###############
+				// ## WARNING!! ##
+				// ###############
+				// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
+				code += INS("Compare stack to stack at -5", null, "C", STACK_OFF(0), STACK_OFF(-5));
+				code += POP(5);
+				// code += POP(getType().sizeof());
 
-			// ###############
-			// ## WARNING!! ##
-			// ###############
-			// IS CORRECT HERE TO USE A FIXED VALUE (5) FOR THE VARIABLE SIZE
-			code += INS("Compare stack to stack at -5", null, "C", STACK_OFF(0), STACK_OFF(-5));
-			code += POP(5);
-			// code += POP(getType().sizeof());
-
-			code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-			code += INS("Jump if greater or equal", null, "BL", labelLessThan);
-			code += INS("Jump to End", null, "B", labelEnd);
-			code += INS("Move 1 in stack", labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-			code += INS("End of GreaterOrEqual", labelEnd, "NOP");
-
+				code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+				code += INS("Jump if greater or equal", null, "BL", labelLessThan);
+				code += INS("Jump to End", null, "B", labelEnd);
+				code += INS("Move 1 in stack", labelLessThan, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+				code += INS("End of GreaterOrEqual", labelEnd, "NOP");
+			}
 			return code;
 		} 
 		else

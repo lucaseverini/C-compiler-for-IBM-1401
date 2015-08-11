@@ -118,7 +118,7 @@ public class VariableExpression extends LValue
 					code += COM("Parameter Variable (" + name + " : " + OFF(off) + ")");
 					if (SmallCC.nostack) {
 						code += INS("Copy address to X1", null, "MCW", "X3", "X1");
-						code += INS("Modify X1 to point to params", null, "MA", "9+X3", "X1");
+						code += INS("Modify X1 to point to params", null, "MA", "12+X3", "X1");
 						code += INS("Modify X1", null, "MA", "@"+ADDR_COD(offset + 3 + getType().getSize())+"@", "X1");
 						code += INS("Move val to "+REG(this), "", "LCA", "0+X1", REG(this));
 					} else {
@@ -130,9 +130,9 @@ public class VariableExpression extends LValue
 					int off = offset + getType().getSize();
 					if(SmallCC.nostack) {
 						code += INS("Copy address to X1", null, "MCW", "X3", "X1");
-						code += INS("Modify X1 to point to var", null, "MA", "12+X3", "X1");
+						code += INS("Modify X1 to point to var", null, "MA", "15+X3", "X1");
 						code += INS("Modify X1", null, "MA", "@"+ADDR_COD(off - 3)+"@", "X1");
-						code += INS("Copy value to " + REG(this), null, "MCW", "0+X1", REG(this));
+						code += INS("Copy value to " + REG(this), null, "LCA", "0+X1", REG(this));
 					} else {
 						code += PUSH(getType().sizeof(), OFF(off));
 					}
@@ -169,7 +169,7 @@ public class VariableExpression extends LValue
 				int addr = offset;
 				if(SmallCC.nostack) {
 					code += INS("Copy address to X1", null, "MCW", "X3", "X1");
-					code += INS("Modify X1 to point to params", null, "MA", "9+X3", "X1");
+					code += INS("Modify X1 to point to params", null, "MA", "12+X3", "X1");
 					code += INS("Modify X1", null, "MA", "@"+ADDR_COD(offset + 3  + getType().getSize())+"@", "X1");
 					code += INS("Copy addr to " + REG(this), null, "MCW", "X1", REG(this));
 				} else {
@@ -183,7 +183,7 @@ public class VariableExpression extends LValue
 				code += COM("Generating address for variable: " + this);
 				if(SmallCC.nostack) {
 					code += INS("Copy address to X1", null, "MCW", "X3", "X1");
-					code += INS("Modify X1 to point to var", null, "MA", "12+X3", "X1");
+					code += INS("Modify X1 to point to var", null, "MA", "15+X3", "X1");
 					code += INS("Modify X1", null, "MA", "@"+ADDR_COD(addr - 3)+"@", "X1");
 					code += INS("Copy addr to " + REG(this), null, "MCW", "X1", REG(this));
 				} else {
@@ -207,10 +207,26 @@ public class VariableExpression extends LValue
 		{
 			if (isParam)
 			{
-				code += OFF(offset);
+				if (SmallCC.nostack)
+				{
+					code += INS("Copy address to X1", null, "MCW", "X3", "X1");
+					code += INS("Modify X1 to point to params", null, "MA", "12+X3", "X1");
+					code += INS("Modify X1", null, "MA", "@"+ADDR_COD(offset + 3  + getType().getSize())+"@", "X1");
+//					code += INS("Copy addr to REG0", null, "MCW", "X1", "REG0");
+				} else {
+					code += OFF(offset);
+				}
 			}
 			else
 			{
+				if (SmallCC.nostack)
+				{
+					int addr = offset + getType().getSize();
+					code += INS("Copy address to X1", null, "MCW", "X3", "X1");
+					code += INS("Modify X1 to point to var", null, "MA", "15+X3", "X1");
+					code += INS("Modify X1", null, "MA", "@"+ADDR_COD(addr - 3)+"@", "X1");
+//					code += INS("Copy addr to REG0", null, "MCW", "X1", "REG0");
+				}
 				int off = (offset + getType().getSize());
 				code += OFF(off);
 			}

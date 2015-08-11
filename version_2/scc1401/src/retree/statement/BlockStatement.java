@@ -77,7 +77,8 @@ public class BlockStatement extends Statement
 			code += INS("Last block instruction", returnLabel, "NOP");
 		}
 
-		code += POP(stackFrameSize);
+		if (! SmallCC.nostack)
+			code += POP(stackFrameSize);
 		
 		for (Initializer i : initializers)
 		{

@@ -10,6 +10,7 @@
 
 package retree.expression;
 
+import compiler.SmallCC;
 import retree.exceptions.TypeMismatchException;
 import static retree.RetreeUtils.*;
 import retree.type.PointerType;
@@ -58,15 +59,24 @@ public class DereferenceExpression extends LValue
 			{
 				String code = COM("DereferenceExpression " + this.toString());
 				code += child.generateCode(false);
+				if (SmallCC.nostack)
+				{
+					code += INS("Copy address to X1", null, "MCW", REG(child), "X1");
+					code += INS("Load val to " + REG(this), null, "LCA", "0+X1", REG(this));
+				}
 				return code;
 			} 
 			else 
 			{
 				String code = COM("DereferenceExpression " + this.toString());
 				code += child.generateCode(true);
-				code += POP(3, "X1");
-				
-				int childSize = getReferenceType(child).sizeof();
+				if (SmallCC.nostack)
+				{
+					code += INS("Move result to " +REG(this), null, "MCW", REG(child), REG(this));
+				} else {
+					code += POP(3, "X1");
+
+					int childSize = getReferenceType(child).sizeof();
 /*
 				// Assure that WM is in the right position
 				switch(childSize)
@@ -89,8 +99,8 @@ public class DereferenceExpression extends LValue
 						code += INS(null, null, "CW", "5+X2");
 						break;
 				}
-*/				
-				code += PUSH(childSize, "0+X1"); // Do something better than this...
+*/
+					code += PUSH(childSize, "0+X1"); // Do something better than this...
 /*
 				switch(childSize)
 				{
@@ -107,6 +117,7 @@ public class DereferenceExpression extends LValue
 						break;
 				}
 */
+				}
 				code += COM("End DereferenceExpression " + this.toString());
 				code += "\n";
 				

@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.exceptions.*;
 import retree.type.*;
 
@@ -57,12 +59,26 @@ public class ModuloExpression extends Expression
 	public String generateCode(boolean valueNeeded)
 	{
 		String code = COM("Modulo (%) " + this.toString());
-		code += r.generateCode(valueNeeded) + l.generateCode(valueNeeded);
+		code += l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
 		
 		if (valueNeeded) 
 		{
-			code += SNIP("SNIP_DIV");
-			code += POP(Type.intType.sizeof());
+			if (SmallCC.nostack)
+			{
+				code += COM("Move operands to MDREGS");
+				code += INS("", null, "LCA", REG(r), "MDREGA");
+				code += INS("Move addr of MDREGB to X1", null, "MCW", ADDR_CONST(442, false), "X1");
+				code += INS("", null, "ZA", REG(l), "MDREGB");
+				code += INS("Divide MDREGA to MDREGB", null, "D", "MDREGA", "MDREGB");
+				code += INS("Move result to "+REG(this), null, "MN", "MDREGB", REG(this));
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+			} else {
+				code += SNIP("SNIP_DIV");
+				code += POP(Type.intType.sizeof());
+			}
 		}
 		
 		return code;

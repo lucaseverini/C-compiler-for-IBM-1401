@@ -11,12 +11,14 @@
 package retree.program;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.exceptions.*;
 import retree.expression.*;
 import retree.type.*;
 import java.util.*;
 
-public class Initializer 
+public class Initializer
 {
 	private final VariableExpression variable;
 	private ConstantExpression value;
@@ -150,9 +152,17 @@ public class Initializer
 			}
 			else
 			{
-				String refType = "" + ((PointerType)variable.getType()).getRefType();
-				String comm = "Load *" + refType + " " + value.getValue() + " into memory " + variable.getAddress();
-				code += INS(comm, null, "LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				if (SmallCC.nostack)
+				{
+					String refType = "" + ((PointerType) variable.getType()).getRefType();
+					String comm = "Load *" + refType + " " + value.getValue() + " into memory";
+					code += variable.getAddress();
+					code += INS(comm, null, "LCA", ADDR_CONST(value.getValue(), isArrayMember), "0+X1");
+				} else {
+					String refType = "" + ((PointerType) variable.getType()).getRefType();
+					String comm = "Load *" + refType + " " + value.getValue() + " into memory " + variable.getAddress();
+					code += INS(comm, null, "LCA", ADDR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				}
 			}
 		} 
 		else if (variable.getType().equals(Type.intType))
@@ -176,8 +186,15 @@ public class Initializer
 			}
 			else
 			{
-				String comm = "Load int " + value.getValue() + " into memory " + variable.getAddress();
-				code += INS(comm, null, "LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				if (SmallCC.nostack)
+				{
+					String comm = "Load int " + value.getValue() + " into memory";
+					code += variable.getAddress();
+					code += INS(comm, null, "LCA", NUM_CONST(value.getValue(), isArrayMember), "0+X1");
+				} else {
+					String comm = "Load int " + value.getValue() + " into memory " + variable.getAddress();
+					code += INS(comm, null, "LCA", NUM_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				}
 			}
 		}
 		else if (variable.getType().equals(Type.charType))
@@ -201,8 +218,15 @@ public class Initializer
 			}
 			else
 			{
-				String comm = "Load char " + value.getValue() + " into memory " + variable.getAddress();
-				code += INS(comm, null, "LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				if (SmallCC.nostack)
+				{
+					String comm = "Load char " + value.getValue() + " into memory";
+					code += variable.getAddress();
+					code += INS(comm, null, "LCA", CHAR_CONST(value.getValue(), isArrayMember), "0+X1");
+				} else {
+					String comm = "Load char " + value.getValue() + " into memory " + variable.getAddress();
+					code += INS(comm, null, "LCA", CHAR_CONST(value.getValue(), isArrayMember), variable.getAddress());
+				}
 			}
 		} 
 		else 

@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.exceptions.*;
 import retree.type.*;
 
@@ -56,14 +58,28 @@ public class DivideExpression extends Expression
 	public String generateCode(boolean valueNeeded) 
 	{
 		String code = COM("Divide " + this.toString()) +
-		r.generateCode(valueNeeded) + l.generateCode(valueNeeded);
+		l.generateCode(valueNeeded) + r.generateCode(valueNeeded);
 		
 		if (valueNeeded) 
 		{
-			code += SNIP("SNIP_DIV");
-			int size = -Type.intType.sizeof();
-			code += INS("Move stack in stack at " + size, null, "MCW", STACK_OFF(0), STACK_OFF(size));
-			code += POP(Type.intType.sizeof());
+			if (SmallCC.nostack)
+			{
+				code += COM("Move operands to MDREGS");
+				code += INS("", null, "LCA", REG(r), "MDREGA");
+				code += INS("Move addr of MDREGB to X1", null, "MCW", ADDR_CONST(442, false), "X1");
+				code += INS("", null, "ZA", REG(l), "MDREGB");
+				code += INS("Divide MDREGA to MDREGB", null, "D", "MDREGA", "15996+X1");
+				code += INS("Move result to "+REG(this), null, "MN", "15994+X1", REG(this));
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+				code += INS("", null, "MN");
+			} else {
+				code += SNIP("SNIP_DIV");
+				int size = -Type.intType.sizeof();
+				code += INS("Move stack in stack at " + size, null, "MCW", STACK_OFF(0), STACK_OFF(size));
+				code += POP(Type.intType.sizeof());
+			}
 		}
 		
 		return code;

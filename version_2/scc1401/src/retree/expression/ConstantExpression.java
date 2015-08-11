@@ -46,21 +46,21 @@ public class ConstantExpression extends Expression
 				{
 					String constVal = ADDR_CONST(val, false);
 					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
-					code += INS("Put pointer at " + REG(this), null, "MCW", constVal, REG(this));
+					code += INS("Put pointer at " + REG(this), null, "LCA", constVal, REG(this));
 					return code;
 				}
 				else if (getType().equals(Type.intType))
 				{
 					String constVal = NUM_CONST(val, false);
 					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
-					code += INS("Put int at " + REG(this), null, "MCW", constVal, REG(this));
+					code += INS("Put int at " + REG(this), null, "LCA", constVal, REG(this));
 					return code;
 				}
 				else if (getType().equals(Type.charType))
 				{
 					String constVal = CHAR_CONST(val, false);
 					String code = COM("Constant (" + this.toString() + " : " + constVal + ")");
-					code += INS("Put char at " + REG(this), null, "MCW", constVal, REG(this));
+					code += INS("Put char at " + REG(this), null, "LCA", constVal, REG(this));
 					return code;
 				}
 				else

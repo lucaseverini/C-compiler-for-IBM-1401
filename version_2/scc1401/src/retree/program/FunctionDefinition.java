@@ -71,8 +71,8 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 		String funcLbl = "F";
 		for (int i = 0; i < 5; i++)
 		{
-			if (funcName.length() > i)
-				funcLbl += funcName.charAt(i);
+			if (funcName.length() - 1 - i > 0)
+				funcLbl += funcName.charAt(funcName.length() - 1 - i);
 			else
 				funcLbl += "A";
 		}
@@ -91,14 +91,9 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 			String funcLbl = "F";
 			int returnSize = 0;
 			int offsetToLocals = 15;
+			int numRegs = registerAllocator.getNumberRegisters() - 1;
 			FunctionType functionType = (FunctionType)declaration.getType();
-			for (int i = 0; i < 5; i++)
-			{
-				if (funcName.length() > i)
-					funcLbl += funcName.charAt(i);
-				else
-					funcLbl += "A";
-			}
+			funcLbl = getFunctionLabel(funcName);
 			String retSize = "";
 			for (int i = 0; i < functionType.getReturnType().getSize(); i++)
 			{
@@ -151,15 +146,18 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 			code += INS("Save return address in "+funcLbl, label(declaration.getValue()), "SBR", funcLbl);
 			code += INS("Save "+funcLbl+ " to X3", null, "SAR", "X3");
 			code += INS("Save X2 to "+funcLbl + "+3", null, "MCW", "X2", funcLbl + "+3");
-			for (int i = 0 ; i < registerAllocator.getNumberRegisters(); i++)
+
+			code += INS("Save REG" + numRegs, null, "LCA", "REG" + numRegs, funcLbl + "+" + (92 + returnSize));
+			for (int i = numRegs-1; i > -1; i--)
 			{
-				code += INS("Save REG" + i, null, "LCA", "REG" + i, funcLbl + "+" + (((i+1) * 5) + returnSize + 12) );
+				code += INS("Save REG" + i, null, "LCA");
 			}
 //			code += INS("Move X3 to local vars",null,"MA","@"+ADDR_COD(offsetToLocals)+"@","X3");
 			code += block.generateCode(registerAllocator);
-			for (int i = 0 ; i < registerAllocator.getNumberRegisters(); i++)
+			code += INS("Restore REG" + numRegs, null, "LCA", funcLbl + "+" + (92 + returnSize), "REG" + numRegs);
+			for (int i = numRegs-1; i > -1; i--)
 			{
-				code += INS("Restore REG" + i, null, "LCA", funcLbl + "+" + (((i+1) * 5) + returnSize + 12), "REG" + i);
+				code += INS("Restore REG" + i, null, "LCA");
 			}
 			code += INS("Load return address in X1", null, "LCA", funcLbl, "X1") +
 					INS("Jump back to caller in X1", null, "B", "0+X1");

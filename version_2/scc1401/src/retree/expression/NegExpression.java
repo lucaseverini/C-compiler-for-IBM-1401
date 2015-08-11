@@ -11,6 +11,8 @@
 package retree.expression;
 
 import static retree.RetreeUtils.*;
+
+import compiler.SmallCC;
 import retree.type.PointerType;
 
 public class NegExpression extends Expression 
@@ -54,8 +56,22 @@ public class NegExpression extends Expression
 			}
 			else 
 			{
-				code += INS(null, null, "ZS", STACK_OFF(0));
-				code += SNIP("clean_number");
+				if (SmallCC.nostack)
+				{
+					code += INS(null, null, "ZS", REG(this));
+					if (SmallCC.nostack)
+					{
+						code += INS("Move child val to CAST reg", null, "MCW", REG(this), "CAST");
+					}
+					code += SNIP("clean_number");
+					if (SmallCC.nostack)
+					{
+						code += INS("Move result to " + REG(this), null, "LCA", "CAST", REG(this));
+					}
+				} else {
+					code += INS(null, null, "ZS", STACK_OFF(0));
+					code += SNIP("clean_number");
+				}
 			}
 		}
 		

@@ -442,7 +442,7 @@ public class RetreeUtils
 
 	private static String loadHeader()
 	{
-		String fileName = "snippets/header.s";
+		String fileName = "snippets/stack/header.s";
 		String code = "";
 
 		if(SmallCC.optimize > 0)
@@ -587,7 +587,9 @@ public class RetreeUtils
 		{
 			code += INS(null, null, "ORG", Integer.toString(SmallCC.codeMem));
 		}
-		Optimizer.setORGPosition(Optimizer.getLastInstruction());
+		if (SmallCC.optimize > 0) {
+			Optimizer.setORGPosition(Optimizer.getLastInstruction());
+		}
 		code += INS("Program starts here", "START", "NOP");
 		code += "\n";
 
@@ -597,12 +599,18 @@ public class RetreeUtils
 	public static String SET_REGS()
 	{
 		String code = "";
-		code += INS("Set Reg position", null, "ORG", "333");
+		code += INS("Set Reg position", null, "ORG", "347");
 		for (int i = 0; i < 16; i++)
 		{
 			String constSize = "";
 			for(int j =0 ; j < Type.intType.getSize(); j++)
 				constSize += "0";
+			if (i < 10)
+			{
+				constSize = constSize.substring(0,constSize.length()-1) + i;
+			} else {
+				constSize = constSize.substring(0,constSize.length()-2) + i;
+			}
 			code += INS("Reg" + i, "REG" + i, "DCW", constSize);
 		}
 		// Multiply registers
@@ -611,9 +619,15 @@ public class RetreeUtils
 		for(int j =0 ; j < Type.intType.getSize(); j++)
 			constSize += "0";
 		code += INS("MDRegA", "MDREGA", "DCW", constSize);
-		for(int j =0 ; j < Type.intType.getSize(); j++)
+		for(int j =0 ; j < Type.intType.getSize() + 1; j++)
 			constSize += "0";
 		code += INS("MDRegB", "MDREGB", "DCW", constSize);
+
+		constSize = "";
+		for(int j =0 ; j < Type.intType.getSize(); j++)
+			constSize += "0";
+		code += INS("Cast Reg", "CAST", "DCW", constSize);
+		code += INS("Cast Reserved", "CSTRES", "DCW", "000");
 		return code;
 	}
 
