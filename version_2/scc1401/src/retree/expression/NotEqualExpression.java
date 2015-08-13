@@ -98,10 +98,10 @@ public class NotEqualExpression extends Expression
 			if (SmallCC.nostack)
 			{
 				code += INS("Compare "+REG(l)+" to " + REG(r), null, "C", REG(l), REG(r));
-				code += INS("", null, "MCW", NUM_CONST(1,false), REG(this));
+				code += INS("", null, "LCA", NUM_CONST(1,false), REG(this));
 				code += INS("Jump if equal", null, "BE", labelEqual);
 				code += INS("Jump to End", null, "B", labelEnd);
-				code += INS("Move 0 in stack", labelEqual, "MCW", NUM_CONST(0, false), REG(this));
+				code += INS("Move 0 in stack", labelEqual, "LCA", NUM_CONST(0, false), REG(this));
 				code += INS("End of NotEqual", labelEnd, "NOP");
 			} else {
 				code += INS("Compare stack to stack at " + -size, null, "C", STACK_OFF(0), STACK_OFF(-size));

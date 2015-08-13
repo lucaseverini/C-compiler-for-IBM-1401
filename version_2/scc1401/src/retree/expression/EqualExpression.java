@@ -102,10 +102,10 @@ public class EqualExpression extends Expression
 			if (SmallCC.nostack)
 			{
 				code += INS("Compare " + REG(l) + " to " + REG(r), null, "C", REG(r), REG(l));
-				code += INS("Move 0 in "+REG(this), null, "MCW", NUM_CONST(0, false), REG(this));
+				code += INS("Move 0 in "+REG(this), null, "LCA", NUM_CONST(0, false), REG(this));
 				code += INS("Jump if equal", null, "BE", labelEqual);
 				code += INS("Jump to End", null, "B", labelEnd);
-				code += INS("Move 1 in stack", labelEqual, "MCW", NUM_CONST(1, false), REG(this));
+				code += INS("Move 1 in stack", labelEqual, "LCA", NUM_CONST(1, false), REG(this));
 				code += INS("End of Equal", labelEnd, "NOP");
 			} else {
 				int size = l.getType().sizeof();

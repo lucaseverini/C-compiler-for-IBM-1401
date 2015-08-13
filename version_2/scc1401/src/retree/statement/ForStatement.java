@@ -53,6 +53,8 @@ public class ForStatement extends LoopStatement
 
 		if (init!= null) 
 		{
+			initList = new ArrayList<>();
+			registerAllocator.lifeScopeEval(init,initList);
 			registerAllocator.linearScanRegisterAllocation(initList);
 			code += init.generateCode(false);
 		}
@@ -61,6 +63,8 @@ public class ForStatement extends LoopStatement
 		
 		if (condition != null) 
 		{
+			expressionList = new ArrayList<>();
+			registerAllocator.lifeScopeEval(condition,expressionList);
 			registerAllocator.linearScanRegisterAllocation(expressionList);
 			code += condition.generateCode(true);
 			if (SmallCC.nostack)
@@ -81,6 +85,8 @@ public class ForStatement extends LoopStatement
 		
 		if (post != null) 
 		{
+			postList = new ArrayList<>();
+			registerAllocator.lifeScopeEval(post,postList);
 			registerAllocator.linearScanRegisterAllocation(postList);
 			code += post.generateCode(false);
 		}

@@ -135,6 +135,11 @@ public class CastExpression extends Expression
 			else
 			{
 				// Otherwise we don't need to do anything and our value is already on the stack
+				if (SmallCC.nostack)
+				{
+					// we need to move our value to the other REG
+					code += INS("Move result to " + REG(this), null, "LCA", REG(child), REG(this));
+				}
 			}
 		}
 		return code;

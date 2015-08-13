@@ -57,22 +57,38 @@ public class AndExpression extends Expression
 	@Override
     public String generateCode(boolean valueNeeded) 
 	{
+        String code = COM("And " + this.toString());
         String labelZero = label(SmallCC.nextLabelNumber());
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("And " + this.toString()); 
-		code += PUSH(5, NUM_CONST(1, false));
-        code += l.generateCode(true);
-        code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0),STACK_OFF(0));
-        code += POP(l.getType().sizeof());
-        code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(l.getType().sizeof())," ");
-        code += r.generateCode(true);
-        code += INS("Clear WM", null, "MCS", STACK_OFF(0),STACK_OFF(0));
-        code += POP(r.getType().sizeof());
-        code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(r.getType().sizeof())," ");
-        code += INS("Jump to End", null, "B", labelEnd);
-        code += INS("Move 0 in stack", labelZero, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-        code += INS("End of And", labelEnd, "NOP");
+        if (SmallCC.nostack)
+        {
+            code += l.generateCode(true);
+            code += INS("Clear WM in stack", null, "MCS", REG(l), REG(l));
+            code += INS("Set WM in stack", null, "SW", ADDR_LIT(347 + (l.scopeInterval.getAssignedRegister() * Type.intType.getSize())));
+            code += INS("Jump to Zero if equal", null, "BCE", labelZero, REG(l), " ");
+            code += r.generateCode(true);
+            code += INS("Clear WM in stack", null, "MCS", REG(r), REG(r));
+            code += INS("Set WM in stack", null, "SW", ADDR_LIT(347 + (r.scopeInterval.getAssignedRegister() * Type.intType.getSize())));
+            code += INS("Jump to Zero if equal", null, "BCE", labelZero, REG(r), " ");
+            code += INS("Move 1 to "+ REG(this), null, "LCA", NUM_CONST(1, false), REG(this));
+            code += INS("Jump to End", null, "B", labelEnd);
+            code += INS("Move 0 in stack", labelZero, "MCW", NUM_CONST(0, false), REG(this));
+            code += INS("End of And", labelEnd, "NOP");
+        } else {
+            code += PUSH(5, NUM_CONST(1, false));
+            code += l.generateCode(true);
+            code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+            code += POP(l.getType().sizeof());
+            code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(l.getType().sizeof()), " ");
+            code += r.generateCode(true);
+            code += INS("Clear WM", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+            code += POP(r.getType().sizeof());
+            code += INS("Jump to Zero if equal", null, "BCE", labelZero, STACK_OFF(r.getType().sizeof()), " ");
+            code += INS("Jump to End", null, "B", labelEnd);
+            code += INS("Move 0 in stack", labelZero, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+            code += INS("End of And", labelEnd, "NOP");
+        }
 
         return code;
     }

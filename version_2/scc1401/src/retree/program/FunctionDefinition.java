@@ -19,6 +19,7 @@ import static retree.RetreeUtils.*;
 import retree.regalloc.RegisterAllocator;
 import retree.statement.*;
 import retree.expression.*;
+import retree.type.ArrayType;
 import retree.type.FunctionType;
 import retree.type.Type;
 
@@ -133,10 +134,20 @@ public class FunctionDefinition implements Comparable<FunctionDefinition>
 			{
 				if (!i.getVariable().getName().equals("")) {
 					String space = "";
-					for (int j = 0; j < i.getVariable().getType().getSize(); j++) {
-						space += "0";
+					if (i.getVariable().getType() instanceof ArrayType) {
+						for (int k = 0; k < ((ArrayType) i.getVariable().getType()).getArrayBaseType().getSize(); k++) {
+							space += "0";
+						}
+						for (int j = 0; j < ((ArrayType) i.getVariable().getType()).getNumElements(); j ++)
+						{
+							code += INS("Room for vars", null, "DCW", space);
+						}
+					} else {
+						for (int j = 0; j < i.getVariable().getType().getSize(); j++) {
+							space += "0";
+						}
+						code += INS("Room for vars", null, "DCW", space);
 					}
-					code += INS("Room for vars", null, "DCW", space);
 				}
 			}
 

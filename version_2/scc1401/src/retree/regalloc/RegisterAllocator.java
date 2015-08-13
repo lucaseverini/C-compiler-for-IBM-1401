@@ -48,7 +48,9 @@ public class RegisterAllocator {
 		regs = new boolean[numberRegisters];
 		numRegsInUse = 0;
 		ScopedIntervalComparator scopedIntervalComparator = new ScopedIntervalComparator();
+		ExpressionIntervalComparator expressionIntervalComparator = new ExpressionIntervalComparator();
 		ArrayList<ScopeInterval> activeIntervals = new ArrayList<>();
+		Collections.sort(parts,expressionIntervalComparator);
 		for(Expression e : parts)
 		{
 			expireOldIntervals(e.scopeInterval,activeIntervals);
@@ -140,7 +142,7 @@ public class RegisterAllocator {
 		}
 	}
 
-	private void lifeScopeEval(Expression e, ArrayList<Expression> expressionList)
+	public void lifeScopeEval(Expression e, ArrayList<Expression> expressionList)
 	{
 		if (e == null) {
 			return;
@@ -149,7 +151,10 @@ public class RegisterAllocator {
 		if (e instanceof FunctionCallExpression)
 		{
 			FunctionCallExpression functionCallExpression = (FunctionCallExpression)e;
-			expressionList.addAll(functionCallExpression.getArguments());
+			for (Expression expression : functionCallExpression.getArguments())
+			{
+				lifeScopeEval(expression, expressionList);
+			}
 		}
 
 		// if both children of the expression are leaves then generate life values at the current level
@@ -176,7 +181,8 @@ public class RegisterAllocator {
 		} else if ((e.getRightExpression() instanceof VariableExpression || e.getRightExpression() instanceof ConstantExpression) &&
 				!(e.getLeftExpression() instanceof VariableExpression || e.getLeftExpression() instanceof ConstantExpression)) {
 			lifeScopeEval(e.getLeftExpression(), expressionList);
-			e.getRightExpression().scopeInterval.setStart(level);
+			if (e.getRightExpression().scopeInterval.getStart() == -1)
+				e.getRightExpression().scopeInterval.setStart(level);
 			e.getRightExpression().scopeInterval.setEnd(level);
 			level += 1;
 			e.scopeInterval.setStart(level);
@@ -227,6 +233,15 @@ public class RegisterAllocator {
 
 	private void handleIfStatement(IfStatement ifStatement) {
 		lifeScopeEval(ifStatement.getCondition(), ifStatement.expressionList);
+		if (ifStatement.getIfClause() != null)
+		{
+			calculatePlacements(ifStatement.getIfClause());
+		}
+		if (ifStatement.getElseClause() != null)
+		{
+			calculatePlacements(ifStatement.getElseClause());
+		}
+
 	}
 
 	private void handleWhileStatement(WhileStatement whileStatement) {

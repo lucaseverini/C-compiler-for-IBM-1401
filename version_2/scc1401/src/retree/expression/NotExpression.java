@@ -52,15 +52,29 @@ public class NotExpression extends Expression
 	{
         String labelEnd = label(SmallCC.nextLabelNumber());
 
-        String code = COM("Not (!) " + this.toString()) + PUSH(5,NUM_CONST(0, false));
+        String code = COM("Not (!) " + this.toString());
+        if (! SmallCC.nostack)
+        {
+            code += PUSH(5,NUM_CONST(0, false));
+        } else {
+            code += INS("Move 1 to " + REG(this), null, "MCW", NUM_CONST(1, false), REG(this));
+        }
         code += l.generateCode(true);
-		
-		int size = l.getType().sizeof();
-        code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
-        code += POP(size);
-        code += INS("Jump to End if equal to stack at " + size, null, "BCE", labelEnd, STACK_OFF(size), " ");
-        code += INS("Move 0 in stack", null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
-        code += INS("End of Not", labelEnd, "NOP");
+        int size = l.getType().sizeof();
+		if (SmallCC.nostack)
+        {
+            code += INS("Clear "+REG(l), null, "MCS", REG(l), REG(l));
+            code += INS("Set WM", null, "SW", REG(l));
+            code += INS("Jump to End if equal to stack at " + size, null, "BCE", labelEnd, REG(l), " ");
+            code += INS("Move 0 in stack", null, "MCW", NUM_CONST(0, false), REG(this));
+            code += INS("End of Not", labelEnd, "NOP");
+        } else {
+            code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+            code += POP(size);
+            code += INS("Jump to End if equal to stack at " + size, null, "BCE", labelEnd, STACK_OFF(size), " ");
+            code += INS("Move 0 in stack", null, "MCW", NUM_CONST(0, false), STACK_OFF(0));
+            code += INS("End of Not", labelEnd, "NOP");
+        }
 		
         return code;
     }

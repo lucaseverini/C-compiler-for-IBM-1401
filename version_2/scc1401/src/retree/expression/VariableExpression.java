@@ -48,11 +48,18 @@ public class VariableExpression extends LValue
 				int refTypeSize = refType.getSize();
 				
 				int addr = offset + (typeSize - 1);
-				code += COM("Static Variable (" + name + " : " + ADDR_LIT(addr) + ")"); 
-				code += PUSH(getType().sizeof(), ADDR_LIT(addr));
-				
-				int off = (refTypeSize - 1) + (refTypeSize * constSubscript);
-				code += INS("Add offset " + off + " to point element " + constSubscript, null, "A", NUM_CONST(off, false), "0+X2");
+				if (SmallCC.nostack) {
+
+					code += COM("Static Variable (" + name + " : " + ADDR_LIT(addr) + ")");
+					code += INS("Move addr lit to " + REG(this), null, "LCA", ADDR_LIT(addr), REG(this));
+					int off = (refTypeSize - 1) + (refTypeSize * constSubscript);
+					code += INS("Add offset " + off + " to point element " + constSubscript, null, "A", NUM_CONST(off, false), REG(this));
+				} else {
+					code += COM("Static Variable (" + name + " : " + ADDR_LIT(addr) + ")");
+					code += PUSH(getType().sizeof(), ADDR_LIT(addr));
+					int off = (refTypeSize - 1) + (refTypeSize * constSubscript);
+					code += INS("Add offset " + off + " to point element " + constSubscript, null, "A", NUM_CONST(off, false), "0+X2");
+				}
 			} 
 			else
 			{
@@ -64,13 +71,27 @@ public class VariableExpression extends LValue
 					int refTypeSize = refType.getSize();
 
 					int off = offset;
-					code += COM("Parameter Variable (" + name + " : " + OFF(off) + ")"); 
-					code += PUSH(getType().sizeof(), OFF(off));
+					if (SmallCC.nostack)
+					{
+						code += COM("Parameter Variable (" + name + ")");
+						code += this.getAddress();
+						code += INS("", null, "LCA", "0+X1", REG(this));
+						code += INS("", null, "MCW", REG(this), "X1");
+
+					} else {
+						code += COM("Parameter Variable (" + name + " : " + OFF(off) + ")");
+						code += PUSH(getType().sizeof(), OFF(off));
+					}
 
 					if(constSubscript > 0)
 					{
 						off = (refTypeSize * constSubscript);
-						code += INS("Add offset " + off + " to point element " + constSubscript, null, "A", NUM_CONST(off, false), "0+X2");
+						if (SmallCC.nostack) {
+							code += INS("Add offset " + off + " to point element " + constSubscript, null, "MA", NUM_CONST(off, false), "X1");
+							code += INS("", null, "LCA", "X1", REG(this));
+						} else {
+							code += INS("Add offset " + off + " to point element " + constSubscript, null, "A", NUM_CONST(off, false), "0+X2");
+						}
 					}
 				}
 				else
@@ -81,11 +102,19 @@ public class VariableExpression extends LValue
 					int refTypeSize = refType.getSize();
 
 					int off = offset + typeSize;
-					code += COM("Local Variable (" + name + " : " + OFF(off) + ")"); 
-					code += PUSH(getType().sizeof(), OFF(off));
-
-					off = (refTypeSize - 1) + (refTypeSize * constSubscript);
-					code += INS("Add offset " + off + " to point element " + constSubscript, null, "A", NUM_CONST(off, false), "0+X2");
+					code += COM("Local Variable (" + name + " : " + OFF(off) + ")");
+					if (SmallCC.nostack) {
+						code += this.getAddress();
+						code += INS("", null, "LCA", "0+X1", REG(this));
+						code += INS("", null, "MCW", REG(this), "X1");
+						off = (refTypeSize - 1) + (refTypeSize * constSubscript);
+						code += INS("Add offset " + off + " to point element " + constSubscript, null, "MA", NUM_CONST(off, false), "X1");
+						code += INS("", null, "LCA", "X1", REG(this));
+					} else {
+						code += PUSH(getType().sizeof(), OFF(off));
+						off = (refTypeSize - 1) + (refTypeSize * constSubscript);
+						code += INS("Add offset " + off + " to point element " + constSubscript, null, "A", NUM_CONST(off, false), "0+X2");
+					}
 				}
 			}
 		} 
@@ -119,7 +148,7 @@ public class VariableExpression extends LValue
 					if (SmallCC.nostack) {
 						code += INS("Copy address to X1", null, "MCW", "X3", "X1");
 						code += INS("Modify X1 to point to params", null, "MA", "12+X3", "X1");
-						code += INS("Modify X1", null, "MA", "@"+ADDR_COD(offset + 3 + getType().getSize())+"@", "X1");
+						code += INS("Modify X1", null, "MA", "@"+ADDR_COD(((offset + 3) * -1) + getType().getSize())+"@", "X1");
 						code += INS("Move val to "+REG(this), "", "LCA", "0+X1", REG(this));
 					} else {
 						code += PUSH(getType().sizeof(), OFF(off));
@@ -170,7 +199,7 @@ public class VariableExpression extends LValue
 				if(SmallCC.nostack) {
 					code += INS("Copy address to X1", null, "MCW", "X3", "X1");
 					code += INS("Modify X1 to point to params", null, "MA", "12+X3", "X1");
-					code += INS("Modify X1", null, "MA", "@"+ADDR_COD(offset + 3  + getType().getSize())+"@", "X1");
+					code += INS("Modify X1", null, "MA", "@"+ADDR_COD(((offset + 3) * -1) + getType().getSize())+"@", "X1");
 					code += INS("Copy addr to " + REG(this), null, "MCW", "X1", REG(this));
 				} else {
 					code += PUSH(3, ADDR_CONST(addr, false));

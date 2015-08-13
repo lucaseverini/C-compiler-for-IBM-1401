@@ -117,7 +117,8 @@ public class AddExpression extends Expression
 		{
 			if (l.getType() instanceof  PointerType)
 			{
-				code += INS("Adding left to right", null, "MA", REG(r), REG(l));
+				code += INS("Adding left to right", null, "MA", REG(l), REG(r));
+				code += INS("Move result to " + REG(this), null, "LCA", REG(r), REG(this));
 			} else {
 				code += INS("Add left to right", null, "A", REG(l), REG(r));
 				code += INS("Move result to " + REG(this), null, "LCA", REG(r), REG(this));

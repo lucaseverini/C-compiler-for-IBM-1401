@@ -75,12 +75,12 @@ public class LessThanExpression extends Expression
 			code += r.generateCode(valueNeeded);
 			if (SmallCC.nostack)
 			{
-				code += INS("Move child val to CAST reg", null, "MCW", REG(l), "CAST");
+				code += INS("Move child val to CAST reg", null, "MCW", REG(r), "CAST");
 			}
 			code += SNIP("clean_number");
 			if (SmallCC.nostack)
 			{
-				code += INS("Move result to " + REG(l), null, "LCA", "CAST", REG(l));
+				code += INS("Move result to " + REG(l), null, "LCA", "CAST", REG(r));
 			}
 			
 			String labelLessThan = label(SmallCC.nextLabelNumber());
@@ -90,9 +90,9 @@ public class LessThanExpression extends Expression
 			{
 				code += INS("Compare "+REG(l)+" to "+REG(r), null, "C", REG(r), REG(l));
 				code += INS("Jump if less or equal", null, "BL", labelLessThan);
-				code += INS("Move 0 in " + REG(this), null, "MCW", NUM_CONST(0, false), REG(this));
+				code += INS("Move 0 in " + REG(this), null, "LCA", NUM_CONST(0, false), REG(this));
 				code += INS("Jump to End", null, "B", labelEnd);
-				code += INS("Move 1 in " + REG(this), labelLessThan, "MCW", NUM_CONST(1, false), REG(this));
+				code += INS("Move 1 in " + REG(this), labelLessThan, "LCA", NUM_CONST(1, false), REG(this));
 				code += INS("End of LessOrEqual", labelEnd, "NOP");
 			} else {
 				// ###############

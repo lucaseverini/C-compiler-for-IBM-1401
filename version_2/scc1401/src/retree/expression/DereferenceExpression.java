@@ -61,8 +61,7 @@ public class DereferenceExpression extends LValue
 				code += child.generateCode(false);
 				if (SmallCC.nostack)
 				{
-					code += INS("Copy address to X1", null, "MCW", REG(child), "X1");
-					code += INS("Load val to " + REG(this), null, "LCA", "0+X1", REG(this));
+					code += INS("Move result to " +REG(this), null, "MCW", REG(child), REG(this));
 				}
 				return code;
 			} 
@@ -72,7 +71,8 @@ public class DereferenceExpression extends LValue
 				code += child.generateCode(true);
 				if (SmallCC.nostack)
 				{
-					code += INS("Move result to " +REG(this), null, "MCW", REG(child), REG(this));
+					code += INS("Copy address to X1", null, "MCW", REG(child), "X1");
+					code += INS("Load val to " + REG(this), null, "LCA", "0+X1", REG(this));
 				} else {
 					code += POP(3, "X1");
 

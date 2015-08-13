@@ -10,6 +10,8 @@
 
 package retree.expression;
 
+import compiler.SmallCC;
+import retree.regalloc.ScopeInterval;
 import retree.type.*;
 import static retree.RetreeUtils.*;
 
@@ -41,9 +43,16 @@ public class ArrayNameExpression extends Expression
 			int offset = array.getOffset();
 			int baseTypeSize = arrayType.getArrayBaseType().sizeof();
 			int arrayOffset = offset + (baseTypeSize - 1) + (baseTypeSize * constSubscript);
-			
-			code += PUSH(3, ADDR_CONST(arrayOffset, false));
-		} 
+			if (SmallCC.nostack) {
+				code += INS("", null, "MCW", getArray().getAddress(), "CAST");
+				code += SNIP("number_to_pointer");
+				code += INS("Move result to " + REG(this), null, "MCW", "CSTRES", "X1");
+				code += INS("", null, "MA", NUM_CONST(arrayOffset, false), "X1");
+				code += INS("", null, "MCW", "X1", REG(this));
+			} else {
+				code += PUSH(3, ADDR_CONST(arrayOffset, false));
+			}
+		}
 		else 
 		{
 			if (array.isParameter())
@@ -54,9 +63,16 @@ public class ArrayNameExpression extends Expression
 				int baseTypeSize = arrayType.getArrayBaseType().sizeof();
 				int arrayTypeSize = arrayType.sizeof();
 				int arrayOffset = offset + baseTypeSize - arrayTypeSize + (baseTypeSize * constSubscript);
-				
-				code += PUSH(3, ADDR_CONST(arrayOffset, false));
-				code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				if (SmallCC.nostack)
+				{
+					code += getArray().generateAddress();
+					code += INS("Add X3 to stack", null, "MCW", REG(array), "X1");
+					code += INS("Add X3 to stack", null, "MA" , ADDR_CONST(arrayOffset, false), "X1");
+					code += INS("Add X3 to stack", null, "MCW", "X1", REG(this));
+				} else {
+					code += PUSH(3, ADDR_CONST(arrayOffset, false));
+					code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				}
 			}
 			else
 			{
@@ -66,8 +82,16 @@ public class ArrayNameExpression extends Expression
 				int baseTypeSize = arrayType.getArrayBaseType().sizeof();
 				int arrayOffset = offset + baseTypeSize + (baseTypeSize * constSubscript);
 
-				code += PUSH(3, ADDR_CONST(arrayOffset, false));
-				code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				if (SmallCC.nostack)
+				{
+					code += getArray().generateAddress();
+					code += INS("Add X3 to stack", null, "MCW", REG(array), "X1");
+					code += INS("Add X3 to stack", null, "MA" , ADDR_CONST(arrayOffset, false), "X1");
+					code += INS("Add X3 to stack", null, "MCW", "X1", REG(this));
+				} else {
+					code += PUSH(3, ADDR_CONST(arrayOffset, false));
+					code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				}
 			}
 		}
 		
@@ -93,8 +117,13 @@ public class ArrayNameExpression extends Expression
 			int offset = array.getOffset();
 			int baseTypeSize = arrayType.getArrayBaseType().sizeof();
 			int arrayOffset = offset + (baseTypeSize - 1);
-
-			code += PUSH(3, ADDR_CONST(arrayOffset, false));
+			if (SmallCC.nostack)
+			{
+				code += INS("", null, "MCW" , ADDR_CONST(arrayOffset, false), "X1");
+				code += INS("", null, "MCW", "X1", REG(this));
+			} else {
+				code += PUSH(3, ADDR_CONST(arrayOffset, false));
+			}
 		} 
 		else 
 		{
@@ -107,9 +136,16 @@ public class ArrayNameExpression extends Expression
 				int arrayTypeSize = arrayType.sizeof();
 				int arrayOffset = offset + baseTypeSize - arrayTypeSize;
 
-				code += PUSH(3, ADDR_CONST(arrayOffset, false));
-				
-				code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				if (SmallCC.nostack)
+				{
+					code += getArray().generateAddress();
+					code += INS("", null, "MCW", REG(array), "X1");
+					code += INS("", null, "MA" , ADDR_CONST(arrayOffset, false), "X1");
+					code += INS("", null, "MCW", "X1", REG(this));
+				} else {
+					code += PUSH(3, ADDR_CONST(arrayOffset, false));
+					code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				}
 			}
 			else
 			{
@@ -119,9 +155,16 @@ public class ArrayNameExpression extends Expression
 				int baseTypeSize = arrayType.getArrayBaseType().sizeof();
 				int arrayOffset = offset + baseTypeSize;
 
-				code += PUSH(3, ADDR_CONST(arrayOffset, false));
-				
-				code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				if (SmallCC.nostack)
+				{
+					code += getArray().generateAddress();
+					code += INS("", null, "MCW", REG(array), "X1");
+					code += INS("", null, "MA" , ADDR_CONST(arrayOffset, false), "X1");
+					code += INS("", null, "MCW", "X1", REG(this));
+				} else {
+					code += PUSH(3, ADDR_CONST(arrayOffset, false));
+					code += INS("Add X3 to stack", null, "MA", "X3", STACK_OFF(0));
+				}
 			}
 		}
 		
@@ -147,7 +190,7 @@ public class ArrayNameExpression extends Expression
 
 	@Override
 	public Expression getLeftExpression() {
-		return null;
+		return array;
 	}
 
 	@Override

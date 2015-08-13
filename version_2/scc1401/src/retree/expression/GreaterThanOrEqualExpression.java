@@ -61,8 +61,7 @@ public class GreaterThanOrEqualExpression extends Expression
 			String lCode = l.generateCode(valueNeeded);
 			String rCode = r.generateCode(valueNeeded);
 
-			String code = COM("GreaterOrEqual " + this.toString()) +
-			lCode;
+			String code = COM("GreaterOrEqual " + this.toString()) + lCode;
 			if (SmallCC.nostack)
 			{
 				code += INS("Move child val to CAST reg", null, "MCW", REG(l), "CAST");
@@ -70,7 +69,7 @@ public class GreaterThanOrEqualExpression extends Expression
 			code += SNIP("clean_number");
 			if (SmallCC.nostack)
 			{
-				code += INS("Move result to " + REG(this), null, "LCA", "CAST", REG(this));
+				code += INS("Move result to " + REG(l), null, "LCA", "CAST", REG(l));
 			}
 
 			code += rCode;
@@ -81,7 +80,7 @@ public class GreaterThanOrEqualExpression extends Expression
 			code += SNIP("clean_number");
 			if (SmallCC.nostack)
 			{
-				code += INS("Move result to " + REG(this), null, "LCA", "CAST", REG(this));
+				code += INS("Move result to " + REG(r), null, "LCA", "CAST", REG(r));
 			}
 
 			String labelLessThan = label(SmallCC.nextLabelNumber());
@@ -89,10 +88,10 @@ public class GreaterThanOrEqualExpression extends Expression
 			if (SmallCC.nostack)
 			{
 				code += INS("Compare " + REG(l) + " to " + REG(r), null, "C", REG(r), REG(l));
-				code += INS("Move 1 in " + REG(this), null, "MCW", NUM_CONST(1, false), REG(this));
+				code += INS("Move 1 in " + REG(this), null, "LCA", NUM_CONST(1, false), REG(this));
 				code += INS("Jump if greater or equal", null, "BL", labelLessThan);
 				code += INS("Jump to End", null, "B", labelEnd);
-				code += INS("Move 0 in " + REG(this), labelLessThan, "MCW", NUM_CONST(0, false), REG(this));
+				code += INS("Move 0 in " + REG(this), labelLessThan, "LCA", NUM_CONST(0, false), REG(this));
 				code += INS("End of GreaterOrEqual", labelEnd, "NOP");
 			} else {
 				// ###############

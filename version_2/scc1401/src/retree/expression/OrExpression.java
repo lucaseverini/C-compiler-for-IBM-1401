@@ -60,23 +60,45 @@ public class OrExpression extends Expression
         String labelSecond = label(SmallCC.nextLabelNumber());
         String labelEnd = label(SmallCC.nextLabelNumber());
 
+        int lSize = l.getType().sizeof();
+        int rSize = r.getType().sizeof();
         String code = COM("Or (||) " + this.toString());
-		code += PUSH(5, NUM_CONST(0, false));
+        if (! SmallCC.nostack)
+        {
+            code += PUSH(5, NUM_CONST(0, false));
+        } else {
+            code += INS("Move 0 to " + REG(this), null, "LCA", NUM_CONST(0, false), REG(this));
+        }
         code += l.generateCode(true);
-		int lSize = l.getType().sizeof();
-		int rSize = r.getType().sizeof();
-        code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
-        code += POP(lSize);
-        code += INS("Jump to Second if equal to stack at " + lSize, null, "BCE", labelSecond, STACK_OFF(lSize)," ");
-        code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-        code += INS("Jump to End", null, "B", labelEnd);
-        code += INS("Second", labelSecond, "NOP");
-        code += r.generateCode(true);
-        code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0),STACK_OFF(0));
-        code += POP(rSize);
-        code += INS("Jump to End if equal to stack at " + rSize, null, "BCE", labelEnd, STACK_OFF(rSize)," ");
-        code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
-        code += INS("End of Or", labelEnd, "NOP");
+        if (SmallCC.nostack)
+        {
+            code += INS("Clear WM in stack", null, "MCS", REG(l), REG(l));
+            code += INS("Set WM in stack", null, "SW", ADDR_LIT(347 + (l.scopeInterval.getAssignedRegister() * Type.intType.getSize())));
+            code += INS("Jump to Second if equal to stack at " + lSize, null, "BCE", labelSecond, REG(l), " ");
+            code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), REG(this));
+            code += INS("Jump to End", null, "B", labelEnd);
+            code += INS("Second", labelSecond, "MCW", NUM_CONST(0, false), REG(this));
+            code += r.generateCode(true);
+            code += INS("Clear WM in stack", null, "MCS", REG(r), REG(r));
+            code += INS("Set WM in stack", null, "SW", ADDR_LIT(347 + (r.scopeInterval.getAssignedRegister() * Type.intType.getSize())));
+            code += INS("Jump to End if equal to stack at " + rSize, null, "BCE", labelEnd, REG(r), " ");
+            code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), REG(this));
+            code += INS("End of Or", labelEnd, "NOP");
+        } else {
+
+            code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+            code += POP(lSize);
+            code += INS("Jump to Second if equal to stack at " + lSize, null, "BCE", labelSecond, STACK_OFF(lSize), " ");
+            code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+            code += INS("Jump to End", null, "B", labelEnd);
+            code += INS("Second", labelSecond, "NOP");
+            code += r.generateCode(true);
+            code += INS("Clear WM in stack", null, "MCS", STACK_OFF(0), STACK_OFF(0));
+            code += POP(rSize);
+            code += INS("Jump to End if equal to stack at " + rSize, null, "BCE", labelEnd, STACK_OFF(rSize), " ");
+            code += INS("Move 1 in stack", null, "MCW", NUM_CONST(1, false), STACK_OFF(0));
+            code += INS("End of Or", labelEnd, "NOP");
+        }
 
         return code;
     }

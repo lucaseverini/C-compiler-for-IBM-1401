@@ -39,4 +39,8 @@ public class ArrayType extends Type
 	{
 		return true;
 	}
+
+	public int getNumElements() {
+		return numElements;
+	}
 }
